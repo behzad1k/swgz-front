@@ -53,7 +53,7 @@ export const routes: Routes = {
     showHeader: false,
   },
   googleCallback: {
-    path: '/auth/google/callback',
+    path: '/google/callback',
     component: GoogleCallback,
     protected: false,
     title: 'Google Sign In',

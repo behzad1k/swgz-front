@@ -1,3 +1,4 @@
+import { useQuery } from '@/router';
 import { FC, useEffect, useState } from 'react';
 import { Music } from 'lucide-react';
 import Button from '@/components/common/Button';
@@ -12,6 +13,7 @@ const DEFAULT_RESULT_MESSAGES = {
 const EmailConfirmation: FC = () => {
   const [_loading, setLoading] = useState(false);
   const [result, setResult] = useState(DEFAULT_RESULT_MESSAGES);
+  const { token } = useQuery();
 
   const submitEmailCode = async (token: string) => {
     if (!token) return;
@@ -32,9 +34,8 @@ const EmailConfirmation: FC = () => {
   };
 
   useEffect(() => {
-    const url = new URLSearchParams(window.location.search)
-    if (url.get('token')) submitEmailCode(url.get('token') || '');
-  }, []);
+    if (token) submitEmailCode(token || '');
+  }, [token]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center p-4">
