@@ -1,8 +1,13 @@
-import routesConfig from '@/config/routes.config.ts';
-import { ProtectedRoute, Route, Routes } from '@/router';
+import routesConfig, { routes } from '@/config/routes.config.ts';
+import { ProtectedRoute, Route, Routes, useNavigate } from '@/router';
+import { authApi } from '@api/auth.api.ts';
+import { libraryApi } from '@api/library.api.ts';
+import { musicApi } from '@api/music.api.ts';
+import { playlistApi } from '@api/playlist.api.ts';
 import ModalManager from '@components/layout/ModalManager.tsx';
 import NowPlayingSheet from '@components/player/NowPlayingSheet.tsx';
-import { FC, useContext } from 'react';
+import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
+import { FC, useContext, useEffect } from 'react';
 import AppContext from './contexts/AppContext';
 
 // Components
@@ -12,6 +17,46 @@ import { WifiOff } from 'lucide-react';
 
 const AppContent: FC = () => {
   const { state, dispatch } = useContext(AppContext)!;
+  const navigate = useNavigate()
+
+  async function fetchUserLibrary() {
+    try {
+      const [librarySongs, recentlyPlayed, mostListened, recentSearches, playlists] = await Promise.all([
+        libraryApi.getLibrary(),
+        libraryApi.getRecentlyPlayed(),
+        libraryApi.getMostListened(),
+        musicApi.getRecentSearches(),
+        playlistApi.getUserPlaylists()
+      ]);
+
+      dispatch({
+        type: 'SET_LIBRARY',
+        payload: { librarySongs, mostListened, recentlyPlayed, recentSearches, playlists, likedSongs: librarySongs.filter(e => e.isLiked) }
+      });
+    } catch (e) {
+      console.error('Failed to fetch user data:', e);
+    }
+  }
+
+  async function fetchUserData(){
+    try {
+      const response = await authApi.getUser();
+      dispatch({ type: 'SET_AUTH', payload: { user: response, token: localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN), isAuthenticated: true }})
+    }catch (e){
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+      navigate(routes.login.path)
+    }
+  }
+  useEffect(() => {
+    if (state.auth.isAuthenticated && state.auth.user) {
+      fetchUserLibrary();
+    } else if (state.auth.isAuthenticated || localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)){
+      fetchUserData();
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+      navigate(routes.login.path)
+    }
+  }, [state.auth.isAuthenticated, state.auth.user]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900">

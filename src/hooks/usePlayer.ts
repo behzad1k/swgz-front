@@ -178,7 +178,7 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
 
         const audio = audioRef.current;
         const preferFlac = quality === 'FLAC';
-        const streamUrl = ApiService.getStreamUrl(songObj.id, preferFlac);
+        const streamUrl = ApiService.getStreamUrl(songObj.id, preferFlac, state.auth.user?.apiKey);
 
         console.log('🌐 Stream URL:', streamUrl);
         console.log('🎚️ Audio state before setting src:', {

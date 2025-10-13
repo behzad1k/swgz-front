@@ -30,10 +30,14 @@ export interface Playlist {
   updatedAt?: string;
 }
 
-export interface UserProfile {
+export interface User {
   id: string;
   username: string;
   email?: string;
+  apiKey?: string;
+}
+
+export interface UserProfile extends User{
   bio?: string;
   avatarUrl?: string;
   stalkingsCount: number;

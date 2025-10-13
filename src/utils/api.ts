@@ -68,8 +68,8 @@ class ApiService {
     return response.json();
   }
 
-  static getStreamUrl(songId: string, flac = false): string {
-    return `${API_BASE_URL}/music/stream/${songId}?flac=${flac}&api-key=5746d273-5f71-4668-9ff1-f3753f0ffe60`;
+  static getStreamUrl(songId: string, flac = false, apiKey: string): string {
+    return `${API_BASE_URL}/music/stream/${songId}?flac=${flac}&api-key=${apiKey}`;
   }
 
   static async downloadSong(

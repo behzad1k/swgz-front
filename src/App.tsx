@@ -1,12 +1,9 @@
 import AppContent from '@/AppContent.tsx';
 import { RootState } from '@/types/states.ts';
-import { libraryApi } from '@api/library.api.ts';
-import { musicApi } from '@api/music.api.ts';
-import { playlistApi } from '@api/playlist.api.ts';
 import appReducer from '@store/reducer.ts';
 import { usePlayer } from '@hooks/usePlayer';
 import { initialModalState } from '@store/slices/modalSlice.ts';
-import { FC, useEffect, useReducer } from 'react';
+import { FC, useReducer } from 'react';
 import AppContext from './contexts/AppContext';
 
 export const initialState: RootState = {
@@ -51,31 +48,6 @@ export const initialState: RootState = {
 const App: FC = () => {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const player = usePlayer({ state, dispatch });
-
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const [librarySongs, recentlyPlayed, mostListened, recentSearches, playlists] = await Promise.all([
-          libraryApi.getLibrary(),
-          libraryApi.getRecentlyPlayed(),
-          libraryApi.getMostListened(),
-          musicApi.getRecentSearches(),
-          playlistApi.getUserPlaylists()
-        ]);
-
-        dispatch({
-          type: 'SET_LIBRARY',
-          payload: { librarySongs, mostListened, recentlyPlayed, recentSearches, playlists, likedSongs: librarySongs.filter(e => e.isLiked) }
-        });
-      } catch (e) {
-        console.error('Failed to fetch user data:', e);
-      }
-    }
-
-    if (state.auth.isAuthenticated) {
-      fetchUserData();
-    }
-  }, [state.auth.isAuthenticated]);
 
   return (
     <AppContext.Provider value={{ state, dispatch, player }}>
