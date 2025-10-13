@@ -120,7 +120,7 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
 
     const handleError = (e: ErrorEvent) => {
       console.error('Audio playback error:', e);
-      setIsPlaying(false);
+      // setIsPlaying(false);
     };
 
     audio.addEventListener('timeupdate', updateProgress);

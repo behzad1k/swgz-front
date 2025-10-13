@@ -43,8 +43,8 @@ const AppContent: FC = () => {
       const response = await authApi.getUser();
       dispatch({ type: 'SET_AUTH', payload: { user: response, token: localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN), isAuthenticated: true }})
     }catch (e){
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
-      navigate(routes.login.path)
+      // localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+      // navigate(routes.login.path)
     }
   }
   useEffect(() => {
