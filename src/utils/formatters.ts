@@ -58,8 +58,8 @@ export const formatDate = (date: string | Date): string => {
 };
 
 export const getImageUrl = (data: Image[] | Image, size: ImageSizes = ImageSizes.large) => {
-  if (!data || data?.length == 0) return null;
-  let img = '';
+  if (!data) return null;
+  let img;
   if (Array.isArray(data)) {
     img = data?.find(e => e.size == size) || data[0];
     if (!img) img = data[0];

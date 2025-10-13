@@ -1,4 +1,5 @@
 import { useApp } from '@/contexts/AppContext.tsx';
+import { Artist, Track } from '@/types/models.ts';
 import Button from '@components/common/Button.tsx';
 import SongItem from '@components/music/SongItem.tsx';
 import { X } from 'lucide-react';
@@ -11,7 +12,7 @@ interface ArtistPageProps {
 
 const ArtistPage: FC<ArtistPageProps> = ({ artistId, onClose }) => {
   const [artist, setArtist] = useState<Artist | null>(null);
-  const [topSongs, setTopSongs] = useState<Song[]>([]);
+  const [topSongs, setTopSongs] = useState<Track[]>([]);
   const { dispatch } = useApp();
 
   useEffect(() => {
@@ -23,8 +24,8 @@ const ArtistPage: FC<ArtistPageProps> = ({ artistId, onClose }) => {
       followers: 1250000,
     });
     setTopSongs([
-      { id: '1', title: 'Hit Song 1', artist: 'Sample Artist', duration: 240, coverUrl: 'https://via.placeholder.com/60' },
-      { id: '2', title: 'Hit Song 2', artist: 'Sample Artist', duration: 210, coverUrl: 'https://via.placeholder.com/60' },
+      { id: '1', title: 'Hit Song 1', artistName: 'Sample Artist', duration: 240, albumCover: 'https://via.placeholder.com/60' },
+      { id: '2', title: 'Hit Song 2', artistName: 'Sample Artist', duration: 210, albumCover: 'https://via.placeholder.com/60' },
     ]);
   }, [artistId]);
 

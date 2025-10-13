@@ -13,9 +13,9 @@ export interface PaginatedResponse<T> {
 }
 
 export interface AuthResponse {
-  access_token: string;
-  refresh_token?: string;
+  accessToken: string;
   user: UserProfile;
+  message: string
 }
 
 export interface LoginCredentials {

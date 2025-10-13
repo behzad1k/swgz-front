@@ -1,4 +1,5 @@
 import { useApp } from '@/contexts/AppContext.tsx';
+import { Album } from '@/types/models.ts';
 import SongItem from '@components/music/SongItem.tsx';
 import { X } from 'lucide-react';
 import { FC, useEffect, useState } from 'react';
@@ -22,7 +23,7 @@ const AlbumPage: FC<AlbumPageProps> = ({ albumId, onClose }) => {
       coverUrl: 'https://via.placeholder.com/400',
       totalTracks: 12,
       songs: [
-        { id: '1', title: 'Track 1', artist: 'Sample Artist', duration: 240, trackNumber: 1, coverUrl: 'https://via.placeholder.com/60' },
+        { id: '1', title: 'Track 1', artistName: 'Sample Artist', duration: 240, trackNumber: 1, albumCover: 'https://via.placeholder.com/60' },
       ],
     });
   }, [albumId]);

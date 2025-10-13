@@ -16,7 +16,7 @@ export const useAuth = () => {
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password });
-      ApiService.setToken(response.access_token);
+      ApiService.setToken(response.accessToken);
       setUser(response.user);
       setIsAuthenticated(true);
       return response;
@@ -28,7 +28,7 @@ export const useAuth = () => {
   const signup = async (username: string, email: string, password: string) => {
     try {
       const response = await authApi.signUp({ username, email, password });
-      ApiService.setToken(response.access_token);
+      ApiService.setToken(response.accessToken);
       setUser(response.user);
       setIsAuthenticated(true);
       return response;

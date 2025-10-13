@@ -5,4 +5,6 @@ export const initialLibraryState: LibraryState = {
   playlists: [],
   recentlyPlayed: [],
   mostListened: [],
+  librarySongs: [],
+  recentSearches: []
 };

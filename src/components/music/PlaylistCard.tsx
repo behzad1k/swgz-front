@@ -1,3 +1,4 @@
+import { Playlist } from '@/types/models.ts';
 import { Play } from 'lucide-react';
 import { FC } from 'react';
 

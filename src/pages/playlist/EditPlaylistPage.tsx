@@ -7,7 +7,7 @@ import { playlistApi } from '@/api/playlist.api';
 import { Playlist } from '@/types/models.ts';
 
 const EditPlaylistPage: FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [name, setName] = useState('');

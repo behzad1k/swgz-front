@@ -1,4 +1,3 @@
-import { AuthResponse } from '@/types/api';
 import { FC, useEffect, useState } from 'react';
 import { Music } from 'lucide-react';
 import Button from '@/components/common/Button';
@@ -11,7 +10,7 @@ const DEFAULT_RESULT_MESSAGES = {
 }
 
 const EmailConfirmation: FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [result, setResult] = useState(DEFAULT_RESULT_MESSAGES);
 
   const submitEmailCode = async (token: string) => {
@@ -34,7 +33,7 @@ const EmailConfirmation: FC = () => {
 
   useEffect(() => {
     const url = new URLSearchParams(window.location.search)
-    submitEmailCode(url.get('token'));
+    if (url.get('token')) submitEmailCode(url.get('token') || '');
   }, []);
 
   return (

@@ -25,7 +25,7 @@ export const useMediaSession = ({
         artist: song.artistName,
         album: song.albumName,
         artwork: [
-          { src: song.coverUrl || '', sizes: '512x512', type: 'image/png' },
+          { src: song.albumCover || '', sizes: '512x512', type: 'image/png' },
         ],
       });
 

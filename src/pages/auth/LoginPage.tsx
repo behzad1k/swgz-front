@@ -1,4 +1,4 @@
-import { ApiResponse, AuthResponse } from '@/types/api';
+import { AuthResponse } from '@/types/api';
 import { UserProfile } from '@/types/models';
 import { validateEmail, validatePassword, validateUsername } from '@utils/validators.ts';
 import { FC, useState } from 'react';
@@ -55,7 +55,7 @@ const LoginPage: FC<LoginPageProps> = ({ onLogin }) => {
     setResultMessage(DEFAULT_RESULT_MESSAGES);
 
     try {
-      let response: ApiResponse;
+      let response: AuthResponse;
       if (isSignUp) {
         response = await authApi.signUp({ username, email, password });
         setResultMessage({ success: true, message: response.message });

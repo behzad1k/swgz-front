@@ -1,5 +1,3 @@
-import { getImageUrl } from '@utils/formatters.ts';
-import { fetchSmallImageByMBID } from '@utils/getters.ts';
 import { Play } from 'lucide-react';
 import { FC } from 'react';
 import { Album } from '@/types/models.ts';
@@ -16,11 +14,11 @@ const AlbumCard: FC<AlbumCardProps> = ({ album, onClick }) => {
       className="group bg-white/5 rounded-xl p-4 cursor-pointer hover:bg-white/10 transition-all duration-200 hover:scale-105"
     >
       <div className="relative mb-4">
-        <img
-          src={getImageUrl(album.image) || 'https://via.placeholder.com/200'}
-          alt={album.name}
-          className="w-full aspect-square rounded-lg object-cover"
-        />
+        {/* <img */}
+        {/*   src={getImageUrl(album.coverUrl) || 'https://via.placeholder.com/200'} */}
+        {/*   alt={album.name} */}
+        {/*   className="w-full aspect-square rounded-lg object-cover" */}
+        {/* /> */}
         <button className="absolute bottom-2 right-2 bg-purple-500 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110">
           <Play size={20} className="text-white fill-white" />
         </button>
