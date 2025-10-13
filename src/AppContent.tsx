@@ -1,5 +1,5 @@
 import routesConfig from '@/config/routes.config.ts';
-import { Navigate, ProtectedRoute, Route, Routes } from '@/router';
+import { ProtectedRoute, Route, Routes } from '@/router';
 import ModalManager from '@components/layout/ModalManager.tsx';
 import NowPlayingSheet from '@components/player/NowPlayingSheet.tsx';
 import { FC, useContext } from 'react';
