@@ -20,7 +20,7 @@ const ArtistCard: FC<ArtistCardProps> = ({ artist, onClick }) => {
         />
       </div>
       <h3 className="text-white font-semibold text-center truncate">{artist.name}</h3>
-      <p className="text-gray-400 text-sm text-center truncate">{artist?.followers?.toLocaleString()} followers</p>
+      <p className="text-gray-400 text-sm text-center truncate">{artist?.externalListeners?.toLocaleString()} listeners</p>
     </div>
   );
 };
