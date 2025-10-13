@@ -1,4 +1,9 @@
-import { Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext.tsx';
+import PlayerControls from '@components/player/PlayerControls.tsx';
+import ProgressBar from '@components/player/ProgressBar.tsx';
+import QueueList from '@components/player/QueueList.tsx';
+import VolumeControl from '@components/player/VolumeControl.tsx';
+import { X } from 'lucide-react';
 import { FC, memo } from 'react';
 
 interface NowPlayingPageProps {
@@ -6,8 +11,8 @@ interface NowPlayingPageProps {
 }
 
 const NowPlayingPage: FC<NowPlayingPageProps> = ({ onClose }) => {
-  const { state, dispatch } = useApp();
-  const { currentSong, isPlaying, progress, quality } = state.player;
+  const { player } = useApp();
+  const { currentSong, isPlaying, progress, quality, seek, togglePlay, changeQuality, playNext, playPrevious, play, queue, volume, changeVolume } = player
 
   if (!currentSong) return null;
 
@@ -18,33 +23,24 @@ const NowPlayingPage: FC<NowPlayingPageProps> = ({ onClose }) => {
           <X size={28} />
         </button>
         <div className="flex-1 flex flex-col items-center justify-center space-y-8">
-          <img src={currentSong.coverUrl || 'https://via.placeholder.com/400'} alt={currentSong.title} className="w-full max-w-md aspect-square rounded-3xl shadow-2xl object-cover" />
+          <img src={currentSong.albumCover || 'https://via.placeholder.com/400'} alt={currentSong.title} className="w-full max-w-md aspect-square rounded-3xl shadow-2xl object-cover" />
           <div className="w-full text-center space-y-2">
             <h1 className="text-3xl font-bold text-white">{currentSong.title}</h1>
-            <p className="text-xl text-gray-300">{currentSong.artist}</p>
+            <p className="text-xl text-gray-300">{currentSong.artistName}</p>
+            <p className="text-xl text-gray-300">{currentSong.albumName}</p>
           </div>
-          <div className="w-full space-y-2">
-            <input type="range" min="0" max="100" value={progress} onChange={(e) => dispatch({ type: 'SET_PLAYER', payload: { progress: parseFloat(e.target.value) } })} className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer" />
-          </div>
-          <div className="flex items-center justify-center gap-8">
-            <button className="p-4 hover:bg-white/10 rounded-full transition-colors">
-              <SkipBack size={28} className="text-white" />
-            </button>
-            <button onClick={() => dispatch({ type: 'SET_PLAYER', payload: { isPlaying: !isPlaying } })} className="p-6 bg-white rounded-full hover:scale-110 transition-transform shadow-2xl">
-              {isPlaying ? <Pause size={32} className="text-black" /> : <Play size={32} className="text-black fill-black" />}
-            </button>
-            <button className="p-4 hover:bg-white/10 rounded-full transition-colors">
-              <SkipForward size={28} className="text-white" />
-            </button>
-          </div>
+          <ProgressBar progress={progress} duration={currentSong.duration} onSeek={seek} />
+          <PlayerControls isPlaying={isPlaying} onPlayPause={togglePlay} onNext={playNext} onPrevious={playPrevious} />
           <div className="flex items-center gap-4">
             <span className="text-gray-400 text-sm">Quality:</span>
             {(['128', '320', 'FLAC'] as const).map((q) => (
-              <button key={q} onClick={() => dispatch({ type: 'SET_PLAYER', payload: { quality: q } })} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${quality === q ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}>
+              <button key={q} onClick={() => changeQuality(q)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${quality === q ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}>
                 {q}
               </button>
             ))}
           </div>
+          <VolumeControl volume={volume} onVolumeChange={changeVolume} onMuteToggle={() => changeVolume(volume == 0 ? 70 : 0)} isMuted={volume == 0} />
+          <QueueList queue={queue} onPlay={play}/>
         </div>
       </div>
     </div>

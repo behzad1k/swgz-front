@@ -1,4 +1,4 @@
-import React, { FC, ReactNode } from 'react';
+import { FC, ReactNode } from 'react';
 
 
 interface InputProps {
@@ -19,7 +19,7 @@ const Input: FC<InputProps> = ({ type = 'text', placeholder, value, onChange, ic
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 ${icon ? 'pl-10' : ''} text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors ${className}`}
+        className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 ${icon ? 'pl-10' : ''} text-white text-left placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors ${className}`}
       />
     </div>
   );

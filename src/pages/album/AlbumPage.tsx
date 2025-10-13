@@ -1,3 +1,5 @@
+import { useApp } from '@/contexts/AppContext.tsx';
+import SongItem from '@components/music/SongItem.tsx';
 import { X } from 'lucide-react';
 import { FC, useEffect, useState } from 'react';
 

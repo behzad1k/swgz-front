@@ -1,7 +1,13 @@
 const registerServiceWorker = (): void => {
   if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data.type === 'NAVIGATION') {
+        // Update router state when SW handles navigation
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }
+    });
     const swCode = `
-      const CACHE_NAME = 'swagz-music-v1';
+      const CACHE_NAME = 'swgz -music-v1';
       const urlsToCache = ['/', '/offline.html'];
 
       self.addEventListener('install', (event) => {
@@ -55,3 +61,4 @@ const registerServiceWorker = (): void => {
     });
   }
 };
+export default registerServiceWorker;

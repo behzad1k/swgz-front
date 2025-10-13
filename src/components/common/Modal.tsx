@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import React, { FC, ReactNode } from 'react';
+import { FC, ReactNode } from 'react';
 
 interface ModalProps {
   isOpen: boolean;

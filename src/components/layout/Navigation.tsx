@@ -1,24 +1,37 @@
-import { Home, Library, Search, User } from 'lucide-react';
-import { FC } from 'react';
+import { useIsActive, useNavigate } from '@/router';
+import { Search, Library, User } from 'lucide-react';
 
-const Navigation: FC = () => {
-  const { state, dispatch } = useApp();
-  const navItems: Array<{ id: 'home' | 'search' | 'library' | 'profile'; label: string; icon: typeof Home }> = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'search', label: 'Search', icon: Search },
-    { id: 'library', label: 'Library', icon: Library },
-    { id: 'profile', label: 'Profile', icon: User },
+const Navigation = () => {
+  const navigate = useNavigate();
+  const isSearchActive = useIsActive('/search');
+  const isLibraryActive = useIsActive('/library');
+  const isProfileActive = useIsActive('/profile');
+
+  const navItems = [
+    // { path: '/home', icon: Home, label: 'Home', isActive: isHomeActive },
+    { path: '/library', icon: Library, label: 'Library', isActive: isLibraryActive },
+    { path: '/search', icon: Search, label: 'Search', isActive: isSearchActive },
+    { path: '/profile', icon: User, label: 'Profile', isActive: isProfileActive },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-t border-white/10 z-30">
-      <div className="flex justify-around items-center h-20 px-4 max-w-4xl mx-auto">
-        {navItems.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => dispatch({ type: 'SET_APP', payload: { currentPage: id } })} className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${state.app.currentPage === id ? 'text-purple-400' : 'text-gray-400 hover:text-white'}`}>
-            <Icon size={24} />
-            <span className="text-xs font-medium">{label}</span>
-          </button>
-        ))}
+    <nav className="fixed bottom-32 right-5">
+      <div className="flex flex-col justify-around items-center w-16 h-60">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={`flex flex-col items-center gap-1 px-4 py-4 backdrop-blur-xl transition-colors bg-gray-600 rounded-full ${
+                item.isActive ? 'text-purple-400' : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <Icon size={24} />
+            </button>
+          );
+        })}
       </div>
     </nav>
   );

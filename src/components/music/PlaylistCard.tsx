@@ -23,3 +23,5 @@ const PlaylistCard: FC<PlaylistCardProps> = ({ playlist, onClick }) => {
     </div>
   );
 };
+
+export default PlaylistCard;

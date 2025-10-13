@@ -1,5 +1,7 @@
+import { useApp } from '@/contexts/AppContext.tsx';
 import Button from '@components/common/Button.tsx';
-import React, { FC, useReducer, useState } from 'react';
+import { X } from 'lucide-react';
+import { FC, useState } from 'react';
 
 interface SettingsPageProps {
   onClose: () => void;

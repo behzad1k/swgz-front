@@ -1,3 +1,5 @@
+import { useApp } from '@/contexts/AppContext.tsx';
+import Modal from '@components/common/Modal.tsx';
 import { Check, Download, X } from 'lucide-react';
 import { FC } from 'react';
 interface DownloadManagerProps {

@@ -1,6 +1,8 @@
-import AlbumPage from '@pages/album/AlbumPage.tsx';
+import { useApp } from '@/contexts/AppContext.tsx';
+import Button from '@components/common/Button.tsx';
+import SongItem from '@components/music/SongItem.tsx';
 import { X } from 'lucide-react';
-import React, { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 interface ArtistPageProps {
   artistId: string;

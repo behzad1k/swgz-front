@@ -19,6 +19,10 @@ export default {
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',
         'fade-in': 'fadeIn 0.2s ease-in',
+        fadeIn: 'fadeIn 0.2s ease-out',
+        slideUp: 'slideUp 0.3s ease-out',
+        slideDown: 'slideDown 0.3s ease-out',
+        scale: 'scale 0.2s ease-out',
       },
       keyframes: {
         slideUp: {
@@ -28,6 +32,14 @@ export default {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scale: {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
     },

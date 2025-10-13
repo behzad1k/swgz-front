@@ -1,5 +1,5 @@
-import { AppContextType } from '@/@types';
-import { createContext, FC, useContext } from 'react';
+import { AppContextType } from '@/types/states.ts';
+import { createContext, useContext } from 'react';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -9,5 +9,6 @@ const useApp = (): AppContextType => {
   return context;
 };
 
+export { useApp }
 
-export const AppProvider: FC = ({ children }) => {}
+export default AppContext;

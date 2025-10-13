@@ -1,14 +1,17 @@
+import { useApp } from '@/contexts/AppContext.tsx';
+import { TrackItemProps } from '@components/music/SongItem.tsx';
 import { Heart, Menu, Pause, Play } from 'lucide-react';
 import { FC } from 'react';
 
-interface DraggableSongItemProps extends SongItemProps {
+interface DraggableSongItemProps extends TrackItemProps {
   index: number;
   onDragStart: (e: React.DragEvent, index: number) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, index: number) => void;
 }
 
-const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onPlay, onLike, onDragStart, onDragOver, onDrop, isPlaying = false }) => {
+const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onLike, onDragStart, onDragOver, onDrop }) => {
+  const { player } = useApp();
   return (
     <div
       draggable
@@ -19,17 +22,17 @@ const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onPlay, on
     >
       <div className="text-gray-400 text-sm w-6">{index + 1}</div>
       <div className="relative flex-shrink-0">
-        <img src={song.coverUrl || 'https://via.placeholder.com/60'} alt={song.title} className="w-14 h-14 rounded-lg object-cover" />
+        <img src={song.albumCover || 'https://via.placeholder.com/60'} alt={song.title} className="w-14 h-14 rounded-lg object-cover" />
         <button
-          onClick={(e) => { e.stopPropagation(); onPlay(song); }}
+          onClick={(e) => { e.stopPropagation(); player.play(song); }}
           className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          {isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white fill-white" />}
+          {player.isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white fill-white" />}
         </button>
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="text-white font-medium truncate">{song.title}</h4>
-        <p className="text-gray-400 text-sm truncate">{song.artist}</p>
+        <p className="text-gray-400 text-sm truncate">{song.artistName}</p>
       </div>
       {onLike && (
         <button onClick={(e) => { e.stopPropagation(); onLike(song); }} className="p-2 hover:bg-white/10 rounded-full transition-colors">
