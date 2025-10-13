@@ -1,8 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import './variables.css';
 @import './animations.css';
 @import './components.css';
 @import './utilities.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
