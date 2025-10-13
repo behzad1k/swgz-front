@@ -24,6 +24,7 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isLoadingRef = useRef(false);
   const isPreparingNextRef = useRef(false);
+  const isFetchingSimilarRef = useRef(false);
   const preparedNextSongRef = useRef<Track | null>(null);
 
   // Sync FROM global state TO local state
@@ -212,103 +213,99 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     loadAndPlaySong();
   }, [currentSong?.title, currentSong?.artistName, quality, dispatch]);
 
-  // Prepare next song when progress reaches 90%
+  // Fill queue at 10% progress if empty
+  useEffect(() => {
+    const fillQueueIfEmpty = async () => {
+      // Only fetch similar tracks if:
+      // 1. Song is playing
+      // 2. Progress is between 10-11% (narrow window)
+      // 3. Queue is empty
+      // 4. Not already fetching
+      // 5. Current song has an ID
+      if (
+        isPlaying &&
+        progress > 10 &&
+        progress < 11 &&
+        queue.length === 0 &&
+        !isFetchingSimilarRef.current &&
+        currentSong?.id
+      ) {
+        console.log('📊 Progress at 10% - Queue is empty, fetching similar tracks...');
+        isFetchingSimilarRef.current = true;
+
+        try {
+          const similarTracks = await musicApi.getSimilarTracks(currentSong.id);
+          console.log('✅ Similar tracks fetched:', similarTracks.length);
+          setQueue(similarTracks);
+        } catch (error) {
+          console.error('❌ Failed to fetch similar tracks:', error);
+        } finally {
+          isFetchingSimilarRef.current = false;
+        }
+      }
+    };
+
+    fillQueueIfEmpty();
+  }, [progress, isPlaying, queue.length, currentSong]);
+
+  // Prepare next song at 90% progress
   useEffect(() => {
     const prepareNextSong = async () => {
       // Only prepare if:
       // 1. Song is playing
-      // 2. Progress is between 90-91% (narrow window to avoid multiple calls)
+      // 2. Progress is between 90-91% (narrow window)
       // 3. Not already preparing
-      // 4. Current song exists and has an ID
+      // 4. Queue has songs
+      // 5. Current song has an ID
       if (
         isPlaying &&
         progress > 90 &&
         progress < 91 &&
         !isPreparingNextRef.current &&
+        queue.length > 0 &&
         currentSong?.id
       ) {
-        console.log('🔄 Progress at 90%, checking queue...');
+        console.log('🔄 Progress at 90% - Preparing next song...');
         isPreparingNextRef.current = true;
 
         try {
-          // If queue is empty, fetch similar tracks first
-          if (queue.length === 0) {
-            console.log('📡 Queue empty, fetching similar tracks...');
-            const similarTracks = await musicApi.getSimilarTracks(currentSong.id);
-            console.log('✅ Similar tracks fetched:', similarTracks.length);
-            setQueue(similarTracks);
+          const nextSong = queue[0];
 
-            // Now prepare the first similar track
-            if (similarTracks.length > 0) {
-              const nextSong = similarTracks[0];
+          // Skip if already prepared
+          if (preparedNextSongRef.current?.title === nextSong.title) {
+            console.log('⏭️ Next song already prepared:', nextSong.title);
+            isPreparingNextRef.current = false;
+            return;
+          }
 
-              if (!nextSong.id) {
-                console.log('⚠️ Preparing first similar track from backend...');
-                const preparedSong = await musicApi.prepareForPlaying({
-                  title: nextSong.title,
-                  artistName: nextSong.artistName,
-                  albumName: nextSong.albumName,
-                  albumCover: nextSong.albumCover,
-                  mbid: nextSong.mbid,
-                  duration: nextSong.duration,
-                  lastFMLink: nextSong.lastFMLink
-                });
+          console.log('🔄 Preparing next song from queue:', nextSong.title);
 
-                console.log('✅ First similar track prepared:', preparedSong);
+          // If song doesn't have an ID, prepare it via API
+          if (!nextSong.id) {
+            console.log('⚠️ Preparing next song from backend...');
+            const preparedSong = await musicApi.prepareForPlaying({
+              title: nextSong.title,
+              artistName: nextSong.artistName,
+              albumName: nextSong.albumName,
+              albumCover: nextSong.albumCover,
+              mbid: nextSong.mbid,
+              duration: nextSong.duration,
+              lastFMLink: nextSong.lastFMLink
+            });
 
-                // Update the queue with the prepared song
-                setQueue(prev => {
-                  const newQueue = [...prev];
-                  newQueue[0] = preparedSong;
-                  return newQueue;
-                });
+            console.log('✅ Next song prepared:', preparedSong);
 
-                preparedNextSongRef.current = preparedSong;
-              } else {
-                console.log('✅ First similar track already has ID');
-                preparedNextSongRef.current = nextSong;
-              }
-            }
+            // Update the queue with the prepared song
+            setQueue(prev => {
+              const newQueue = [...prev];
+              newQueue[0] = preparedSong;
+              return newQueue;
+            });
+
+            preparedNextSongRef.current = preparedSong;
           } else {
-            // Queue has songs, prepare the first one
-            const nextSong = queue[0];
-
-            // Skip if already prepared
-            if (preparedNextSongRef.current?.title === nextSong.title) {
-              console.log('⏭️ Next song already prepared:', nextSong.title);
-              isPreparingNextRef.current = false;
-              return;
-            }
-
-            console.log('🔄 Preparing next song from queue:', nextSong.title);
-
-            // If song doesn't have an ID, prepare it
-            if (!nextSong.id) {
-              console.log('⚠️ Preparing next song from backend...');
-              const preparedSong = await musicApi.prepareForPlaying({
-                title: nextSong.title,
-                artistName: nextSong.artistName,
-                albumName: nextSong.albumName,
-                albumCover: nextSong.albumCover,
-                mbid: nextSong.mbid,
-                duration: nextSong.duration,
-                lastFMLink: nextSong.lastFMLink
-              });
-
-              console.log('✅ Next song prepared:', preparedSong);
-
-              // Update the queue with the prepared song
-              setQueue(prev => {
-                const newQueue = [...prev];
-                newQueue[0] = preparedSong;
-                return newQueue;
-              });
-
-              preparedNextSongRef.current = preparedSong;
-            } else {
-              console.log('✅ Next song already has ID, no preparation needed');
-              preparedNextSongRef.current = nextSong;
-            }
+            console.log('✅ Next song already has ID, no preparation needed');
+            preparedNextSongRef.current = nextSong;
           }
         } catch (error) {
           console.error('❌ Failed to prepare next song:', error);
