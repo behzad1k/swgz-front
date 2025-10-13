@@ -51,7 +51,7 @@ const AppContent: FC = () => {
       </div>
 
       {/* <MiniPlayer onClick={() => dispatch({ type: 'SET_APP', payload: { showNowPlaying: true } })} /> */}
-      <Navigation />
+      {state.auth.isAuthenticated && <Navigation/>}
 
       <NowPlayingSheet />
 

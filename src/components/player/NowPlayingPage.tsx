@@ -23,7 +23,7 @@ const NowPlayingPage: FC<NowPlayingPageProps> = ({ onClose }) => {
           <X size={28} />
         </button>
         <div className="flex-1 flex flex-col items-center justify-center space-y-8">
-          <img src={currentSong.albumCover || 'https://via.placeholder.com/400'} alt={currentSong.title} className="w-full max-w-md aspect-square rounded-3xl shadow-2xl object-cover" />
+          <img src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'} alt={currentSong.title} className="w-full max-w-md aspect-square rounded-3xl shadow-2xl object-cover" />
           <div className="w-full text-center space-y-2">
             <h1 className="text-3xl font-bold text-white">{currentSong.title}</h1>
             <p className="text-xl text-gray-300">{currentSong.artistName}</p>

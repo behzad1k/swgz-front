@@ -57,8 +57,12 @@ export interface Artist {
   id: string;
   name: string;
   image: string;
-  bio: string;
-  followers: number;
+  lastFMLink: string;
+  mbid: string
+  bio?: string;
+  fullBio?: string;
+  externalListeners?: number;
+  externalPlays?: number;
 }
 
 export interface Album {

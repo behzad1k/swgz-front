@@ -14,7 +14,7 @@ const MiniPlayer: FC<MiniPlayerProps> = ({ onClick }) => {
   return (
     <div onClick={onClick} className="fixed bottom-20 left-0 right-0 mx-4 mb-2 bg-gradient-to-r from-purple-900/90 to-pink-900/90 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden z-40 cursor-pointer">
       <div className="flex items-center gap-4 p-3">
-        <img src={player.currentSong?.albumCover || player.currentSong?.image || 'https://via.placeholder.com/60'} alt={player.currentSong.title} className="w-12 h-12 rounded-lg object-cover" />
+        <img src={player.currentSong?.albumCover || player.currentSong?.image || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'} alt={player.currentSong.title} className="w-12 h-12 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
           <h4 className="text-white font-medium text-sm truncate">{player.currentSong.title}</h4>
           <p className="text-gray-300 text-xs truncate">{player.currentSong.artist}</p>

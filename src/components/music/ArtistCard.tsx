@@ -14,7 +14,7 @@ const ArtistCard: FC<ArtistCardProps> = ({ artist, onClick }) => {
     >
       <div className="relative mb-4">
         <img
-          src={artist.image || 'https://via.placeholder.com/200'}
+          src={artist.image || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
           alt={artist.name}
           className="w-full aspect-square rounded-full object-cover"
         />

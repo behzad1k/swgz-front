@@ -14,7 +14,7 @@ const TrackItem: FC<TrackItemProps> = ({ song, onPlay, onLike, onMore, isPlaying
   return (
     <div className="group flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-200 cursor-pointer">
       <div className="relative flex-shrink-0">
-        <img src={song.albumCover || 'https://via.placeholder.com/60'} alt={song.title} className="w-14 h-14 rounded-lg object-cover" />
+        <img src={song.albumCover || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'} alt={song.title} className="w-14 h-14 rounded-lg object-cover" />
         <button
           onClick={(e) => { e.stopPropagation(); console.log(song); onPlay(song); }}
           className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"

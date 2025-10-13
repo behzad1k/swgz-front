@@ -71,7 +71,7 @@ const PlaylistDetailPage: FC = () => {
         <div className="flex items-end gap-6 mb-8">
           <div className="relative group">
             <img
-              src={playlist.coverUrl || 'https://via.placeholder.com/300'}
+              src={playlist.coverUrl || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
               alt={playlist.name}
               className="w-64 h-64 rounded-2xl object-cover shadow-2xl"
             />

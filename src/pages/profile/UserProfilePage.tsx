@@ -81,7 +81,7 @@ const UserProfilePage: FC = () => {
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-2xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start gap-6">
             <img
-              src={profile.avatarUrl || 'https://via.placeholder.com/120'}
+              src={profile.avatarUrl || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'}
               alt={profile.username}
               className="w-32 h-32 rounded-full object-cover border-4 border-white/20"
             />

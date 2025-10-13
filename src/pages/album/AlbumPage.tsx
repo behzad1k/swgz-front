@@ -20,10 +20,10 @@ const AlbumPage: FC<AlbumPageProps> = ({ albumId, onClose }) => {
       name: 'Sample Album',
       artist: 'Sample Artist',
       year: 2024,
-      coverUrl: 'https://via.placeholder.com/400',
+      coverUrl: 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png',
       totalTracks: 12,
       songs: [
-        { id: '1', title: 'Track 1', artistName: 'Sample Artist', duration: 240, trackNumber: 1, albumCover: 'https://via.placeholder.com/60' },
+        { id: '1', title: 'Track 1', artistName: 'Sample Artist', duration: 240, trackNumber: 1, albumCover: 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png' },
       ],
     });
   }, [albumId]);

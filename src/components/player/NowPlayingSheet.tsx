@@ -137,7 +137,7 @@ const NowPlayingSheet: FC = () => {
             onClick={() => setSheetState('half')}
           >
             <img
-              src={currentSong.albumCover || 'https://via.placeholder.com/400'}
+              src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
               alt={currentSong.title}
               className="w-14 h-14 rounded-lg shadow-lg"
             />
@@ -191,7 +191,7 @@ const NowPlayingSheet: FC = () => {
             {/* Album Art */}
             <div className="flex justify-center px-6 mb-6">
               <img
-                src={currentSong.albumCover || 'https://via.placeholder.com/400'}
+                src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
                 alt={currentSong.title}
                 className="w-full max-w-sm aspect-square rounded-2xl shadow-2xl object-cover"
               />
@@ -308,7 +308,7 @@ const DesktopNowPlaying: FC = () => {
           </button>
 
           <img
-            src={currentSong.albumCover || 'https://via.placeholder.com/400'}
+            src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
             alt={currentSong.title}
             className="w-full aspect-square rounded-lg shadow-2xl mb-4 object-cover"
           />
@@ -371,7 +371,7 @@ const DesktopNowPlaying: FC = () => {
           onClick={() => setIsExpanded(true)}
         >
           <img
-            src={currentSong.albumCover || 'https://via.placeholder.com/400'}
+            src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
             alt={currentSong.title}
             className="w-12 h-12 rounded-md mb-3 shadow-lg"
           />

@@ -13,7 +13,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
                                                         }) => {
   const { state } = useContext(AppContext)!;
 
-  if (!state.auth.isAuthenticated) {
+  if (!state.auth.isAuthenticated && !window.location.href.includes('auth/confirm-email')) {
     return <Navigate to={redirectTo} replace />;
   }
 

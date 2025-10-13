@@ -22,7 +22,7 @@ const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onLike, on
     >
       <div className="text-gray-400 text-sm w-6">{index + 1}</div>
       <div className="relative flex-shrink-0">
-        <img src={song.albumCover || 'https://via.placeholder.com/60'} alt={song.title} className="w-14 h-14 rounded-lg object-cover" />
+        <img src={song.albumCover || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'} alt={song.title} className="w-14 h-14 rounded-lg object-cover" />
         <button
           onClick={(e) => { e.stopPropagation(); player.play(song); }}
           className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"

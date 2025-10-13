@@ -123,8 +123,8 @@ const LoginPage: FC<LoginPageProps> = ({ onLogin }) => {
           <div className="flex-1 h-px bg-white/10" />
         </div>
 
-        <Button variant="secondary" className="w-full" size="lg" onClick={handleGoogleAuth}>
-          Continue with Google
+        <Button variant="secondary" className="w-full" size="lg" disabled onClick={handleGoogleAuth}>
+          Continue with Google (Soon)
         </Button>
 
         <p className="text-center mt-6 text-gray-400">

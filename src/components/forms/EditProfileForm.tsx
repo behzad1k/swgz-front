@@ -32,7 +32,7 @@ const EditProfileForm: FC<EditProfileFormProps> = ({ profile, onSubmit, loading 
       <div className="flex justify-center mb-4">
         <label className="cursor-pointer relative">
           <img
-            src={avatar ? URL.createObjectURL(avatar) : profile.avatarUrl || 'https://via.placeholder.com/120'}
+            src={avatar ? URL.createObjectURL(avatar) : profile.avatarUrl || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'}
             alt="Avatar"
             className="w-32 h-32 rounded-full object-cover"
           />

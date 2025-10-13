@@ -15,7 +15,7 @@ const AlbumCard: FC<AlbumCardProps> = ({ album, onClick }) => {
     >
       <div className="relative mb-4">
         {/* <img */}
-        {/*   src={getImageUrl(album.coverUrl) || 'https://via.placeholder.com/200'} */}
+        {/*   src={getImageUrl(album.coverUrl) || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'} */}
         {/*   alt={album.name} */}
         {/*   className="w-full aspect-square rounded-lg object-cover" */}
         {/* /> */}

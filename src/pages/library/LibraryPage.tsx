@@ -182,7 +182,7 @@ const LibraryPage: FC = () => {
                       className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all cursor-pointer"
                     >
                       <img
-                        src={playlist.coverUrl || 'https://via.placeholder.com/60'}
+                        src={playlist.coverUrl || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'}
                         alt={playlist.name}
                         className="w-16 h-16 rounded-lg object-cover"
                       />

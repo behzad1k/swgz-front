@@ -5,9 +5,11 @@ import AlbumCard from '@/components/music/AlbumCard';
 import ArtistCard from '@/components/music/ArtistCard';
 import SongList from '@/components/music/SongList';
 import UserCard from '@/components/social/UserCard';
+import { buildPath, routes } from '@/config/routes.config.ts';
 import { useApp } from '@/contexts/AppContext.tsx';
 import { SearchFilters } from '@/enums/global.ts';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useNavigate } from '@/router';
 import { Album, Artist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
 import { ArchiveRestoreIcon, Disc, Music, Search, User, Users } from 'lucide-react';
 import { FC, ReactElement, useState } from 'react';
@@ -32,7 +34,7 @@ const SearchPage: FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
-
+  const navigate = useNavigate()
   // @ts-ignore
   const { state } = useApp();
 
@@ -46,11 +48,11 @@ const SearchPage: FC = () => {
   //   }
   // }, [debouncedQuery]);
 
-  const handleSearch = async (query: string = debouncedQuery) => {
+  const handleSearch = async (query: string = debouncedQuery, customFitler = filter) => {
     setLoading(true);
     try {
       let promises: Promise<UserProfile[] | Track[] | Artist[] | Album[]>[] = [profileApi.searchStalkers(query.replaceAll(' ', '%20'))];
-      if (filter != SearchFilters.stalker) promises.push(musicApi.search(query, filter));
+      if (filter != SearchFilters.stalker) promises.push(musicApi.search(query, customFitler));
 
       const [stalkersData, searchData] = await Promise.all(promises);
 
@@ -62,7 +64,7 @@ const SearchPage: FC = () => {
         track: []
       };
 
-      if (filter != SearchFilters.stalker) newResult[filter] = searchData;
+      if (filter != SearchFilters.stalker) newResult[customFitler] = searchData;
 
       setResults(newResult);
     } catch (error) {
@@ -107,7 +109,7 @@ const SearchPage: FC = () => {
   const selectSearchHistory = async (searchHistory: SearchHistory) => {
     setQuery(searchHistory.query)
     setFilter(searchHistory.filter || SearchFilters.track)
-    await handleSearch(searchHistory.query)
+    await handleSearch(searchHistory.query, searchHistory.filter)
   };
 
   const shouldShowSection = (section: SearchFilters) => {
@@ -150,7 +152,7 @@ const SearchPage: FC = () => {
             <div className="flex flex-col gap-4 ">
               {state.library.recentSearches.map(e =>
                 <div className="flex justify-between" key={e.id}>
-                  <div className="flex flex-col gap-1 " onClick={() => selectSearchHistory(e)}>
+                  <div className="flex flex-col gap-1 " onClick={async () => await selectSearchHistory(e)}>
                     <span className="text-m">{e.query}</span>
                     <span className="text-sm">{e.filter}</span>
                   </div>
@@ -195,8 +197,7 @@ const SearchPage: FC = () => {
               <h2 className="text-xl font-bold text-white mb-4">Artists</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {results.artist.map((artist) => (
-                  <ArtistCard key={artist.id} artist={artist} onClick={() => {
-                  }}/>
+                  <ArtistCard key={artist.id} artist={artist} onClick={() => navigate(buildPath(routes.artist, { id: artist.id }))}/>
                 ))}
               </div>
             </div>
