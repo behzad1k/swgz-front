@@ -1,29 +1,29 @@
+import { routes } from '@/config/routes.config.ts';
+import { useApp } from '@/contexts/AppContext.tsx';
+import { useNavigate } from '@/router';
 import { AuthResponse } from '@/types/api';
-import { UserProfile } from '@/types/models';
 import { validateEmail, validatePassword, validateUsername } from '@utils/validators.ts';
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Music } from 'lucide-react';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { authApi } from '@/api/auth.api';
 import ApiService from '@/utils/api';
 
-interface LoginPageProps {
-  onLogin: (user: UserProfile, token: string) => void;
-}
-
 const DEFAULT_RESULT_MESSAGES = {
   success: false,
   message: '',
 }
 
-const LoginPage: FC<LoginPageProps> = ({ onLogin }) => {
+const LoginPage: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resultMessage, setResultMessage] = useState(DEFAULT_RESULT_MESSAGES);
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
+  const { state, dispatch } = useApp();
+  const navigate = useNavigate();
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -62,7 +62,8 @@ const LoginPage: FC<LoginPageProps> = ({ onLogin }) => {
       } else {
         response = await authApi.login({ email, password });
         ApiService.setToken(response.accessToken);
-        onLogin(response.user, response.accessToken);
+        dispatch({ type: 'SET_AUTH', payload: { user: response.user, token: response.accessToken, isAuthenticated: true }})
+        navigate(routes.library.path)
       }
     } catch (err: any) {
       setResultMessage({ success: false, message: err.message || 'Authentication failed'});
@@ -70,6 +71,10 @@ const LoginPage: FC<LoginPageProps> = ({ onLogin }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (state.auth.isAuthenticated) navigate(routes.library.path)
+  },[])
 
   const handleGoogleAuth = () => {
     authApi.googleAuth();
