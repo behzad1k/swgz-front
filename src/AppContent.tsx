@@ -46,7 +46,7 @@ const AppContent: FC = () => {
           })}
 
           {/* 404 fallback */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
         </Routes>
       </div>
 
