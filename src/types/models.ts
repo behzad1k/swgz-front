@@ -58,6 +58,7 @@ export interface Activity {
 }
 
 export interface Artist {
+  albums: Album[];
   id: string;
   name: string;
   image: string;
@@ -67,15 +68,16 @@ export interface Artist {
   fullBio?: string;
   externalListeners?: number;
   externalPlays?: number;
+  songs: Track[];
 }
 
 export interface Album {
   id: string;
-  name: string;
-  artist: string;
-  year: number;
-  coverUrl: string;
-  totalTracks: number;
+  title: string;
+  artistName: string;
+  releaseDate: number;
+  totalTracks?: number;
+  albumCover?: string;
   songs?: Track[];
   mbid?: string;
 }

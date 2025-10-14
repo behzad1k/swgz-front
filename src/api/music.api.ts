@@ -1,6 +1,6 @@
 import { SearchFilters } from '@/enums/global.ts';
 import ApiService from '@utils/api';
-import { Artist, SearchHistory, Track } from '@/types/models.ts';
+import { Album, Artist, SearchHistory, Track } from '@/types/models.ts';
 
 export const musicApi = {
   search: (query: string, filter: SearchFilters, signal?: AbortSignal) => ApiService.get<Track[]>(`/music/search?q=${encodeURIComponent(query)}&filter=${filter}`, signal),
@@ -10,4 +10,5 @@ export const musicApi = {
   prepareForPlaying: (track: Partial<Track>, signal?: AbortSignal) => ApiService.post<Track>('/music/prepare', track, signal),
   getSimilarTracks: (songId: string, signal?: AbortSignal) => ApiService.get<Track[]>(`/music/similar-tracks/${songId}`, signal),
   getArtist: (artistId: string, signal?: AbortSignal) => ApiService.get<Artist>(`/music/artist/${artistId}`, signal),
+  getAlbum: (albumId: string, signal?: AbortSignal) => ApiService.get<Album>(`/music/album/${albumId}`, signal),
 };

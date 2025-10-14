@@ -248,24 +248,24 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     fillQueueIfEmpty();
   }, [progress, isPlaying, queue.length, currentSong]);
 
-  // Prepare next song at 90% progress
+  // Prepare next song at 80% progress
   useEffect(() => {
     const prepareNextSong = async () => {
       // Only prepare if:
       // 1. Song is playing
-      // 2. Progress is between 90-91% (narrow window)
+      // 2. Progress is between 80-81% (narrow window)
       // 3. Not already preparing
       // 4. Queue has songs
       // 5. Current song has an ID
       if (
         isPlaying &&
-        progress > 90 &&
-        progress < 91 &&
+        progress > 80 &&
+        progress < 81 &&
         !isPreparingNextRef.current &&
         queue.length > 0 &&
         currentSong?.id
       ) {
-        console.log('🔄 Progress at 90% - Preparing next song...');
+        console.log('🔄 Progress at 80% - Preparing next song...');
         isPreparingNextRef.current = true;
 
         try {
