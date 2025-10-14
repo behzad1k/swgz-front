@@ -61,7 +61,7 @@ export interface Artist {
   albums: Album[];
   id: string;
   name: string;
-  image: string;
+  pfp: string;
   lastFMLink: string;
   mbid: string
   bio?: string;

@@ -30,7 +30,6 @@ const ArtistPage: FC = () => {
   }, [id])
 
   if (!artist) return null;
-
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 overflow-auto">
       <div className="max-w-6xl mx-auto p-6">
@@ -38,7 +37,7 @@ const ArtistPage: FC = () => {
           <X size={28} onClick={() => navigate(-1)} />
         </button>
         <div className="flex flex-col items-start gap-6 mb-8">
-          <img src={artist.image} alt={artist.name} className="rounded-2xl object-cover shadow-2xl" />
+          <img src={artist.pfp} alt={artist.name} className="rounded-2xl object-cover shadow-2xl" />
           <div>
             <p className="text-gray-400 text-sm uppercase mb-2">Artist</p>
             <h1 className="text-6xl font-bold text-white mb-4">{artist.name}</h1>

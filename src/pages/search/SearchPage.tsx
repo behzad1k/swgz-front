@@ -115,7 +115,6 @@ const SearchPage: FC = () => {
   const shouldShowSection = (section: SearchFilters) => {
     return filter == section;
   };
-
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <div className="space-y-6">

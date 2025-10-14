@@ -123,7 +123,16 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
       console.error('Audio playback error:', e);
       // setIsPlaying(false);
     };
-
+    // In the audio element setup useEffect, add:
+    audio.addEventListener('loadstart', () => console.log('🔄 Audio: Load start'));
+    audio.addEventListener('loadedmetadata', () => console.log('✅ Audio: Metadata loaded'));
+    audio.addEventListener('loadeddata', () => console.log('✅ Audio: Data loaded'));
+    audio.addEventListener('canplay', () => console.log('✅ Audio: Can play'));
+    audio.addEventListener('canplaythrough', () => console.log('✅ Audio: Can play through'));
+    audio.addEventListener('waiting', () => console.log('⏳ Audio: Waiting'));
+    audio.addEventListener('stalled', () => console.log('⚠️ Audio: Stalled'));
+    audio.addEventListener('suspend', () => console.log('⏸️ Audio: Suspended'));
+    audio.addEventListener('abort', () => console.log('🛑 Audio: Aborted'));
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
