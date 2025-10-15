@@ -37,19 +37,19 @@ const ArtistPage: FC = () => {
           <X size={28} onClick={() => navigate(-1)} />
         </button>
         <div className="flex flex-col items-start gap-6 mb-8">
-          <img src={artist.pfp} alt={artist.name} className="rounded-2xl object-cover shadow-2xl" />
+          <img src={artist?.pfp} alt={artist?.name} className="rounded-2xl object-cover shadow-2xl" />
           <div>
             <p className="text-gray-400 text-sm uppercase mb-2">Artist</p>
-            <h1 className="text-6xl font-bold text-white mb-4">{artist.name}</h1>
-            <p className="text-gray-300 mb-4">{artist.externalListeners?.toLocaleString()} listeners</p>
-            <p className="text-gray-300 mb-4">{artist.externalPlays?.toLocaleString()} plays</p>
+            <h1 className="text-6xl font-bold text-white mb-4">{artist?.name}</h1>
+            <p className="text-gray-300 mb-4">{artist?.externalListeners?.toLocaleString()} listeners</p>
+            <p className="text-gray-300 mb-4">{artist?.externalPlays?.toLocaleString()} plays</p>
             <Button size="lg" disabled>Follow</Button>
           </div>
         </div>
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white mb-4">Top Songs</h2>
           <div className="space-y-2">
-            {artist.songs.map((song) => (
+            {artist?.songs?.map((song) => (
               <SongItem
                 key={song.id}
                 song={song}
@@ -61,7 +61,7 @@ const ArtistPage: FC = () => {
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white mb-4">Top Albums</h2>
           <div className="grid grid-cols-2">
-            {artist.albums.map((album) =>
+            {artist?.albums?.map((album) =>
               <AlbumCard album={album} onClick={() => navigate(buildPath(routes.album, { id: album.id }))} key={album.id}/>
             )}
           </div>
