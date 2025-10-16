@@ -1,7 +1,7 @@
 // public/sw.js
 'use strict';
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v1';
 const CACHE_NAME = `music-player-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -62,39 +62,45 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // CRITICAL: Let audio streaming requests pass through completely
-    // Don't use event.respondWith() for streaming - just return and let browser handle it
+    // Log all requests for debugging
+    console.log('[SW] Fetch:', request.method, url.pathname);
+
+    // CRITICAL: Skip service worker COMPLETELY for audio streaming
+    // Check this FIRST before any other conditions
     if (
         url.pathname.includes('/music/stream/') ||
         url.pathname.includes('/music/stream') ||
-        url.pathname.match(/\/music\/stream\/[^/]+/) ||
+        url.pathname.match(/\/music\/stream\/[\w-]+/) ||
         request.destination === 'audio' ||
         request.headers.has('range')
     ) {
-        console.log('[SW] 🎵 Bypassing service worker for audio stream:', url.pathname);
-        // Don't call event.respondWith() - let the request go directly to network
+        console.log('[SW] 🎵 BYPASSING service worker for audio stream:', url.pathname);
+        // DON'T call event.respondWith() - let browser handle it directly
         return;
     }
 
-    // Skip cross-origin requests (except your API domain)
+    // Skip cross-origin requests
     if (url.origin !== self.location.origin) {
+        console.log('[SW] Skipping cross-origin:', url.origin);
         return;
     }
 
-    // API calls - Network first, fallback to cache (but NOT streaming endpoints)
+    // API calls (but NOT streaming which was already checked above)
+    // Network first, fallback to cache
     if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/music/')) {
+        console.log('[SW] Handling API request:', url.pathname);
         event.respondWith(
             fetch(request)
                 .then((response) => {
                     console.log('[SW] API response:', response.status, url.pathname);
 
                     // Only cache successful GET requests
-                    // if (request.method === 'GET' && response.status === 200) {
-                    //     const responseClone = response.clone();
-                    //     caches.open(RUNTIME_CACHE).then((cache) => {
-                    //         cache.put(request, responseClone);
-                    //     });
-                    // }
+                    if (request.method === 'GET' && response.status === 200) {
+                        const responseClone = response.clone();
+                        caches.open(RUNTIME_CACHE).then((cache) => {
+                            cache.put(request, responseClone);
+                        });
+                    }
                     return response;
                 })
                 .catch((error) => {
@@ -117,6 +123,7 @@ self.addEventListener('fetch', (event) => {
 
     // Navigation requests
     if (request.mode === 'navigate') {
+        console.log('[SW] Handling navigation:', url.pathname);
         event.respondWith(
             fetch(request)
                 .then((response) => {
@@ -144,6 +151,7 @@ self.addEventListener('fetch', (event) => {
         caches.match(request)
             .then((cachedResponse) => {
                 if (cachedResponse) {
+                    // Update cache in background
                     fetch(request).then((response) => {
                         if (response.status === 200) {
                             const responseClone = response.clone();
