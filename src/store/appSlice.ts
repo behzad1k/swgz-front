@@ -1,5 +1,5 @@
 // store/slices/appSlice.ts
-import { AppState } from '@/types/states';
+import { AppState } from '@/types/states.ts';
 
 export const initialAppState: AppState = {
   isOnline: navigator.onLine,

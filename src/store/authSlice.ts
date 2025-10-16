@@ -1,6 +1,6 @@
 // store/slices/authSlice.ts
-import { UserProfile } from '@/types/models';
-import { AuthState } from '@/types/states';
+import { UserProfile } from '@/types/models.ts';
+import { AuthState } from '@/types/states.ts';
 
 export const initialAuthState: AuthState = {
   token: localStorage.getItem('auth_token'),

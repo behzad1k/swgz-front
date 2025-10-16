@@ -1,7 +1,7 @@
-import { QualityType } from '@/types/global';
-import { Track } from '@/types/models';
-import { PlayerState } from '@/types/states';
-import { LOCAL_STORAGE_KEYS } from '@utils/constants';
+import { QualityType } from '@/types/global.ts';
+import { Track } from '@/types/models.ts';
+import { PlayerState } from '@/types/states.ts';
+import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
 
 export const initialPlayerState: PlayerState = {
   audioRef: null,

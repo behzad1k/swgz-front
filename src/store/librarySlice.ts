@@ -1,6 +1,6 @@
 // store/slices/librarySlice.ts
-import { MostListened, Playlist, SearchHistory, Track } from '@/types/models';
-import { LibraryState } from '@/types/states';
+import { MostListened, Playlist, SearchHistory, Track } from '@/types/models.ts';
+import { LibraryState } from '@/types/states.ts';
 
 export const initialLibraryState: LibraryState = {
   likedSongs: [],

@@ -1,8 +1,8 @@
 // contexts/AppContext.tsx
 import { AppState } from '@/types/states';
-import { AppAction, appReducer, initialAppState } from '@store/slices/appSlice';
+import { AppAction, appReducer, initialAppState } from '@store/appSlice.ts';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useReducer } from 'react';
-import { AppActionKeys } from '@store/slices/appSlice';
+import { AppActionKeys } from '@store/appSlice.ts';
 
 type AppContextType = {
   state: AppState;

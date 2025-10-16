@@ -2,7 +2,7 @@
 import { ModalConfig } from '@/types/modal.ts';
 import { useCallback } from 'react';
 import { useModalContext } from '@/contexts/ModalContext';
-import { ModalActionKeys } from '@store/slices/modalSlice';
+import { ModalActionKeys } from '@store/modalSlice.ts';
 
 export const useModal = () => {
   const { state, dispatch } = useModalContext();

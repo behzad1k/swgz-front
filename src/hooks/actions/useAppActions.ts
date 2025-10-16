@@ -1,6 +1,6 @@
 // hooks/useAppActions.ts
 import { useAppContext } from '@/contexts/AppContext';
-import { AppActionKeys } from '@store/slices/appSlice';
+import { AppActionKeys } from '@store/appSlice.ts';
 import { useCallback } from 'react';
 
 export const useAppActions = () => {

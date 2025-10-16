@@ -1,6 +1,6 @@
 // contexts/AuthContext.tsx
 import { AuthState } from '@/types/states';
-import { AuthAction, authReducer, initialAuthState } from '@store/slices/authSlice';
+import { AuthAction, authReducer, initialAuthState } from '@store/authSlice.ts';
 import { createContext, ReactNode, useContext, useMemo, useReducer } from 'react';
 
 type AuthContextType = {

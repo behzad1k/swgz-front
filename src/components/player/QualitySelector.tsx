@@ -28,7 +28,8 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({
                                                                   className = '',
                                                                   onQualityChange
                                                                 }) => {
-  const [knownQualities, setKnownQualities] = useState<QualityInfo[]>([]);
+  const [_availableQualities, setAvailableQualities] = useState<QualityInfo[]>([]);
+  const [unavailableQualities, setUnavailableQualities] = useState<QualityInfo[]>([]);
   const [_isLoading, setIsLoading] = useState(false);
 
   const fetchKnownQualities = async () => {
@@ -36,9 +37,10 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({
 
     setIsLoading(true);
 
-    const res = await musicApi.getKnownQualities(songId)
+    const res = await musicApi.getDetailedQualities(songId)
 
-    setKnownQualities(res)
+    setAvailableQualities(res.availableQualities)
+    setUnavailableQualities(res.unavailableQualities)
 
     setIsLoading(false)
   };
@@ -47,9 +49,9 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({
   useEffect(() => {
     if (songId) fetchKnownQualities();
   }, [songId]);
-
+  console.log(quality);
   return (
-    <div className={`w-1/4 h-1/4 bg-gray-600${className}`}>
+    <div className={`w-screen bg-gray-600${className}`}>
       <h3>Audio Quality</h3>
 
       {/* Quick selector */}
@@ -58,12 +60,12 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({
           const isSelected = q === quality;
           const info = QUALITY_LABELS[q];
           const requiresPremium = q === 'flac' && !isPremium;
-          const status = knownQualities.find(e => (e.quality == q && e.unavailable)) ? 'unavailable' : 'available';
+          const status = unavailableQualities?.find(e => (e.quality == q)) ? 'unavailable' : 'available';
 
           return (
             <button
               key={q}
-              className={`quality-option ${status} ${isSelected ? 'selected' : ''}`}
+              className={` ${status} ${isSelected ? 'selected' : ''}`}
               onClick={() => onQualityChange(q)}
               disabled={status === 'unavailable' || requiresPremium}
               title={

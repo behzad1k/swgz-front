@@ -88,7 +88,7 @@ const UserProfilePage: FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold text-white">{profile.username}</h1>
-                {profile.isPremium && <Badge variant="warning">Premium</Badge>}
+                {profile.subscriptionPlan == 'premium' && <Badge variant="warning">Premium</Badge>}
                 <Button
                   size="sm"
                   variant={isStalkeding ? 'secondary' : 'primary'}

@@ -1,9 +1,18 @@
-// music.api.ts - SIMPLIFIED VERSION
 import { SearchFilters } from '@/enums/global.ts';
 import { QualityType } from '@/types/global.ts';
 import ApiService, { API_BASE_URL } from '@/utils/api';
 import { Track, SearchHistory, Artist, Album } from '@/types/models';
 
+export interface QualityDetails {
+  songId: string,
+  title: string,
+  artist: string,
+  hasFlac: boolean,
+  availableQualities: QualityInfo[],
+  unavailableQualities: QualityInfo[],
+  totalAvailable: number,
+  totalUnavailable: number,
+}
 
 export interface QualityInfo {
   quality: string;
@@ -48,8 +57,8 @@ export const musicApi = {
   getAlbum: (albumId: string, signal?: AbortSignal) =>
     ApiService.get<Album>(`/music/album/${albumId}`, signal),
 
-  getKnownQualities: (songId: string, signal?: AbortSignal) =>
-    ApiService.get<QualityInfo[]>(`/music/qualities/${songId}`, signal),
+  getDetailedQualities: (songId: string, signal?: AbortSignal) =>
+    ApiService.get<QualityDetails>(`/music/qualities/${songId}`, signal),
 
   getSongInfo: (songId: string, signal?: AbortSignal) =>
     ApiService.get<Track & { availableQualities: QualityInfo[]; unavailableQualities: string[] }>(

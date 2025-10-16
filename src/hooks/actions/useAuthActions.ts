@@ -1,6 +1,6 @@
 // hooks/useAuthActions.ts
 import { useAuthContext } from '@/contexts/AuthContext';
-import { AuthActionKeys } from '@store/slices/authSlice';
+import { AuthActionKeys } from '@store/authSlice.ts';
 import { UserProfile } from '@/types/models';
 import { useCallback } from 'react';
 

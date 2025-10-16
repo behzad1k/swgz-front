@@ -1,11 +1,11 @@
 import { QualityType } from '@/types/global.ts';
 import { ModalConfig } from '@/types/modal.ts';
 import { MostListened, Playlist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
-import { AppAction } from '@store/slices/appSlice.ts';
-import { AuthAction } from '@store/slices/authSlice.ts';
-import { LibraryAction } from '@store/slices/librarySlice.ts';
-import { ModalAction } from '@store/slices/modalSlice.ts';
-import { PlayerAction } from '@store/slices/playerSlice.ts';
+import { AppAction } from '@store/appSlice.ts';
+import { AuthAction } from '@store/authSlice.ts';
+import { LibraryAction } from '@store/librarySlice.ts';
+import { ModalAction } from '@store/modalSlice.ts';
+import { PlayerAction } from '@store/playerSlice.ts';
 
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string;
@@ -61,6 +61,13 @@ export type ModalState = {
 };
 
 
+export type RootState = {
+  auth: AuthState;
+  player: PlayerState;
+  app: AppState;
+  library: LibraryState;
+  modal: ModalState;
+}
 export type RootAction = ModalAction | AppAction | PlayerAction | LibraryAction | AuthAction;
 
 // export type Action =

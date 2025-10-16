@@ -1,5 +1,5 @@
 import { LibraryState } from '@/types/states';
-import { initialLibraryState, LibraryAction, libraryReducer } from '@store/slices/librarySlice';
+import { initialLibraryState, LibraryAction, libraryReducer } from '@store/librarySlice.ts';
 import { createContext, ReactNode, useContext, useMemo, useReducer } from 'react';
 
 type LibraryContextType = {

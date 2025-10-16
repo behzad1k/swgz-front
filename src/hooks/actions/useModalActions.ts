@@ -1,7 +1,7 @@
 // hooks/useModalActions.ts
 import { useCallback } from 'react';
 import { useModalContext } from '@/contexts/ModalContext';
-import { ModalActionKeys } from '@store/slices/modalSlice';
+import { ModalActionKeys } from '@store/modalSlice.ts';
 import { ModalConfig } from '@/types/modal';
 
 export const useModalActions = () => {

@@ -1,6 +1,6 @@
 // hooks/useLibraryActions.ts
 import { useLibraryContext } from '@/contexts/LibraryContext';
-import { LibraryActionKeys } from '@store/slices/librarySlice';
+import { LibraryActionKeys } from '@store/librarySlice.ts';
 import { MostListened, Playlist, SearchHistory, Track } from '@/types/models';
 import { LibraryState } from '@/types/states';
 import { useCallback } from 'react';

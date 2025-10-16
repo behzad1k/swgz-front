@@ -1,5 +1,5 @@
 import { PlayerState } from '@/types/states';
-import { initialPlayerState, PlayerAction, playerReducer } from '@store/slices/playerSlice';
+import { initialPlayerState, PlayerAction, playerReducer } from '@store/playerSlice.ts';
 import { createContext, ReactNode, useContext, useMemo, useReducer } from 'react';
 
 type PlayerContextType = {

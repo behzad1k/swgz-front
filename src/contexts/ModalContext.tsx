@@ -1,5 +1,5 @@
 import { ModalState } from '@/types/states';
-import { initialModalState, ModalAction, modalReducer } from '@store/slices/modalSlice';
+import { initialModalState, ModalAction, modalReducer } from '@store/modalSlice.ts';
 import { createContext, ReactNode, useContext, useMemo, useReducer } from 'react';
 
 type ModalContextType = {

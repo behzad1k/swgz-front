@@ -1,6 +1,6 @@
 // hooks/usePlayerActions.ts (Enhanced version)
 import { usePlayerContext } from '@/contexts/PlayerContext';
-import { PlayerActionKeys } from '@store/slices/playerSlice';
+import { PlayerActionKeys } from '@store/playerSlice.ts';
 import { QualityType } from '@/types/global';
 import { Track } from '@/types/models';
 import { useCallback, useRef } from 'react';

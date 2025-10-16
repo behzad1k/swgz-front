@@ -2,8 +2,8 @@
 import { useCallback, useState } from 'react';
 import { playlistApi } from '@/api/playlist.api';
 import { Playlist } from '@/types/models';
-import { useLibraryActions } from './useLibraryActions';
-import { usePlaylists } from './useLibrarySelectors';
+import { useLibraryActions } from './actions/useLibraryActions';
+import { usePlaylists } from './selectors/useLibrarySelectors';
 
 export const usePlaylist = () => {
   const playlists = usePlaylists();
@@ -68,7 +68,7 @@ export const usePlaylist = () => {
   const addTrackToPlaylist = useCallback(
     async (playlistId: string, trackId: string) => {
       try {
-        const updatedPlaylist = await playlistApi.addTrackToPlaylist(playlistId, trackId);
+        const updatedPlaylist = await playlistApi.addSong(playlistId, trackId);
         updatePlaylist(updatedPlaylist);
         return updatedPlaylist;
       } catch (error) {
@@ -82,7 +82,7 @@ export const usePlaylist = () => {
   const removeTrackFromPlaylist = useCallback(
     async (playlistId: string, trackId: string) => {
       try {
-        const updatedPlaylist = await playlistApi.removeTrackFromPlaylist(playlistId, trackId);
+        const updatedPlaylist = await playlistApi.removeSong(playlistId, trackId);
         updatePlaylist(updatedPlaylist);
         return updatedPlaylist;
       } catch (error) {
