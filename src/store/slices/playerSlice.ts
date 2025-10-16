@@ -8,5 +8,5 @@ export const initialPlayerState: PlayerState = {
   volume: 1,
   repeat: false,
   shuffle: false,
-  quality: (localStorage.getItem('preferred_quality') as '128' | '320' | 'FLAC') || '320',
+  quality: (localStorage.getItem('preferred_quality') as '128' | '320' | 'flac') || '320',
 };

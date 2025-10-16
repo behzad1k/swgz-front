@@ -33,7 +33,7 @@ const NowPlayingPage: FC<NowPlayingPageProps> = ({ onClose }) => {
           <PlayerControls isPlaying={isPlaying} onPlayPause={togglePlay} onNext={playNext} onPrevious={playPrevious} />
           <div className="flex items-center gap-4">
             <span className="text-gray-400 text-sm">Quality:</span>
-            {(['128', '320', 'FLAC'] as const).map((q) => (
+            {(['128', '320', 'flac'] as const).map((q) => (
               <button key={q} onClick={() => changeQuality(q)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${quality === q ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}>
                 {q}
               </button>

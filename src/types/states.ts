@@ -1,3 +1,4 @@
+import { QualityType } from '@/types/global.ts';
 import { ModalConfig } from '@/types/modal.ts';
 import { DownloadItem, Playlist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
 import React from 'react';
@@ -24,7 +25,7 @@ export interface AppContextType {
     queue: any[];
     repeat: boolean;
     shuffle: boolean;
-    quality: '128' | '320' | 'FLAC';
+    quality: QualityType;
     audioRef: React.RefObject<HTMLAudioElement>;
     play: (song: any) => Promise<void>;
     togglePlay: () => void;
@@ -35,9 +36,14 @@ export interface AppContextType {
     addToQueue: (song: any) => void;
     removeFromQueue: (index: number) => void;
     clearQueue: () => void;
+    updateQueue: (song: Track[]) => void;
     toggleRepeat: () => void;
     toggleShuffle: () => void;
-    changeQuality: (quality: '128' | '320' | 'FLAC') => void;
+    changeQuality: (quality: QualityType) => void;
+    actualQuality: string | null, // The quality actually being played (may differ from requested)
+    qualityFallbackUsed: boolean, // Whether fallback was used
+    availableQualities: QualityType[], // Qualities available for current song
+    unavailableQualities: QualityType[], // Qualities marked unavailable
   };
 }
 
@@ -57,7 +63,7 @@ export interface PlayerState {
   volume: number;
   repeat: boolean;
   shuffle: boolean;
-  quality: '128' | '320' | 'FLAC';
+  quality: QualityType
 }
 
 export interface MostListened {

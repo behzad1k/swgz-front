@@ -1,6 +1,6 @@
 import { publicEndpoints } from '@utils/endpoints.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 class ApiService {
   static getToken(): string | null {
@@ -66,10 +66,6 @@ class ApiService {
       signal,
     });
     return response.json();
-  }
-
-  static getStreamUrl(songId: string, flac = false, apiKey: string): string {
-    return `${API_BASE_URL}/music/stream/${songId}?flac=${flac}&api-key=${apiKey}`;
   }
 
   static async downloadSong(

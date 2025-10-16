@@ -32,7 +32,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onClose }) => {
             <div>
               <label className="text-gray-300 mb-2 block">Default Quality</label>
               <div className="flex gap-2">
-                {(['128', '320', 'FLAC'] as const).map((q) => (
+                {(['128', '320', 'flac'] as const).map((q) => (
                   <button
                     key={q}
                     onClick={() => setDefaultQuality(q)}

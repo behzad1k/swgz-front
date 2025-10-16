@@ -3,13 +3,14 @@ import PlayerControls from '@/components/player/PlayerControls';
 import ProgressBar from '@/components/player/ProgressBar';
 import QueueList from '@/components/player/QueueList';
 import VolumeControl from '@/components/player/VolumeControl';
+import QualitySelector from '@components/player/QualitySelector.tsx';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FC, memo, useState, useRef, useEffect } from 'react';
 
 type SheetState = 'closed' | 'mini' | 'half' | 'full';
 
 const NowPlayingSheet: FC = () => {
-  const { player } = useApp();
+  const { state, player } = useApp();
   const [sheetState, setSheetState] = useState<SheetState>('mini');
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -18,7 +19,9 @@ const NowPlayingSheet: FC = () => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [isDesktop, setIsDesktop] = useState(false);
 
-  const { currentSong, isPlaying, progress, quality, seek, togglePlay, changeQuality, playNext, playPrevious, play, queue, volume, changeVolume } = player;
+  const { currentSong, isPlaying, progress, quality, seek, togglePlay, changeQuality, playNext, playPrevious, play, queue, volume, changeVolume, shuffle, toggleShuffle, repeat, toggleRepeat, actualQuality, availableQualities, unavailableQualities} = player;
+
+  const isPremium = state.auth?.user?.subscriptionPlan === 'premium';
 
   // Check if desktop
   useEffect(() => {
@@ -216,30 +219,43 @@ const NowPlayingSheet: FC = () => {
                 onPlayPause={togglePlay}
                 onNext={playNext}
                 onPrevious={playPrevious}
+                onShuffle={toggleShuffle}
+                onRepeat={toggleRepeat}
+                repeat={repeat}
+                shuffle={shuffle}
               />
             </div>
 
             {/* Quality Controls */}
             {sheetState === 'full' && (
               <>
-                <div className="px-6 mb-6">
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-gray-400 text-sm">Quality:</span>
-                    {(['128', '320', 'FLAC'] as const).map((q) => (
-                      <button
-                        key={q}
-                        onClick={() => changeQuality(q)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                          quality === q
-                            ? 'bg-purple-500 text-white'
-                            : 'bg-white/10 text-gray-400 hover:bg-white/20'
-                        }`}
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <QualitySelector
+                  songId={currentSong?.id}
+                  currentQuality={quality}
+                  actualQuality={actualQuality}
+                  availableQualities={availableQualities}
+                  unavailableQualities={unavailableQualities}
+                  onQualityChange={changeQuality}
+                  isPremium={isPremium}
+                />
+                {/* <div className="px-6 mb-6"> */}
+                {/*   <div className="flex items-center justify-center gap-3"> */}
+                {/*     <span className="text-gray-400 text-sm">Quality:</span> */}
+                {/*     {(['128', '320', 'flac'] as const).map((q) => ( */}
+                {/*       <button */}
+                {/*         key={q} */}
+                {/*         onClick={() => changeQuality(q)} */}
+                {/*         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${ */}
+                {/*           quality === q */}
+                {/*             ? 'bg-purple-500 text-white' */}
+                {/*             : 'bg-white/10 text-gray-400 hover:bg-white/20' */}
+                {/*         }`} */}
+                {/*       > */}
+                {/*         {q} */}
+                {/*       </button> */}
+                {/*     ))} */}
+                {/*   </div> */}
+                {/* </div> */}
 
                 {/* Volume Control */}
                 <div className="px-6 mb-6">
@@ -335,7 +351,7 @@ const DesktopNowPlaying: FC = () => {
           <div className="mb-4">
             <div className="flex items-center justify-center gap-2">
               <span className="text-gray-400 text-xs">Quality:</span>
-              {(['128', '320', 'FLAC'] as const).map((q) => (
+              {(['128', '320', 'flac'] as const).map((q) => (
                 <button
                   key={q}
                   onClick={() => changeQuality(q)}

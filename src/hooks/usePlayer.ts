@@ -1,7 +1,7 @@
+import { QualityType } from '@/types/global.ts';
 import { musicApi } from '@api/music.api.ts';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/types/models.ts';
-import ApiService from '@/utils/api';
 import { RootState } from '@/types/states';
 
 interface UsePlayerProps {
@@ -14,12 +14,16 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(1);
-  const [quality, setQuality] = useState<'128' | '320' | 'FLAC'>(
-    (localStorage.getItem('preferred_quality') as '128' | '320' | 'FLAC') || '320'
+  const [quality, setQuality] = useState<QualityType>(
+    (localStorage.getItem('preferred_quality') as QualityType) || '320'
   );
+  const [actualQuality, setActualQuality] = useState<string | null>(null); // What's actually playing
+  const [qualityFallbackUsed, setQualityFallbackUsed] = useState(false);
   const [queue, setQueue] = useState<Track[]>([]);
   const [repeat, setRepeat] = useState(false);
   const [shuffle, setShuffle] = useState(false);
+  const [availableQualities, setAvailableQualities] = useState<string[]>([]);
+  const [unavailableQualities, setUnavailableQualities] = useState<string[]>([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isLoadingRef = useRef(false);
@@ -46,6 +50,21 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     }
   }, [state.player.quality]);
 
+  // const checkQualities = async () => {
+  //   if (!currentSong?.id) return;
+  //
+  //   try {
+  //     const qualitiesInfo = await musicApi.getAvailableQualities(currentSong.id);
+  //     setAvailableQualities(qualitiesInfo.availableQualities.map(q => q.quality));
+  //     setUnavailableQualities(qualitiesInfo.unavailableQualities);
+  //
+  //     console.log('📊 Available qualities:', qualitiesInfo.availableQualities);
+  //     console.log('❌ Unavailable qualities:', qualitiesInfo.unavailableQualities);
+  //   } catch (error) {
+  //     console.error('Failed to check qualities:', error);
+  //   }
+  // };
+
   // Use refs for latest values in event handlers
   const queueRef = useRef(queue);
   const repeatRef = useRef(repeat);
@@ -63,12 +82,13 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     preparedNextSongRefLatest.current = preparedNextSongRef.current;
   }, [preparedNextSongRef.current]);
 
-
   const play = useCallback(async (song: Track) => {
     console.log('🎵 Playing song:', song.title);
     setCurrentSong(song);
     setIsPlaying(true);
     setProgress(0);
+    setQualityFallbackUsed(false);
+    setActualQuality(null);
     // Reset prepared next song
     preparedNextSongRef.current = null;
     isPreparingNextRef.current = false;
@@ -98,19 +118,13 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
         audio.currentTime = 0;
         audio.play();
       } else {
-        // Use the latest queue from ref
         if (queueRef.current.length > 0) {
           const nextSong = preparedNextSongRefLatest.current || queueRef.current[0];
           console.log('🎵 Playing next song:', nextSong.title, 'Has ID:', !!nextSong.id);
 
-          // Remove from queue
           setQueue(prev => prev.slice(1));
-
-          // Reset prepared reference
           preparedNextSongRef.current = null;
           isPreparingNextRef.current = false;
-
-          // Play the song
           play(nextSong);
         } else {
           console.log('⏹️ Queue empty in handleEnded, stopping playback');
@@ -120,10 +134,20 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     };
 
     const handleError = (e: ErrorEvent) => {
-      console.error('Audio playback error:', e);
-      // setIsPlaying(false);
+      console.error('❌ Audio playback error:', e);
+
+      // If quality fallback failed, notify user
+      if (qualityFallbackUsed) {
+        dispatch({
+          type: 'SHOW_NOTIFICATION',
+          payload: {
+            message: 'Playback failed. This track may not be available.',
+            type: 'error'
+          }
+        });
+      }
     };
-    // In the audio element setup useEffect, add:
+
     audio.addEventListener('loadstart', () => console.log('🔄 Audio: Load start'));
     audio.addEventListener('loadedmetadata', () => console.log('✅ Audio: Metadata loaded'));
     audio.addEventListener('loadeddata', () => console.log('✅ Audio: Data loaded'));
@@ -142,7 +166,7 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [play]);
+  }, [play, qualityFallbackUsed, dispatch]);
 
   // Handle song changes and quality changes
   useEffect(() => {
@@ -159,8 +183,9 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
       console.log('🎵 Starting to load song:', currentSong);
 
       try {
-        let songObj: any = currentSong
+        let songObj: any = currentSong;
 
+        // Prepare song if needed
         if (!currentSong.id) {
           console.log('⚠️ Song has no ID, preparing...');
           isLoadingRef.current = true;
@@ -178,6 +203,8 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
           console.log('✅ Song prepared:', songObj);
 
           setCurrentSong(songObj);
+          setAvailableQualities(songObj.qualities.filter((e: any) => !e.unavailable).map((e: any) => e.quality))
+          setUnavailableQualities(songObj.qualities.filter((e: any) => e.unavailable).map((e: any) => e.quality))
           dispatch({
             type: 'SET_CURRENT_SONG',
             payload: songObj
@@ -187,10 +214,55 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
         }
 
         const audio = audioRef.current;
-        const preferFlac = quality === 'FLAC';
-        const streamUrl = ApiService.getStreamUrl(songObj.id, preferFlac, state.auth?.user?.apiKey || '');
 
-        console.log('🌐 Stream URL:', streamUrl);
+        // Check if requested quality is available (proactively)
+        const isRequestedQualityUnavailable = unavailableQualities.includes(quality);
+
+        if (isRequestedQualityUnavailable) {
+          console.warn(`⚠️ Requested quality ${quality} is unavailable for this track`);
+
+          // Get fallback chain
+          try {
+            const fallbackInfo = await musicApi.getQualityFallback(quality);
+            console.log('📊 Fallback chain:', fallbackInfo.fallbackChain);
+
+            // Find first available fallback
+            const availableFallback = fallbackInfo.fallbackChain.find(
+              q => availableQualities.includes(q)
+            );
+
+            if (availableFallback) {
+              console.log(`✅ Using fallback quality: ${availableFallback}`);
+              setActualQuality(availableFallback);
+              setQualityFallbackUsed(true);
+
+              dispatch({
+                type: 'SHOW_NOTIFICATION',
+                payload: {
+                  message: `Playing ${availableFallback} quality instead of ${quality}`,
+                  type: 'info'
+                }
+              });
+            }
+          } catch (error) {
+            console.error('Failed to get fallback chain:', error);
+          }
+        } else {
+          // Reset fallback state if quality is available
+          setActualQuality(quality);
+          setQualityFallbackUsed(false);
+        }
+
+        // Build stream URL directly (no HEAD request)
+        const preferFlac = quality.toLowerCase() === 'flac';
+        const apiKey = state.auth?.user?.apiKey ||
+          localStorage.getItem('apiKey') ||
+          '';
+
+        const streamUrl = musicApi.getStreamUrl(songObj.id, preferFlac, apiKey);
+
+        console.log('🌐 Stream URL:', streamUrl.substring(0, 80) + '...');
+
         console.log('🎚️ Audio state before setting src:', {
           currentSrc: audio.src,
           paused: audio.paused,
@@ -198,39 +270,108 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
           networkState: audio.networkState
         });
 
+        // Set audio source
         audio.src = streamUrl;
         audio.load();
 
         console.log('📊 Audio state after load:', {
-          src: audio.src,
           readyState: audio.readyState,
           networkState: audio.networkState
         });
 
+        // Listen for loadedmetadata to detect actual quality from headers
+        const handleLoadedMetadata = () => {
+          console.log('✅ Audio metadata loaded');
+          // Quality detection will happen on backend through X-Quality-Fallback header
+          // which we can check via audio element events or response inspection
+        };
+
+        audio.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+
         if (isPlaying) {
           console.log('▶️ Attempting to play...');
+
           audio.play()
-          .catch(e => console.error('❌ Playback error:', e));
+          .then(() => {
+            console.log('✅ Playback started successfully');
+          })
+          .catch(e => {
+            console.error('❌ Playback error:', e);
+
+            // Handle different error types
+            // if (e.name === 'NotAllowedError') {
+            //   dispatch({
+            //     type: 'SHOW_NOTIFICATION',
+            //     payload: {
+            //       message: 'Please interact with the page to enable audio playback',
+            //       type: 'warning'
+            //     }
+            //   });
+            // } else if (e.name === 'NotSupportedError') {
+            //   dispatch({
+            //     type: 'SHOW_NOTIFICATION',
+            //     payload: {
+            //       message: 'Audio format not supported',
+            //       type: 'error'
+            //     }
+            //   });
+            // } else if (e.message?.includes('404')) {
+            //   dispatch({
+            //     type: 'SHOW_NOTIFICATION',
+            //     payload: {
+            //       message: `${quality} quality not available for this track`,
+            //       type: 'error'
+            //     }
+            //   });
+            // } else if (e.message?.includes('401') || e.message?.includes('403')) {
+            //   dispatch({
+            //     type: 'SHOW_NOTIFICATION',
+            //     payload: {
+            //       message: 'Authentication error. Please log in again.',
+            //       type: 'error'
+            //     }
+            //   });
+            // } else {
+            //   dispatch({
+            //     type: 'SHOW_NOTIFICATION',
+            //     payload: {
+            //       message: 'Failed to play track. Please try again.',
+            //       type: 'error'
+            //     }
+            //   });
+            // }
+          });
         }
       } catch (error) {
         console.error('❌ Failed to load song:', error);
         setIsPlaying(false);
         isLoadingRef.current = false;
+
+        // dispatch({
+        //   type: 'SHOW_NOTIFICATION',
+        //   payload: {
+        //     message: 'Failed to load song. Please try again.',
+        //     type: 'error'
+        //   }
+        // });
       }
     };
 
     loadAndPlaySong();
-  }, [currentSong?.title, currentSong?.artistName, quality, dispatch]);
+  }, [
+    currentSong?.title,
+    currentSong?.artistName,
+    quality,
+    dispatch,
+    availableQualities,
+    unavailableQualities,
+    state.auth?.user?.apiKey,
+    isPlaying
+  ]);
 
   // Fill queue at 10% progress if empty
   useEffect(() => {
     const fillQueueIfEmpty = async () => {
-      // Only fetch similar tracks if:
-      // 1. Song is playing
-      // 2. Progress is between 10-11% (narrow window)
-      // 3. Queue is empty
-      // 4. Not already fetching
-      // 5. Current song has an ID
       if (
         isPlaying &&
         progress > 10 &&
@@ -260,12 +401,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
   // Prepare next song at 80% progress
   useEffect(() => {
     const prepareNextSong = async () => {
-      // Only prepare if:
-      // 1. Song is playing
-      // 2. Progress is between 80-81% (narrow window)
-      // 3. Not already preparing
-      // 4. Queue has songs
-      // 5. Current song has an ID
       if (
         isPlaying &&
         progress > 80 &&
@@ -280,7 +415,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
         try {
           const nextSong = queue[0];
 
-          // Skip if already prepared
           if (preparedNextSongRef.current?.title === nextSong.title) {
             console.log('⏭️ Next song already prepared:', nextSong.title);
             isPreparingNextRef.current = false;
@@ -289,7 +423,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
 
           console.log('🔄 Preparing next song from queue:', nextSong.title);
 
-          // If song doesn't have an ID, prepare it via API
           if (!nextSong.id) {
             console.log('⚠️ Preparing next song from backend...');
             const preparedSong = await musicApi.prepareForPlaying({
@@ -304,7 +437,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
 
             console.log('✅ Next song prepared:', preparedSong);
 
-            // Update the queue with the prepared song
             setQueue(prev => {
               const newQueue = [...prev];
               newQueue[0] = preparedSong;
@@ -327,7 +459,7 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     prepareNextSong();
   }, [progress, isPlaying, queue, currentSong]);
 
-  // Add effect to sync isPlaying with audio element
+  // Sync isPlaying with audio element
   useEffect(() => {
     if (!audioRef.current) return;
 
@@ -367,19 +499,13 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     console.log('⏭️ Playing next song. Queue length:', queue.length);
 
     if (queue.length > 0) {
-      // Use the prepared song if available, otherwise use queue[0]
       const nextSong = preparedNextSongRef.current || queue[0];
       console.log('🎵 Next song:', nextSong.title, 'Has ID:', !!nextSong.id);
       console.log('🎵 Using prepared song:', !!preparedNextSongRef.current);
 
-      // Remove from queue
       setQueue(prev => prev.slice(1));
-
-      // Reset prepared reference
       preparedNextSongRef.current = null;
       isPreparingNextRef.current = false;
-
-      // Play the song (which is already prepared if we did it right)
       play(nextSong);
     } else {
       console.log('⏹️ Queue empty, stopping playback');
@@ -390,12 +516,10 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
   const playPrevious = useCallback(() => {
     if (!audioRef.current) return;
 
-    // If more than 3 seconds into the song, restart it
     if (audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0;
       setProgress(0);
     } else {
-      // TODO: Implement previous song from history
       console.log('Previous song not implemented yet');
     }
   }, []);
@@ -422,7 +546,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     console.log('➖ Removing from queue at index:', index);
     setQueue(prev => prev.filter((_, i) => i !== index));
 
-    // If we removed the next song that was being prepared, reset
     if (index === 0) {
       preparedNextSongRef.current = null;
       isPreparingNextRef.current = false;
@@ -444,11 +567,18 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     setShuffle(prev => !prev);
   }, []);
 
-  const changeQuality = useCallback((newQuality: '128' | '320' | 'FLAC') => {
+  const changeQuality = useCallback((newQuality: QualityType) => {
     console.log('🎚️ Changing quality to:', newQuality);
     setQuality(newQuality);
     localStorage.setItem('preferred_quality', newQuality);
-  }, []);
+
+    // Trigger reload of current song with new quality
+    if (currentSong?.id && isPlaying) {
+      console.log('🔄 Reloading current song with new quality');
+      setQualityFallbackUsed(false);
+      setActualQuality(null);
+    }
+  }, [currentSong, isPlaying]);
 
   return {
     // State
@@ -460,8 +590,12 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     repeat,
     shuffle,
     quality,
+    actualQuality, // The quality actually being played (may differ from requested)
+    qualityFallbackUsed, // Whether fallback was used
+    availableQualities, // Qualities available for current song
+    unavailableQualities, // Qualities marked unavailable
 
-    // Audio ref (for direct access if needed)
+    // Audio ref
     audioRef,
 
     // Actions

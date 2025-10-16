@@ -149,7 +149,7 @@ const SearchPage: FC = () => {
         <div className="text-center py-12 text-gray-400">
           {state.library.recentSearches.length ? (
             <div className="flex flex-col gap-4 ">
-              {state.library.recentSearches.map(e =>
+              {state.library.recentSearches.filter(e => filter != SearchFilters.all ? e.filter == filter : true).map(e =>
                 <div className="flex justify-between" key={e.id}>
                   <div className="flex flex-col gap-1 " onClick={async () => await selectSearchHistory(e)}>
                     <span className="text-m">{e.query}</span>

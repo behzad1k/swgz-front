@@ -35,6 +35,7 @@ export interface User {
   username: string;
   email?: string;
   apiKey?: string;
+  subscriptionPlan?: 'free' | 'premium'
 }
 
 export interface UserProfile extends User{

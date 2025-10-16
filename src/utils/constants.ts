@@ -3,7 +3,7 @@ export const APP_NAME = 'Swgz Music';
 export const AUDIO_QUALITIES = {
   LOW: '128',
   MEDIUM: '320',
-  HIGH: 'FLAC',
+  HIGH: 'flac',
 } as const;
 
 export const ROUTES = {
