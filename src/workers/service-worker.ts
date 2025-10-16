@@ -35,7 +35,6 @@ class ServiceWorkerManager {
     }
 
     try {
-      // Wait for page to load
       await new Promise<void>((resolve) => {
         if (document.readyState === 'complete') {
           resolve();
@@ -44,7 +43,7 @@ class ServiceWorkerManager {
         }
       });
 
-      // Register service worker
+      // Register service worker but exclude /music/stream/ from its scope
       this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
       });
@@ -52,29 +51,24 @@ class ServiceWorkerManager {
       console.log('[App] ✅ Service Worker registered');
       console.log('[App] 📍 Scope:', this.registration.scope);
 
-      // Setup event listeners
       this.setupEventListeners();
 
-      // Check for updates periodically (every 5 minutes)
       this.updateCheckInterval = window.setInterval(() => {
         this.checkForUpdates();
       }, 5 * 60 * 1000);
 
-      // Check for updates on visibility change
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           this.checkForUpdates();
         }
       });
 
-      // Initial update check
       this.checkForUpdates();
 
     } catch (error) {
       console.error('[App] ❌ Service Worker registration failed:', error);
     }
   }
-
   /**
    * Setup event listeners for service worker lifecycle
    */
