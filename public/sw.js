@@ -1,7 +1,7 @@
 // public/sw.js
 'use strict';
 
-const CACHE_VERSION = 'v2.1.2';
+const CACHE_VERSION = 'v2.1.4';
 const CACHE_NAME = `music-player-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -55,6 +55,20 @@ self.addEventListener('activate', (event) => {
                 return self.clients.claim();
             })
     );
+});
+
+
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
+    // Log everything
+    console.log('[SW] Intercept:', url.pathname);
+
+    // TEMPORARY: Let everything through for testing
+    if (url.origin === self.location.origin) {
+        console.log('[SW] Same origin - letting through');
+        return; // Don't intercept anything
+    }
 });
 
 // Fetch event

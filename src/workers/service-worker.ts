@@ -55,7 +55,7 @@ class ServiceWorkerManager {
 
       this.updateCheckInterval = window.setInterval(() => {
         this.checkForUpdates();
-      }, 5 * 60 * 1000);
+      }, 20 * 60 * 1000);
 
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {

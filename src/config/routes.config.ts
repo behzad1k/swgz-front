@@ -111,6 +111,15 @@ export const routes: Routes = {
     showHeader: true,
     headerBackButton: true,
   },
+  // recentlyPlayed: {
+  //   path: '/library/recently-played',
+  //   component: Recent,
+  //   protected: true,
+  //   title: 'Most Listened',
+  //   description: 'Your top tracks',
+  //   showHeader: true,
+  //   headerBackButton: true,
+  // },
 
   // Profile Routes
   profile: {

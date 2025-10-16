@@ -9,8 +9,7 @@ interface QueueListProps {
   onRemove?: (song: Track) => void;
 }
 
-const QueueList: FC<QueueListProps> = ({ queue, currentSongId, onPlay, onRemove }) => {
-  console.log(onRemove);
+const QueueList: FC<QueueListProps> = ({ queue, currentSongId, onPlay }) => {
   if (queue.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">

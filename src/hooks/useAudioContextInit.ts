@@ -17,7 +17,7 @@ export const useAudioContextInit = () => {
 
       try {
         const audioContext = new AudioContext();
-
+        console.log(audioContext, initializedRef);
         if (audioContext.state === 'suspended') {
           await audioContext.resume();
         }

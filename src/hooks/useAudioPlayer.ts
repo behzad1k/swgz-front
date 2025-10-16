@@ -129,9 +129,10 @@ export const useAudioPlayer = () => {
 
       // Resume AudioContext if suspended (iOS requirement)
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        console.log(audioContextRef.current.state);
         audioContextRef.current.resume().then(() => {
           console.log('🎚️ AudioContext resumed');
-        });
+        }).catch(e => console.error(e));
       }
     };
 
@@ -284,7 +285,7 @@ export const useAudioPlayer = () => {
           await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(() => {
               reject(new Error('Audio load timeout'));
-            }, 10000); // 10 second timeout
+            }, 60000); // 10 second timeout
 
             const canPlayHandler = () => {
               clearTimeout(timeout);
@@ -361,7 +362,7 @@ export const useAudioPlayer = () => {
     };
 
     loadAndPlaySong();
-  }, [currentSong?.id, currentSong?.title, quality, user?.apiKey, isPlaying, setCurrentSong, setIsPlaying]);
+  }, [currentSong?.id, currentSong?.title, quality, user?.apiKey, setCurrentSong, setIsPlaying]);
 
   // Sync isPlaying with audio element
   useEffect(() => {
