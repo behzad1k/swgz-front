@@ -1,7 +1,7 @@
 // public/sw.js
 'use strict';
 
-const CACHE_VERSION = 'v2.1.1';
+const CACHE_VERSION = 'v2.1.2';
 const CACHE_NAME = `music-player-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -95,12 +95,12 @@ self.addEventListener('fetch', (event) => {
                     console.log('[SW] API response:', response.status, url.pathname);
 
                     // Only cache successful GET requests
-                    if (request.method === 'GET' && response.status === 200) {
-                        const responseClone = response.clone();
-                        caches.open(RUNTIME_CACHE).then((cache) => {
-                            cache.put(request, responseClone);
-                        });
-                    }
+                    // if (request.method === 'GET' && response.status === 200) {
+                    //     const responseClone = response.clone();
+                    //     caches.open(RUNTIME_CACHE).then((cache) => {
+                    //         cache.put(request, responseClone);
+                    //     });
+                    // }
                     return response;
                 })
                 .catch((error) => {
