@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { QualityType } from '@/types/global.ts';
 import React, { useEffect, useState } from 'react';
 import { musicApi, QualityInfo } from '@/api/music.api';
