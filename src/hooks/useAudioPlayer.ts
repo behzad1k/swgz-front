@@ -8,14 +8,14 @@ import {
   usePlayerQuality,
   usePlayerRepeat
 } from './selectors/usePlayerSelectors';
-import { useAuthToken } from './selectors/useAuthSelectors';
+import { useCurrentUser } from './selectors/useAuthSelectors';
 
 export const useAudioPlayer = () => {
   const currentSong = useCurrentSong();
   const isPlaying = useIsPlaying();
   const quality = usePlayerQuality();
   const repeat = usePlayerRepeat();
-  const token = useAuthToken();
+  const user = useCurrentUser();
 
   const {
     setIsPlaying,
@@ -255,7 +255,7 @@ export const useAudioPlayer = () => {
         }
 
         const audio = audioRef.current;
-        const apiKey = token || localStorage.getItem('apiKey') || '';
+        const apiKey = user?.apiKey || '';
         const streamUrl = musicApi.getStreamUrl(songObj.id || '', quality, apiKey);
 
 
@@ -361,7 +361,7 @@ export const useAudioPlayer = () => {
     };
 
     loadAndPlaySong();
-  }, [currentSong?.id, currentSong?.title, quality, token, isPlaying, setCurrentSong, setIsPlaying]);
+  }, [currentSong?.id, currentSong?.title, quality, user?.apiKey, isPlaying, setCurrentSong, setIsPlaying]);
 
   // Sync isPlaying with audio element
   useEffect(() => {
