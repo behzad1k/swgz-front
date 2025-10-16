@@ -1,5 +1,6 @@
 import routesConfig, { routes } from '@/config/routes.config.ts';
 import { ProtectedRoute, Route, Routes, useNavigate } from '@/router';
+import { StreamDebug } from '@/StreamDebug.tsx';
 import { authApi } from '@api/auth.api.ts';
 import { libraryApi } from '@api/library.api.ts';
 import { musicApi } from '@api/music.api.ts';
@@ -122,7 +123,7 @@ const App: FC = () => {
         />
       )}
 
-
+      <StreamDebug />
       {/* Modal Manager for all modals */}
       <ModalManager />
     </div>
