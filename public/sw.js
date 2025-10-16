@@ -1,7 +1,7 @@
 // public/sw.js
 'use strict';
 
-const CACHE_VERSION = 'v2.1';
+const CACHE_VERSION = 'v2.1.1';
 const CACHE_NAME = `music-player-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -80,10 +80,10 @@ self.addEventListener('fetch', (event) => {
     }
 
     // Skip cross-origin requests
-    if (url.origin !== self.location.origin) {
-        console.log('[SW] Skipping cross-origin:', url.origin);
-        return;
-    }
+    // if (url.origin !== self.location.origin) {
+    //     console.log('[SW] Skipping cross-origin:', url.origin);
+    //     return;
+    // }
 
     // API calls (but NOT streaming which was already checked above)
     // Network first, fallback to cache
