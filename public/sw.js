@@ -1,7 +1,7 @@
 // public/sw.js
 'use strict';
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2.1';
 const CACHE_NAME = `music-player-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -76,7 +76,7 @@ self.addEventListener('fetch', (event) => {
     ) {
         console.log('[SW] 🎵 BYPASSING service worker for audio stream:', url.pathname);
         // DON'T call event.respondWith() - let browser handle it directly
-        return;
+        // return;
     }
 
     // Skip cross-origin requests
