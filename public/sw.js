@@ -58,132 +58,132 @@ self.addEventListener('activate', (event) => {
 });
 
 // Fetch event
-self.addEventListener('fetch', (event) => {
-    const { request } = event;
-    const url = new URL(request.url);
-
-    // Log all requests for debugging
-    console.log('[SW] Fetch:', request.method, url.pathname);
-
-    // CRITICAL: Skip service worker COMPLETELY for audio streaming
-    // Check this FIRST before any other conditions
-    if (
-        url.pathname.includes('/music/stream/') ||
-        url.pathname.includes('/music/stream') ||
-        url.pathname.match(/\/music\/stream\/[\w-]+/) ||
-        request.destination === 'audio' ||
-        request.headers.has('range')
-    ) {
-        console.log('[SW] 🎵 BYPASSING service worker for audio stream:', url.pathname);
-        // DON'T call event.respondWith() - let browser handle it directly
-        // return;
-    }
-
-    // Skip cross-origin requests
-    // if (url.origin !== self.location.origin) {
-    //     console.log('[SW] Skipping cross-origin:', url.origin);
-    //     return;
-    // }
-
-    // API calls (but NOT streaming which was already checked above)
-    // Network first, fallback to cache
-    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/music/')) {
-        console.log('[SW] Handling API request:', url.pathname);
-        event.respondWith(
-            fetch(request)
-                .then((response) => {
-                    console.log('[SW] API response:', response.status, url.pathname);
-
-                    // Only cache successful GET requests
-                    // if (request.method === 'GET' && response.status === 200) {
-                    //     const responseClone = response.clone();
-                    //     caches.open(RUNTIME_CACHE).then((cache) => {
-                    //         cache.put(request, responseClone);
-                    //     });
-                    // }
-                    return response;
-                })
-                .catch((error) => {
-                    console.error('[SW] API fetch failed:', error);
-                    return caches.match(request).then((cachedResponse) => {
-                        if (cachedResponse) {
-                            console.log('[SW] Serving cached API response:', url.pathname);
-                            return cachedResponse;
-                        }
-                        return new Response(JSON.stringify({ error: 'Offline' }), {
-                            status: 503,
-                            statusText: 'Service Unavailable',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                    });
-                })
-        );
-        return;
-    }
-
-    // Navigation requests
-    if (request.mode === 'navigate') {
-        console.log('[SW] Handling navigation:', url.pathname);
-        event.respondWith(
-            fetch(request)
-                .then((response) => {
-                    const responseClone = response.clone();
-                    caches.open(RUNTIME_CACHE).then((cache) => {
-                        cache.put(request, responseClone);
-                    });
-                    return response;
-                })
-                .catch(() => {
-                    return caches.match(request)
-                        .then((cachedResponse) => {
-                            if (cachedResponse) {
-                                return cachedResponse;
-                            }
-                            return caches.match('/index.html');
-                        });
-                })
-        );
-        return;
-    }
-
-    // Static assets - Cache first
-    event.respondWith(
-        caches.match(request)
-            .then((cachedResponse) => {
-                if (cachedResponse) {
-                    // Update cache in background
-                    fetch(request).then((response) => {
-                        if (response.status === 200) {
-                            const responseClone = response.clone();
-                            caches.open(RUNTIME_CACHE).then((cache) => {
-                                cache.put(request, responseClone);
-                            });
-                        }
-                    }).catch(() => {});
-
-                    return cachedResponse;
-                }
-
-                return fetch(request)
-                    .then((response) => {
-                        if (response.status === 200) {
-                            const responseClone = response.clone();
-                            caches.open(RUNTIME_CACHE).then((cache) => {
-                                cache.put(request, responseClone);
-                            });
-                        }
-                        return response;
-                    })
-                    .catch((error) => {
-                        console.error('[SW] Fetch failed:', error);
-                        return new Response('Offline', {
-                            status: 503,
-                            statusText: 'Service Unavailable'
-                        });
-                    });
-            })
-    );
-});
+// self.addEventListener('fetch', (event) => {
+//     const { request } = event;
+//     const url = new URL(request.url);
+//
+//     // Log all requests for debugging
+//     console.log('[SW] Fetch:', request.method, url.pathname);
+//
+//     // CRITICAL: Skip service worker COMPLETELY for audio streaming
+//     // Check this FIRST before any other conditions
+//     if (
+//         url.pathname.includes('/music/stream/') ||
+//         url.pathname.includes('/music/stream') ||
+//         url.pathname.match(/\/music\/stream\/[\w-]+/) ||
+//         request.destination === 'audio' ||
+//         request.headers.has('range')
+//     ) {
+//         console.log('[SW] 🎵 BYPASSING service worker for audio stream:', url.pathname);
+//         // DON'T call event.respondWith() - let browser handle it directly
+//         // return;
+//     }
+//
+//     // Skip cross-origin requests
+//     // if (url.origin !== self.location.origin) {
+//     //     console.log('[SW] Skipping cross-origin:', url.origin);
+//     //     return;
+//     // }
+//
+//     // API calls (but NOT streaming which was already checked above)
+//     // Network first, fallback to cache
+//     if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/music/')) {
+//         console.log('[SW] Handling API request:', url.pathname);
+//         event.respondWith(
+//             fetch(request)
+//                 .then((response) => {
+//                     console.log('[SW] API response:', response.status, url.pathname);
+//
+//                     // Only cache successful GET requests
+//                     // if (request.method === 'GET' && response.status === 200) {
+//                     //     const responseClone = response.clone();
+//                     //     caches.open(RUNTIME_CACHE).then((cache) => {
+//                     //         cache.put(request, responseClone);
+//                     //     });
+//                     // }
+//                     return response;
+//                 })
+//                 .catch((error) => {
+//                     console.error('[SW] API fetch failed:', error);
+//                     return caches.match(request).then((cachedResponse) => {
+//                         if (cachedResponse) {
+//                             console.log('[SW] Serving cached API response:', url.pathname);
+//                             return cachedResponse;
+//                         }
+//                         return new Response(JSON.stringify({ error: 'Offline' }), {
+//                             status: 503,
+//                             statusText: 'Service Unavailable',
+//                             headers: { 'Content-Type': 'application/json' }
+//                         });
+//                     });
+//                 })
+//         );
+//         return;
+//     }
+//
+//     // Navigation requests
+//     if (request.mode === 'navigate') {
+//         console.log('[SW] Handling navigation:', url.pathname);
+//         event.respondWith(
+//             fetch(request)
+//                 .then((response) => {
+//                     const responseClone = response.clone();
+//                     caches.open(RUNTIME_CACHE).then((cache) => {
+//                         cache.put(request, responseClone);
+//                     });
+//                     return response;
+//                 })
+//                 .catch(() => {
+//                     return caches.match(request)
+//                         .then((cachedResponse) => {
+//                             if (cachedResponse) {
+//                                 return cachedResponse;
+//                             }
+//                             return caches.match('/index.html');
+//                         });
+//                 })
+//         );
+//         return;
+//     }
+//
+//     // Static assets - Cache first
+//     event.respondWith(
+//         caches.match(request)
+//             .then((cachedResponse) => {
+//                 if (cachedResponse) {
+//                     // Update cache in background
+//                     fetch(request).then((response) => {
+//                         if (response.status === 200) {
+//                             const responseClone = response.clone();
+//                             caches.open(RUNTIME_CACHE).then((cache) => {
+//                                 cache.put(request, responseClone);
+//                             });
+//                         }
+//                     }).catch(() => {});
+//
+//                     return cachedResponse;
+//                 }
+//
+//                 return fetch(request)
+//                     .then((response) => {
+//                         if (response.status === 200) {
+//                             const responseClone = response.clone();
+//                             caches.open(RUNTIME_CACHE).then((cache) => {
+//                                 cache.put(request, responseClone);
+//                             });
+//                         }
+//                         return response;
+//                     })
+//                     .catch((error) => {
+//                         console.error('[SW] Fetch failed:', error);
+//                         return new Response('Offline', {
+//                             status: 503,
+//                             statusText: 'Service Unavailable'
+//                         });
+//                     });
+//             })
+//     );
+// });
 
 // Message event
 self.addEventListener('message', (event) => {
