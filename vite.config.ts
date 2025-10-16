@@ -23,8 +23,8 @@ export default defineConfig({
     port: 3001,
   },
   build: {
-    outDir: 'dist',
-    sourcemap: true,
+    // outDir: 'dist',
+    // sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
