@@ -1,4 +1,4 @@
-import { Home, Search, Library, Plus, Heart, Clock, TrendingUp } from 'lucide-react';
+import { Search, Library, Plus, Heart, Clock, TrendingUp } from 'lucide-react';
 import { FC } from 'react';
 
 interface SidebarProps {
@@ -8,7 +8,7 @@ interface SidebarProps {
 
 const Sidebar: FC<SidebarProps> = ({ currentPage, onNavigate }) => {
   const menuItems = [
-    { id: 'home', label: 'Home', icon: Home },
+    // { id: 'home', label: 'Home', icon: Home },
     { id: 'search', label: 'Search', icon: Search },
     { id: 'library', label: 'Your Library', icon: Library },
   ];

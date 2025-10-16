@@ -12,7 +12,7 @@ const PRECACHE_ASSETS = [
     '/manifest.json',
 ];
 
-// Install event - cache essential assets
+// Install event
 self.addEventListener('install', (event) => {
     console.log('[SW] Install event');
 
@@ -22,7 +22,6 @@ self.addEventListener('install', (event) => {
                 console.log('[SW] Precaching assets');
                 return cache.addAll(PRECACHE_ASSETS).catch((error) => {
                     console.error('[SW] Precaching failed:', error);
-                    // Don't fail installation if precaching fails
                     return Promise.resolve();
                 });
             })
@@ -33,7 +32,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Activate event - clean up old caches
+// Activate event
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activate event');
 
@@ -43,7 +42,6 @@ self.addEventListener('activate', (event) => {
                 return Promise.all(
                     cacheNames
                         .filter((cacheName) => {
-                            // Delete old caches
                             return cacheName.startsWith('music-player-') && cacheName !== CACHE_NAME ||
                                 cacheName.startsWith('runtime-') && cacheName !== RUNTIME_CACHE;
                         })
@@ -60,40 +58,42 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch event - handle different request types
+// Fetch event
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
+
+    // Log all requests for debugging
+    console.log('[SW] Fetch:', request.method, url.pathname);
+
+    // CRITICAL: Skip service worker for all music streaming requests
+    // This allows streaming to work normally
+    if (
+        url.pathname.includes('/music/stream') ||
+        url.pathname.includes('/stream/') ||
+        url.pathname.includes('/audio/') ||
+        url.pathname.match(/\/music\/stream\/[^/]+/) || // Matches /music/stream/:id
+        request.headers.has('range') ||
+        request.destination === 'audio' ||
+        request.url.includes('stream')
+    ) {
+        console.log('[SW] ⚡ Bypassing cache for audio stream:', url.pathname);
+        // Return the request without any service worker intervention
+        return;
+    }
 
     // Skip cross-origin requests
     if (url.origin !== self.location.origin) {
         return;
     }
 
-    // Audio streaming - NEVER cache, always network
-    if (
-        url.pathname.includes('/stream') ||
-        url.pathname.includes('/audio') ||
-        url.pathname.includes('/api/music/stream') ||
-        request.headers.has('range') ||
-        request.destination === 'audio'
-    ) {
-        event.respondWith(
-            fetch(request).catch(() => {
-                return new Response('Audio stream unavailable', {
-                    status: 503,
-                    statusText: 'Service Unavailable'
-                });
-            })
-        );
-        return;
-    }
-
     // API calls - Network first, fallback to cache
-    if (url.pathname.startsWith('/api/')) {
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/music/')) {
         event.respondWith(
             fetch(request)
                 .then((response) => {
+                    console.log('[SW] API response:', response.status, url.pathname);
+
                     // Only cache successful GET requests
                     if (request.method === 'GET' && response.status === 200) {
                         const responseClone = response.clone();
@@ -103,15 +103,17 @@ self.addEventListener('fetch', (event) => {
                     }
                     return response;
                 })
-                .catch(() => {
+                .catch((error) => {
+                    console.error('[SW] API fetch failed:', error);
                     return caches.match(request).then((cachedResponse) => {
                         if (cachedResponse) {
                             console.log('[SW] Serving cached API response:', url.pathname);
                             return cachedResponse;
                         }
-                        return new Response('Offline', {
+                        return new Response(JSON.stringify({ error: 'Offline' }), {
                             status: 503,
-                            statusText: 'Service Unavailable'
+                            statusText: 'Service Unavailable',
+                            headers: { 'Content-Type': 'application/json' }
                         });
                     });
                 })
@@ -119,7 +121,7 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Navigation requests - Network first, fallback to cache, then to index.html
+    // Navigation requests
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request)
@@ -143,12 +145,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Static assets - Cache first, fallback to network
+    // Static assets - Cache first
     event.respondWith(
         caches.match(request)
             .then((cachedResponse) => {
                 if (cachedResponse) {
-                    // Return cached version and update in background
                     fetch(request).then((response) => {
                         if (response.status === 200) {
                             const responseClone = response.clone();
@@ -156,17 +157,13 @@ self.addEventListener('fetch', (event) => {
                                 cache.put(request, responseClone);
                             });
                         }
-                    }).catch(() => {
-                        // Silently fail background update
-                    });
+                    }).catch(() => {});
 
                     return cachedResponse;
                 }
 
-                // Not in cache, fetch from network
                 return fetch(request)
                     .then((response) => {
-                        // Only cache successful responses
                         if (response.status === 200) {
                             const responseClone = response.clone();
                             caches.open(RUNTIME_CACHE).then((cache) => {
@@ -186,7 +183,7 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Message event - handle commands from the app
+// Message event
 self.addEventListener('message', (event) => {
     console.log('[SW] Message received:', event.data);
 
@@ -206,7 +203,9 @@ self.addEventListener('message', (event) => {
                         cacheNames.map((cacheName) => caches.delete(cacheName))
                     );
                 }).then(() => {
-                    event.ports[0].postMessage({ success: true });
+                    if (event.ports && event.ports[0]) {
+                        event.ports[0].postMessage({ success: true });
+                    }
                 })
             );
             break;
@@ -217,10 +216,14 @@ self.addEventListener('message', (event) => {
                     caches.open(RUNTIME_CACHE)
                         .then((cache) => cache.addAll(event.data.urls))
                         .then(() => {
-                            event.ports[0].postMessage({ success: true });
+                            if (event.ports && event.ports[0]) {
+                                event.ports[0].postMessage({ success: true });
+                            }
                         })
                         .catch((error) => {
-                            event.ports[0].postMessage({ success: false, error: error.message });
+                            if (event.ports && event.ports[0]) {
+                                event.ports[0].postMessage({ success: false, error: error.message });
+                            }
                         })
                 );
             }
@@ -229,47 +232,6 @@ self.addEventListener('message', (event) => {
         default:
             console.warn('[SW] Unknown message type:', event.data.type);
     }
-});
-
-// Background sync for offline actions (if needed)
-self.addEventListener('sync', (event) => {
-    console.log('[SW] Background sync:', event.tag);
-
-    if (event.tag === 'sync-data') {
-        event.waitUntil(
-            // Handle background sync logic here
-            Promise.resolve()
-        );
-    }
-});
-
-// Push notifications (if needed in the future)
-self.addEventListener('push', (event) => {
-    console.log('[SW] Push notification received');
-
-    const data = event.data ? event.data.json() : {};
-
-    const options = {
-        body: data.body || 'New notification',
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-96x96.png',
-        data: data,
-    };
-
-    event.waitUntil(
-        self.registration.showNotification(data.title || 'Music Player', options)
-    );
-});
-
-// Notification click handler
-self.addEventListener('notificationclick', (event) => {
-    console.log('[SW] Notification clicked');
-
-    event.notification.close();
-
-    event.waitUntil(
-        self.clients.openWindow('/')
-    );
 });
 
 console.log('[SW] Service Worker loaded');

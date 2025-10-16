@@ -1,7 +1,6 @@
 import { FC } from 'react';
 
 // Pages
-import HomePage from '@pages/home/HomePage.tsx';
 import SearchPage from '@pages/search/SearchPage.tsx';
 import LibraryPage from '@pages/library/LibraryPage.tsx';
 import LikedSongsPage from '@pages/library/LikedSongsPage.tsx';
@@ -63,21 +62,21 @@ export const routes: Routes = {
   // Main Routes
   root: {
     path: '/',
-    component: HomePage,
+    component: LibraryPage,
     protected: true,
     exact: true,
-    title: 'Home',
-    description: 'Discover new music',
+    title: 'Library',
+    description: 'Library',
     showHeader: true,
   },
-  home: {
-    path: '/home',
-    component: HomePage,
-    protected: true,
-    title: 'Home',
-    description: 'Discover new music',
-    showHeader: true,
-  },
+  // home: {
+  //   path: '/home',
+  //   component: HomePage,
+  //   protected: true,
+  //   title: 'Home',
+  //   description: 'Discover new music',
+  //   showHeader: true,
+  // },
   search: {
     path: '/search',
     component: SearchPage,

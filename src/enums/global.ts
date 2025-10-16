@@ -14,7 +14,7 @@ export enum ImageSizes {
 }
 
 export enum MainPages {
-  home = 'home',
+  // home = 'home',
   library = 'library',
   search = 'search',
   profile = 'profile',
