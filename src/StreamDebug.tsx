@@ -1,10 +1,20 @@
 // components/StreamDebug.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 export const StreamDebug: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [testUrl, setTestUrl] = useState('');
   const [status, setStatus] = useState('');
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+
+  useEffect(() => {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContext) {
+      const ctx = new AudioContext();
+      setAudioContext(ctx);
+      console.log('AudioContext created:', ctx.state);
+    }
+  }, []);
 
   const testStream = async () => {
     if (!audioRef.current || !testUrl) return;
@@ -12,47 +22,79 @@ export const StreamDebug: React.FC = () => {
     setStatus('Testing...');
 
     try {
-      // Test 1: Direct fetch
+      const audio = audioRef.current;
+
+      // Step 1: Resume AudioContext
+      if (audioContext && audioContext.state === 'suspended') {
+        console.log('Resuming AudioContext...');
+        await audioContext.resume();
+        console.log('AudioContext state:', audioContext.state);
+      }
+
+      // Step 2: Fetch test
       console.log('Test 1: Fetching stream URL...');
       const response = await fetch(testUrl);
-      console.log('Fetch response:', response.status, response.headers);
-      setStatus(`Fetch: ${response.status} ${response.statusText}`);
+      console.log('Fetch response:', {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+      });
 
-      // Test 2: Audio element
+      // Step 3: Set audio src
       console.log('Test 2: Setting audio src...');
-      audioRef.current.src = testUrl;
-      audioRef.current.load();
+      audio.src = testUrl;
+      audio.load();
 
-      audioRef.current.onloadedmetadata = () => {
-        console.log('✅ Audio metadata loaded');
-        setStatus('✅ Stream loaded successfully!');
-      };
+      // Step 4: Wait for canplay
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Timeout')), 10000);
 
-      audioRef.current.onerror = (e) => {
-        console.error('❌ Audio error:', e);
-        setStatus('❌ Audio failed to load');
-      };
+        audio.oncanplay = () => {
+          clearTimeout(timeout);
+          console.log('✅ Can play');
+          resolve(null);
+        };
 
-      // Test 3: Play
-      await audioRef.current.play();
-      console.log('✅ Playing');
+        audio.onerror = (e) => {
+          clearTimeout(timeout);
+          console.error('❌ Audio error:', e);
+          reject(e);
+        };
+      });
 
-    } catch (error) {
+      setStatus('✅ Loaded, attempting play...');
+
+      // Step 5: Play
+      console.log('Test 3: Playing...');
+      await audio.play();
+      console.log('✅ Playing!');
+      setStatus('✅ Playing!');
+
+    } catch (error: any) {
       console.error('Test failed:', error);
-      setStatus(`❌ Error: ${error}`);
+      setStatus(`❌ Error: ${error.message || error}`);
     }
   };
 
-  const checkServiceWorker = async () => {
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.getRegistration();
-      console.log('SW Registration:', registration);
-      console.log('SW Active:', registration?.active);
-      console.log('SW Scope:', registration?.scope);
-
-      setStatus(`SW: ${registration ? 'Active' : 'Not registered'}`);
+  const checkAudioContext = () => {
+    if (audioContext) {
+      console.log('AudioContext state:', audioContext.state);
+      console.log('AudioContext sampleRate:', audioContext.sampleRate);
+      setStatus(`AudioContext: ${audioContext.state}`);
+    } else {
+      setStatus('No AudioContext');
     }
   };
+
+  const resumeAudioContext = async () => {
+    if (audioContext) {
+      await audioContext.resume();
+      setStatus(`AudioContext resumed: ${audioContext.state}`);
+    }
+  };
+
+  if (process.env.NODE_ENV !== 'development') {
+    return null;
+  }
 
   return (
     <div style={{
@@ -85,12 +127,15 @@ export const StreamDebug: React.FC = () => {
         }}
       />
 
-      <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-        <button onClick={testStream} style={{ padding: '5px 10px', flex: 1 }}>
+      <div style={{ display: 'flex', gap: '5px', marginBottom: '5px', flexWrap: 'wrap' }}>
+        <button onClick={testStream} style={{ padding: '5px 10px', flex: '1 1 45%' }}>
           Test Stream
         </button>
-        <button onClick={checkServiceWorker} style={{ padding: '5px 10px', flex: 1 }}>
-          Check SW
+        <button onClick={checkAudioContext} style={{ padding: '5px 10px', flex: '1 1 45%' }}>
+          Check AC
+        </button>
+        <button onClick={resumeAudioContext} style={{ padding: '5px 10px', flex: '1 1 45%' }}>
+          Resume AC
         </button>
       </div>
 
@@ -99,12 +144,18 @@ export const StreamDebug: React.FC = () => {
         background: '#222',
         borderRadius: '4px',
         minHeight: '30px',
-        wordBreak: 'break-all'
+        wordBreak: 'break-all',
+        marginBottom: '10px',
       }}>
         {status || 'Ready to test...'}
       </div>
 
-      <audio ref={audioRef} style={{ width: '100%', marginTop: '10px' }} controls />
+      <audio ref={audioRef} style={{ width: '100%' }} controls />
+
+      <div style={{ marginTop: '10px', fontSize: '10px', opacity: 0.7 }}>
+        <div>Standalone: {window.matchMedia('(display-mode: standalone)').matches ? 'Yes' : 'No'}</div>
+        <div>AC State: {audioContext?.state || 'N/A'}</div>
+      </div>
     </div>
   );
 };

@@ -1,29 +1,29 @@
+// hooks/usePlayerInitialization.ts
 import { useAudioPlayer } from './useAudioPlayer';
 import { useQueueManager } from './useQueueManager';
 import { useMediaSession } from './useMediaSession';
 import { usePlayerActions } from './actions/usePlayerActions';
+import { useAudioContextInit } from './useAudioContextInit';
 import { useEffect } from 'react';
 
 export const usePlayerInitialization = () => {
   const audioRef = useAudioPlayer();
   const { setAudioRef } = usePlayerActions();
 
-  // Set audio ref in context
+  // Initialize AudioContext on user interaction (CRITICAL for iOS/PWA)
+  useAudioContextInit();
+
   useEffect(() => {
     if (audioRef.current) {
       setAudioRef(audioRef.current);
     }
   }, [audioRef, setAudioRef]);
 
-  // Initialize queue manager
   useQueueManager();
-
-  // Initialize Media Session API (Critical for iOS)
   useMediaSession();
 
-  // Prevent iOS from sleeping during audio playback
+  // Handle visibility change
   useEffect(() => {
-    // Visibility change handler
     const handleVisibilityChange = () => {
       if (document.hidden) {
         console.log('📱 App went to background');
