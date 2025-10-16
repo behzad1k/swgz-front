@@ -5,7 +5,6 @@ const CACHE_VERSION = 'v1';
 const CACHE_NAME = `music-player-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
-// Assets to precache on install
 const PRECACHE_ASSETS = [
     '/',
     '/index.html',
@@ -63,31 +62,26 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Log all requests for debugging
-    console.log('[SW] Fetch:', request.method, url.pathname);
-
-    // CRITICAL: Skip service worker for all music streaming requests
-    // This allows streaming to work normally
+    // CRITICAL: Let audio streaming requests pass through completely
+    // Don't use event.respondWith() for streaming - just return and let browser handle it
     if (
+        url.pathname.includes('/music/stream/') ||
         url.pathname.includes('/music/stream') ||
-        url.pathname.includes('/stream/') ||
-        url.pathname.includes('/audio/') ||
-        url.pathname.match(/\/music\/stream\/[^/]+/) || // Matches /music/stream/:id
-        request.headers.has('range') ||
+        url.pathname.match(/\/music\/stream\/[^/]+/) ||
         request.destination === 'audio' ||
-        request.url.includes('stream')
+        request.headers.has('range')
     ) {
-        console.log('[SW] ⚡ Bypassing cache for audio stream:', url.pathname);
-        // Return the request without any service worker intervention
+        console.log('[SW] 🎵 Bypassing service worker for audio stream:', url.pathname);
+        // Don't call event.respondWith() - let the request go directly to network
         return;
     }
 
-    // Skip cross-origin requests
+    // Skip cross-origin requests (except your API domain)
     if (url.origin !== self.location.origin) {
         return;
     }
 
-    // API calls - Network first, fallback to cache
+    // API calls - Network first, fallback to cache (but NOT streaming endpoints)
     if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/music/')) {
         event.respondWith(
             fetch(request)
@@ -185,8 +179,6 @@ self.addEventListener('fetch', (event) => {
 
 // Message event
 self.addEventListener('message', (event) => {
-    console.log('[SW] Message received:', event.data);
-
     if (!event.data) {
         return;
     }
@@ -208,25 +200,6 @@ self.addEventListener('message', (event) => {
                     }
                 })
             );
-            break;
-
-        case 'CACHE_URLS':
-            if (event.data.urls && Array.isArray(event.data.urls)) {
-                event.waitUntil(
-                    caches.open(RUNTIME_CACHE)
-                        .then((cache) => cache.addAll(event.data.urls))
-                        .then(() => {
-                            if (event.ports && event.ports[0]) {
-                                event.ports[0].postMessage({ success: true });
-                            }
-                        })
-                        .catch((error) => {
-                            if (event.ports && event.ports[0]) {
-                                event.ports[0].postMessage({ success: false, error: error.message });
-                            }
-                        })
-                );
-            }
             break;
 
         default:
