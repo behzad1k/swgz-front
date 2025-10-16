@@ -92,10 +92,6 @@ export const StreamDebug: React.FC = () => {
     }
   };
 
-  if (process.env.NODE_ENV !== 'development') {
-    return null;
-  }
-
   return (
     <div style={{
       position: 'fixed',
