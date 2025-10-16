@@ -1,44 +1,26 @@
-import { Action, RootState } from '@/types/states.ts';
+import { RootAction, RootState } from '@/types/states.ts';
+import { AppAction, appReducer, initialAppState } from '@store/slices/appSlice.ts';
+import { AuthAction, authReducer, initialAuthState } from '@store/slices/authSlice.ts';
+import { initialLibraryState, LibraryAction, libraryReducer, } from '@store/slices/librarySlice.ts';
+import { initialModalState, ModalAction, modalReducer } from '@store/slices/modalSlice.ts';
+import { initialPlayerState, PlayerAction, playerReducer } from '@store/slices/playerSlice.ts';
 
-export const appReducer = (state: RootState, action: Action): RootState => {
-  switch (action.type) {
-    case 'SET_AUTH':
-      return { ...state, auth: { ...state.auth, ...action.payload } };
-    case 'SET_PLAYER':
-      return { ...state, player: { ...state.player, ...action.payload } };
-    case 'SET_LIBRARY':
-      return { ...state, library: { ...state.library, ...action.payload } };
-    case 'SET_DOWNLOADS':
-      return { ...state, downloads: { ...state.downloads, ...action.payload } };
-    case 'SET_APP':
-      return { ...state, app: { ...state.app, ...action.payload } };
-    case 'UPDATE_DOWNLOAD_PROGRESS':
-      return {
-        ...state,
-        downloads: {
-          ...state.downloads,
-          active: {
-            ...state.downloads.active,
-            [action.payload.id]: {
-              ...state.downloads.active[action.payload.id],
-              progress: action.payload.progress,
-            },
-          },
-        },
-      };
-    case 'COMPLETE_DOWNLOAD':
-      const { [action.payload.id]: completed, ...remaining } = state.downloads.active;
-      return {
-        ...state,
-        downloads: {
-          ...state.downloads,
-          active: remaining,
-          completed: [...state.downloads.completed, completed],
-        },
-      };
-    default:
-      return state;
+export const rootReducer = (state: RootState, action: RootAction): RootState => {
+  return {
+    auth: authReducer(state.auth, action as AuthAction),
+    library: libraryReducer(state.library, action as LibraryAction),
+    player: playerReducer(state.player, action as PlayerAction),
+    modal: modalReducer(state.modal, action as ModalAction),
+    app: appReducer(state.app, action as AppAction)
   }
-};
+}
+
+export const initialRootState: RootState = {
+  app: initialAppState,
+  auth: initialAuthState,
+  library: initialLibraryState,
+  modal: initialModalState,
+  player: initialPlayerState
+}
 
 export default appReducer;

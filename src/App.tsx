@@ -1,70 +1,129 @@
-import AppContent from '@/AppContent.tsx';
-import { QualityType } from '@/types/global.ts';
-import { RootState } from '@/types/states.ts';
-import appReducer from '@store/reducer.ts';
-import { usePlayer } from '@hooks/usePlayer';
-import { initialModalState } from '@store/slices/modalSlice.ts';
-import { FC, useReducer } from 'react';
-import AppContext from './contexts/AppContext';
+import routesConfig, { routes } from '@/config/routes.config.ts';
+import { ProtectedRoute, Route, Routes, useNavigate } from '@/router';
+import { authApi } from '@api/auth.api.ts';
+import { libraryApi } from '@api/library.api.ts';
+import { musicApi } from '@api/music.api.ts';
+import { playlistApi } from '@api/playlist.api.ts';
+import ModalManager from '@components/layout/ModalManager.tsx';
+import NowPlayingSheet from '@components/player/NowPlayingSheet.tsx';
+import { useAppActions } from '@hooks/actions/useAppActions.ts';
+import { useAuthActions } from '@hooks/actions/useAuthActions.ts';
+import { useLibraryActions } from '@hooks/actions/useLibraryActions.ts';
+import { useIsOnline, useShowDownloadManager } from '@hooks/selectors/useAppSelectors.ts';
+import { useAuthToken, useCurrentUser, useIsAuthenticated } from '@hooks/selectors/useAuthSelectors.ts';
+import { usePlayerInitialization } from '@hooks/usePlayerInitialization.ts';
+import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
+import { FC, useEffect } from 'react';
 
-export const initialState: RootState = {
-  auth: {
-    token: localStorage.getItem('auth_token'),
-    user: null,
-    isAuthenticated: !!localStorage.getItem('auth_token'),
-  },
-  player: {
-    currentSong: null,
-    queue: [],
-    isPlaying: false,
-    progress: 0,
-    volume: 1,
-    repeat: false,
-    shuffle: false,
-    quality: (localStorage.getItem('preferred_quality') as QualityType) || '320',
-  },
-  library: {
-    librarySongs: [],
-    likedSongs: [],
-    playlists: [],
-    recentlyPlayed: [],
-    mostListened: [],
-    recentSearches: [],
-  },
-  downloads: {
-    active: {},
-    completed: [],
-    failed: [],
-  },
-  app: {
-    isOnline: navigator.onLine,
-    currentPage: 'library',
-    showNowPlaying: false,
-    showDownloadManager: false,
-  },
-  modal: initialModalState
-};
-
+// Components
+import DownloadManager from '@components/download/DownloadManager.tsx';
+import Navigation from '@components/layout/Navigation.tsx';
+import { WifiOff } from 'lucide-react';
 
 const App: FC = () => {
-  const [state, dispatch] = useReducer(appReducer, initialState);
-  const player = usePlayer({ state, dispatch });
+  usePlayerInitialization();
+  const navigate = useNavigate()
+  const isOnline = useIsOnline();
+  const { login } = useAuthActions()
+  const { setLibrary } = useLibraryActions();
+  const authToken = useAuthToken()
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useIsAuthenticated();
+  const showDownloadManager = useShowDownloadManager();
+  const { setShowDownloadManager } = useAppActions()
+
+  async function fetchUserLibrary() {
+    try {
+      const [librarySongs, recentlyPlayed, mostListened, recentSearches, playlists] = await Promise.all([
+        libraryApi.getLibrary(),
+        libraryApi.getRecentlyPlayed(),
+        libraryApi.getMostListened(),
+        musicApi.getRecentSearches(),
+        playlistApi.getUserPlaylists()
+      ]);
+
+      setLibrary({ librarySongs, recentSearches, recentlyPlayed, mostListened, playlists, likedSongs: librarySongs.filter(e => e.isLiked) })
+
+    } catch (e) {
+      console.error('Failed to fetch user data:', e);
+    }
+  }
+
+  async function fetchUserData(){
+    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)) return;
+    try {
+      const response = await authApi.getUser();
+
+      login(localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN) || authToken || '', response)
+    }catch (e){
+      // localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+      // navigate(routes.login.path)
+    }
+  }
+  useEffect(() => {
+    if (isAuthenticated && currentUser) {
+      fetchUserLibrary();
+    } else if (isAuthenticated || localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)){
+      fetchUserData();
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+      navigate(routes.login.path)
+    }
+  }, [isAuthenticated, currentUser]);
 
   return (
-    <AppContext.Provider value={{ state, dispatch, player }}>
-      <AppContent />
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900">
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black px-4 py-2 text-center z-50 flex items-center justify-center gap-2">
+          <WifiOff size={20} />
+          <span>You're offline. Playing downloaded music.</span>
+        </div>
+      )}
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: white; cursor: pointer; }
-        input[type="range"]::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; }
-      `}</style>
-    </AppContext.Provider>
+      <div className="pb-40">
+        <Routes>
+          {routesConfig.map((route) => {
+            const RouteComponent = route.component;
+
+            return (
+              <Route
+                key={route.path}
+                path={route.path}
+                exact={route.exact}
+                element={
+                  route.protected ? (
+                    <ProtectedRoute>
+                      <RouteComponent />
+                    </ProtectedRoute>
+                  ) : (
+                    <RouteComponent />
+                  )
+                }
+              />
+            );
+          })}
+
+          {/* 404 fallback */}
+          {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
+        </Routes>
+      </div>
+
+      {/* <MiniPlayer onClick={() => dispatch({ type: 'SET_APP', payload: { showNowPlaying: true } })} /> */}
+      {isAuthenticated && <Navigation/>}
+
+      <NowPlayingSheet />
+
+      {showDownloadManager && (
+        <DownloadManager
+          isOpen
+          onClose={() => setShowDownloadManager(false)}
+        />
+      )}
+
+
+      {/* Modal Manager for all modals */}
+      <ModalManager />
+    </div>
   );
 };
 

@@ -19,6 +19,10 @@ export interface QualityFallbackResponse {
   fallbackChain: QualityType[];
 }
 
+export interface PrepareForPlayingResponse extends Track{
+  id: string;
+}
+
 export const musicApi = {
   search: (query: string, filter: SearchFilters, signal?: AbortSignal) =>
     ApiService.get<Track[]>(`/music/search?q=${encodeURIComponent(query)}&filter=${filter}`, signal),
@@ -33,7 +37,7 @@ export const musicApi = {
     ApiService.get<{ songId: string; hasFlac: boolean }>(`/music/check-flac/${songId}`),
 
   prepareForPlaying: (track: Partial<Track>, signal?: AbortSignal) =>
-    ApiService.post<Track>('/music/prepare', track, signal),
+    ApiService.post<PrepareForPlayingResponse>('/music/prepare', track, signal),
 
   getSimilarTracks: (songId: string, signal?: AbortSignal) =>
     ApiService.get<Track[]>(`/music/similar-tracks/${songId}`, signal),

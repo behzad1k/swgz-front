@@ -1,7 +1,12 @@
 import { QualityType } from '@/types/global.ts';
 import { ModalConfig } from '@/types/modal.ts';
-import { DownloadItem, Playlist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
-import React from 'react';
+import { MostListened, Playlist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
+import { AppAction } from '@store/slices/appSlice.ts';
+import { AuthAction } from '@store/slices/authSlice.ts';
+import { LibraryAction } from '@store/slices/librarySlice.ts';
+import { ModalAction } from '@store/slices/modalSlice.ts';
+import { PlayerAction } from '@store/slices/playerSlice.ts';
+
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string;
   readonly VITE_GOOGLE_CLIENT_ID: string;
@@ -13,49 +18,8 @@ export interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
-
-export interface AppContextType {
-  state: RootState;
-  dispatch: React.Dispatch<any>;
-  player: {
-    currentSong: any;
-    isPlaying: boolean;
-    progress: number;
-    volume: number;
-    queue: any[];
-    repeat: boolean;
-    shuffle: boolean;
-    quality: QualityType;
-    audioRef: React.RefObject<HTMLAudioElement>;
-    play: (song: any) => Promise<void>;
-    togglePlay: () => void;
-    playNext: () => void;
-    playPrevious: () => void;
-    seek: (value: number) => void;
-    changeVolume: (value: number) => void;
-    addToQueue: (song: any) => void;
-    removeFromQueue: (index: number) => void;
-    clearQueue: () => void;
-    updateQueue: (song: Track[]) => void;
-    toggleRepeat: () => void;
-    toggleShuffle: () => void;
-    changeQuality: (quality: QualityType) => void;
-    // actualQuality: string | null, // The quality actually being played (may differ from requested)
-    // qualityFallbackUsed: boolean, // Whether fallback was used
-    // availableQualities: QualityType[], // Qualities available for current song
-    // unavailableQualities: QualityType[], // Qualities marked unavailable
-  };
-}
-
-
-
-export interface AuthState {
-  token: string | null;
-  user: UserProfile | null;
-  isAuthenticated: boolean;
-}
-
-export interface PlayerState {
+export type PlayerState = {
+  audioRef: HTMLAudioElement | null;
   currentSong: Track | null;
   queue: Track[];
   isPlaying: boolean;
@@ -63,58 +27,48 @@ export interface PlayerState {
   volume: number;
   repeat: boolean;
   shuffle: boolean;
-  quality: QualityType
-}
+  quality: QualityType;
+};
 
-export interface MostListened {
-  count: number;
-  song: Track
-}
-
-export interface LibraryState {
-  librarySongs: Track[];
+// Library State
+export type LibraryState = {
   likedSongs: Track[];
   playlists: Playlist[];
   recentlyPlayed: Track[];
   mostListened: MostListened[];
+  librarySongs: Track[];
   recentSearches: SearchHistory[];
-}
+};
 
-export interface DownloadsState {
-  active: Record<string, DownloadItem>;
-  completed: DownloadItem[];
-  failed: DownloadItem[];
-}
+// Auth State
+export type AuthState = {
+  token: string | null;
+  user: UserProfile | null;
+  isAuthenticated: boolean;
+};
 
-
-export interface ModalState {
-  modals: ModalConfig[];
-  activeModalId: string | null;
-}
-
-export interface RootState {
-  auth: AuthState;
-  player: PlayerState;
-  library: LibraryState;
-  downloads: DownloadsState;
-  app: AppState;
-  modal: ModalState; // Add this line
-}
-
-
-export interface AppState {
+// App State
+export type AppState = {
   isOnline: boolean;
-  currentPage: 'home' | 'search' | 'library' | 'profile';
   showNowPlaying: boolean;
   showDownloadManager: boolean;
-}
+};
+
+// Modal State (add if you have it)
+export type ModalState = {
+  modals: ModalConfig[];
+  activeModalId: string | null;
+};
 
 
-export type Action =
-  | { type: 'SET_AUTH'; payload: Partial<AuthState> }
-  | { type: 'SET_PLAYER'; payload: Partial<PlayerState> }
-  | { type: 'SET_LIBRARY'; payload: Partial<LibraryState> }
-  | { type: 'SET_DOWNLOADS'; payload: Partial<DownloadsState> }
-  | { type: 'SET_APP'; payload: Partial<AppState> }
-  | { type: 'UPDATE_DOWNLOAD_PROGRESS'; payload: { id: string; progress: number } }
-  | { type: 'COMPLETE_DOWNLOAD'; payload: { id: string } };
+export type RootAction = ModalAction | AppAction | PlayerAction | LibraryAction | AuthAction;
+
+// export type Action =
+//   | { type: 'SET_MODAL'; payload: Partial<ModalState> }
+//   | { type: 'SET_AUTH'; payload: Partial<AuthState> }
+//   | { type: 'SET_PLAYER'; payload: Partial<PlayerState> }
+//   | { type: 'SET_LIBRARY'; payload: Partial<LibraryState> }
+//   | { type: 'SET_DOWNLOADS'; payload: Partial<DownloadsState> }
+//   | { type: 'SET_APP'; payload: Partial<AppState> }
+//   | { type: 'UPDATE_DOWNLOAD_PROGRESS'; payload: { id: string; progress: number } }
+//   | { type: 'COMPLETE_DOWNLOAD'; payload: { id: string } };

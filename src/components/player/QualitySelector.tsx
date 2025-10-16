@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { Qualities } from '@/enums/global.ts';
 import { QualityType } from '@/types/global.ts';
 import React, { useEffect, useState } from 'react';
 import { musicApi, QualityInfo } from '@/api/music.api';
@@ -19,17 +19,17 @@ const QUALITY_LABELS: Record<string, { label: string; description: string }> = {
   'flac': { label: 'flac', description: 'Lossless (Premium)' },
 };
 
-const allQualities = ['128', '192', '256', '320', 'flac'];
+const allQualities = Object.values(Qualities)
 
 export const QualitySelector: React.FC<QualitySelectorProps> = ({
                                                                   songId,
                                                                   quality,
-                                                                  onQualityChange,
                                                                   isPremium = false,
                                                                   className = '',
+                                                                  onQualityChange
                                                                 }) => {
   const [knownQualities, setKnownQualities] = useState<QualityInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
 
   const fetchKnownQualities = async () => {
     if (!songId) return;
@@ -46,32 +46,31 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({
 
   useEffect(() => {
     if (songId) fetchKnownQualities();
-  })
+  }, [songId]);
 
   return (
-    <div className={`quality-selector ${className}`}>
-      <div className="quality-selector-header">
-        <h3>Audio Quality</h3>
-      </div>
+    <div className={`w-1/4 h-1/4 bg-gray-600${className}`}>
+      <h3>Audio Quality</h3>
 
       {/* Quick selector */}
-      <div className="quality-options">
+      <div className="flex flex-col gap-4 ">
         {allQualities.map(q => {
           const isSelected = q === quality;
           const info = QUALITY_LABELS[q];
           const requiresPremium = q === 'flac' && !isPremium;
+          const status = knownQualities.find(e => (e.quality == q && e.unavailable)) ? 'unavailable' : 'available';
 
           return (
             <button
               key={q}
               className={`quality-option ${status} ${isSelected ? 'selected' : ''}`}
-              // onClick={() => handleQualityClick(q)}
+              onClick={() => onQualityChange(q)}
               disabled={status === 'unavailable' || requiresPremium}
               title={
                 requiresPremium
                   ? 'Premium subscription required'
                   : status === 'unavailable'
-                    ? 'Not available on Soulseek'
+                    ? 'Not available'
                     : info.description
               }
             >

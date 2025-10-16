@@ -1,10 +1,12 @@
-import { useApp } from '@/contexts/AppContext';
 import PlayerControls from '@/components/player/PlayerControls';
 import ProgressBar from '@/components/player/ProgressBar';
 import QueueList from '@/components/player/QueueList';
 import VolumeControl from '@/components/player/VolumeControl';
 import Button from '@components/common/Button.tsx';
 import QualitySelector from '@components/player/QualitySelector.tsx';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
+import { useCurrentUser } from '@hooks/selectors/useAuthSelectors.ts';
+import { useCurrentSong, useIsPlaying, usePlayerProgress, usePlayerQuality, usePlayerRepeat, usePlayerShuffle, usePlayerVolume, useQueue } from '@hooks/selectors/usePlayerSelectors.ts';
 import { useModal } from '@hooks/useModal.ts';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FC, memo, useState, useRef, useEffect } from 'react';
@@ -12,7 +14,6 @@ import { FC, memo, useState, useRef, useEffect } from 'react';
 type SheetState = 'closed' | 'mini' | 'half' | 'full';
 
 const NowPlayingSheet: FC = () => {
-  const { state, player } = useApp();
   const [sheetState, setSheetState] = useState<SheetState>('mini');
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -21,9 +22,20 @@ const NowPlayingSheet: FC = () => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const { openModal, closeModal } = useModal();
-  const { currentSong, isPlaying, progress, quality, seek, togglePlay, changeQuality, playNext, playPrevious, play, queue, volume, changeVolume, shuffle, toggleShuffle, repeat, toggleRepeat } = player;
+  const user = useCurrentUser();
+  const { seek, togglePlay, changeQuality, playNext, playPrevious, play, changeVolume, toggleShuffle, toggleRepeat } = usePlayerActions();
+  const isPremium = user?.subscriptionPlan === 'premium';
 
-  const isPremium = state.auth?.user?.subscriptionPlan === 'premium';
+  // hooks
+  const repeat = usePlayerRepeat();
+  const shuffle = usePlayerShuffle();
+  const queue = useQueue();
+  const volume = usePlayerVolume();
+  const progress = usePlayerProgress();
+  const quality = usePlayerQuality();
+  const currentSong = useCurrentSong();
+  const isPlaying = useIsPlaying();
+
 
   // Check if desktop
   useEffect(() => {
@@ -211,7 +223,7 @@ const NowPlayingSheet: FC = () => {
 
             {/* Progress Bar */}
             <div className="px-6 mb-6">
-              <ProgressBar progress={progress} duration={currentSong.duration} onSeek={seek} />
+              <ProgressBar progress={progress} duration={currentSong.duration || 200} onSeek={seek} />
             </div>
 
             {/* Player Controls */}
@@ -311,10 +323,19 @@ const NowPlayingSheet: FC = () => {
 
 // Desktop Sidebar Version
 const DesktopNowPlaying: FC = () => {
-  const { player } = useApp();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { currentSong, isPlaying, progress, quality, seek, togglePlay, changeQuality, playNext, playPrevious, play, queue, volume, changeVolume } = player;
+  const { seek, togglePlay, changeQuality, playNext, playPrevious, play, changeVolume, toggleShuffle, toggleRepeat } = usePlayerActions();
+
+  // hooks
+  const repeat = usePlayerRepeat();
+  const shuffle = usePlayerShuffle();
+  const queue = useQueue();
+  const volume = usePlayerVolume();
+  const progress = usePlayerProgress();
+  const quality = usePlayerQuality();
+  const currentSong = useCurrentSong();
+  const isPlaying = useIsPlaying();
 
   if (!currentSong) return null;
 
@@ -346,7 +367,7 @@ const DesktopNowPlaying: FC = () => {
           </div>
 
           <div className="mb-4">
-            <ProgressBar progress={progress} duration={currentSong.duration} onSeek={seek} />
+            <ProgressBar progress={progress} duration={currentSong.duration || 200} onSeek={seek} />
           </div>
 
           <div className="mb-4">
@@ -355,6 +376,10 @@ const DesktopNowPlaying: FC = () => {
               onPlayPause={togglePlay}
               onNext={playNext}
               onPrevious={playPrevious}
+              shuffle={shuffle}
+              repeat={repeat}
+              onRepeat={toggleRepeat}
+              onShuffle={toggleShuffle}
             />
           </div>
 

@@ -1,6 +1,6 @@
-import { MostListened } from '@/types/states.ts';
+
 import ApiService from '@utils/api';
-import { Track } from '@/types/models.ts';
+import { MostListened, Track } from '@/types/models.ts';
 
 export const libraryApi = {
   getLibrary: (signal?: AbortSignal) => ApiService.get<Track[]>('/library', signal),

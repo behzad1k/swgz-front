@@ -1,6 +1,6 @@
 import { buildPath, routes } from '@/config/routes.config.ts';
-import { useApp } from '@/contexts/AppContext.tsx';
 import { useNavigate } from '@/router';
+import { useLikedSongs, useMostListened, useRecentlyPlayed } from '@hooks/selectors/useLibrarySelectors.ts';
 import { FC, useState } from 'react';
 import { Music, Heart, Clock, TrendingUp, Plus, Search, List, Grid as GridIcon } from 'lucide-react';
 import Button from '@/components/common/Button';
@@ -13,11 +13,16 @@ import { playlistApi } from '@/api/playlist.api';
 import { Track, Playlist } from '@/types/models.ts';
 
 const LibraryPage: FC = () => {
-  const { state } = useApp()
+  // hooks
+  const likedSongs = useLikedSongs();
+  const mostListened = useMostListened();
+  const recentlyPlayed = useRecentlyPlayed();
+
+  //states
   const [activeTab, setActiveTab] = useState<'songs' | 'playlists'>('songs');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchQuery, setSearchQuery] = useState('');
-  const [songs, _setSongs] = useState<Track[]>(state.library.librarySongs);
+  const [songs, _setSongs] = useState<Track[]>(likedSongs);
   const [playlists, _setPlaylists] = useState<Playlist[]>([]);
   const [loading, _setLoading] = useState(true);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
@@ -48,9 +53,9 @@ const LibraryPage: FC = () => {
   ];
 
   const quickLinks = [
-    { value: 'likedSongs', label: 'Liked Songs', icon: <Heart size={20} />, count: state.library.likedSongs.length },
-    { value: 'recentlyPlayed', label: 'Recently Played', icon: <Clock size={20} />, count: state.library.recentlyPlayed.length },
-    { value: 'mostListened', label: 'Most Listened', icon: <TrendingUp size={20} />, count: state.library.mostListened.length },
+    { value: 'likedSongs', label: 'Liked Songs', icon: <Heart size={20} />, count: likedSongs.length },
+    { value: 'recentlyPlayed', label: 'Recently Played', icon: <Clock size={20} />, count: recentlyPlayed.length },
+    { value: 'mostListened', label: 'Most Listened', icon: <TrendingUp size={20} />, count: mostListened.length },
   ];
 
 

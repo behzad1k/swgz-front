@@ -1,70 +1,61 @@
-import { ModalAction } from '@/types/modal';
+// store/slices/modalSlice.ts
+import { ModalConfig } from '@/types/modal';
 import { ModalState } from '@/types/states.ts';
+
 
 export const initialModalState: ModalState = {
   modals: [],
   activeModalId: null,
 };
 
-export const modalReducer = (
-  state: ModalState = initialModalState,
-  action: ModalAction
-): ModalState => {
+export enum ModalActionKeys {
+  OPEN_MODAL = 'OPEN_MODAL',
+  CLOSE_MODAL = 'CLOSE_MODAL',
+  CLOSE_TOP_MODAL = 'CLOSE_TOP_MODAL',
+  CLOSE_ALL_MODALS = 'CLOSE_ALL_MODALS',
+  UPDATE_MODAL = 'UPDATE_MODAL',
+}
+
+export type ModalAction =
+  | { type: ModalActionKeys.OPEN_MODAL; payload: ModalConfig }
+  | { type: ModalActionKeys.CLOSE_MODAL; payload: string }
+  | { type: ModalActionKeys.CLOSE_TOP_MODAL }
+  | { type: ModalActionKeys.CLOSE_ALL_MODALS }
+  | { type: ModalActionKeys.UPDATE_MODAL; payload: { id: string; props: Record<string, any> } };
+
+export const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
   switch (action.type) {
-    case 'OPEN_MODAL': {
-      const newModal = {
-        ...action.payload,
-        closeOnOverlayClick: action.payload.closeOnOverlayClick ?? true,
-        closeOnEscape: action.payload.closeOnEscape ?? true,
-        showCloseButton: action.payload.showCloseButton ?? true,
-        size: action.payload.size ?? 'md',
-        animation: action.payload.animation ?? 'fade',
+    case ModalActionKeys.OPEN_MODAL:
+      return {
+        modals: [...state.modals, action.payload],
+        activeModalId: action.payload.id,
       };
 
+    case ModalActionKeys.CLOSE_MODAL:
+      const filteredModals = state.modals.filter((m) => m.id !== action.payload);
       return {
-        ...state,
-        modals: [...state.modals, newModal],
-        activeModalId: newModal.id,
-      };
-    }
-
-    case 'CLOSE_MODAL': {
-      const filteredModals = state.modals.filter(
-        (modal) => modal.id !== action.payload
-      );
-
-      return {
-        ...state,
         modals: filteredModals,
         activeModalId: filteredModals.length > 0
           ? filteredModals[filteredModals.length - 1].id
           : null,
       };
-    }
 
-    case 'CLOSE_TOP_MODAL': {
-      if (state.modals.length === 0) return state;
-
-      const newModals = state.modals.slice(0, -1);
-
+    case ModalActionKeys.CLOSE_TOP_MODAL:
+      const modalsAfterClosingTop = state.modals.slice(0, -1);
       return {
-        ...state,
-        modals: newModals,
-        activeModalId: newModals.length > 0
-          ? newModals[newModals.length - 1].id
+        modals: modalsAfterClosingTop,
+        activeModalId: modalsAfterClosingTop.length > 0
+          ? modalsAfterClosingTop[modalsAfterClosingTop.length - 1].id
           : null,
       };
-    }
 
-    case 'CLOSE_ALL_MODALS': {
+    case ModalActionKeys.CLOSE_ALL_MODALS:
       return {
-        ...state,
         modals: [],
         activeModalId: null,
       };
-    }
 
-    case 'UPDATE_MODAL': {
+    case ModalActionKeys.UPDATE_MODAL:
       return {
         ...state,
         modals: state.modals.map((modal) =>
@@ -73,7 +64,6 @@ export const modalReducer = (
             : modal
         ),
       };
-    }
 
     default:
       return state;

@@ -1,24 +1,29 @@
-import { createContext, FC, ReactNode, useContext } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+// contexts/AuthContext.tsx
+import { AuthState } from '@/types/states';
+import { AuthAction, authReducer, initialAuthState } from '@store/slices/authSlice';
+import { createContext, ReactNode, useContext, useMemo, useReducer } from 'react';
 
-interface AuthContextType {
-  isAuthenticated: boolean;
-  loading: boolean;
-  user: any;
-  login: (email: string, password: string) => Promise<any>;
-  signup: (username: string, email: string, password: string) => Promise<any>;
-  logout: () => void;
-}
+type AuthContextType = {
+  state: AuthState;
+  dispatch: React.Dispatch<AuthAction>;
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(authReducer, initialAuthState);
+
+  const value = useMemo(() => ({ state, dispatch }), [state]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
 export const useAuthContext = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuthContext must be used within AuthProvider');
+  if (!context) {
+    throw new Error('useAuthContext must be used within AuthProvider');
+  }
   return context;
 };
 
-export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const auth = useAuth();
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
-};
+export default AuthProvider;

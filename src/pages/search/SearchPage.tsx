@@ -6,11 +6,11 @@ import ArtistCard from '@/components/music/ArtistCard';
 import SongList from '@/components/music/SongList';
 import UserCard from '@/components/social/UserCard';
 import { buildPath, routes } from '@/config/routes.config.ts';
-import { useApp } from '@/contexts/AppContext.tsx';
 import { SearchFilters } from '@/enums/global.ts';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@/router';
 import { Album, Artist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
+import { useRecentSearches } from '@hooks/selectors/useLibrarySelectors.ts';
 import { ArchiveRestoreIcon, Disc, Music, Search, User, Users } from 'lucide-react';
 import { FC, ReactElement, useState } from 'react';
 
@@ -35,9 +35,7 @@ const SearchPage: FC = () => {
   const [loading, setLoading] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
   const navigate = useNavigate()
-  // @ts-ignore
-  const { state } = useApp();
-
+  const recentSearches = useRecentSearches();
   // useEffect(() => {
   //   if (debouncedQuery.trim()) {
   //     if (debouncedQuery.trim().length > 10) {
@@ -147,9 +145,9 @@ const SearchPage: FC = () => {
         </div>
       ) : !query ? (
         <div className="text-center py-12 text-gray-400">
-          {state.library.recentSearches.length ? (
+          {recentSearches.length ? (
             <div className="flex flex-col gap-4 ">
-              {state.library.recentSearches.filter(e => filter != SearchFilters.all ? e.filter == filter : true).map(e =>
+              {recentSearches.filter(e => filter != SearchFilters.all ? e.filter == filter : true).map(e =>
                 <div className="flex justify-between" key={e.id}>
                   <div className="flex flex-col gap-1 " onClick={async () => await selectSearchHistory(e)}>
                     <span className="text-m">{e.query}</span>

@@ -1,7 +1,8 @@
 import { routes } from '@/config/routes.config.ts';
-import { useApp } from '@/contexts/AppContext.tsx';
 import { useNavigate } from '@/router';
 import { AuthResponse } from '@/types/api';
+import { useAuthActions } from '@hooks/actions/useAuthActions.ts';
+import { useIsAuthenticated } from '@hooks/selectors/useAuthSelectors.ts';
 import { validateEmail, validatePassword, validateUsername } from '@utils/validators.ts';
 import { FC, useEffect, useState } from 'react';
 import { Music } from 'lucide-react';
@@ -22,8 +23,10 @@ const LoginPage: FC = () => {
   const [resultMessage, setResultMessage] = useState(DEFAULT_RESULT_MESSAGES);
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
-  const { state, dispatch } = useApp();
   const navigate = useNavigate();
+
+  const isAuthenticated = useIsAuthenticated()
+  const { login } = useAuthActions();
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -62,7 +65,7 @@ const LoginPage: FC = () => {
       } else {
         response = await authApi.login({ email, password });
         ApiService.setToken(response.accessToken);
-        dispatch({ type: 'SET_AUTH', payload: { user: response.user, token: response.accessToken, isAuthenticated: true }})
+        login(response.accessToken, response.user)
         navigate(routes.library.path)
       }
     } catch (err: any) {
@@ -73,7 +76,7 @@ const LoginPage: FC = () => {
   };
 
   useEffect(() => {
-    if (state.auth.isAuthenticated) navigate(routes.library.path)
+    if (isAuthenticated) navigate(routes.library.path)
   },[])
 
   const handleGoogleAuth = () => {

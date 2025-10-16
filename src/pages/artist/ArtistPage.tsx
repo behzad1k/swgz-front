@@ -1,11 +1,11 @@
 import { buildPath, routes } from '@/config/routes.config.ts';
-import { useApp } from '@/contexts/AppContext.tsx';
 import { useNavigate, useParams } from '@/router';
 import { Artist } from '@/types/models.ts';
 import { musicApi } from '@api/music.api.ts';
 import Button from '@components/common/Button.tsx';
 import AlbumCard from '@components/music/AlbumCard.tsx';
 import SongItem from '@components/music/SongItem.tsx';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { X } from 'lucide-react';
 import { FC, useEffect, useState } from 'react';
 
@@ -14,9 +14,8 @@ const ArtistPage: FC = () => {
   const { id } = useParams()
   const [artist, setArtist] = useState<Artist | null>(null);
   const [_loading, setLoading] = useState(false);
-  const { player } = useApp();
   const navigate = useNavigate()
-
+  const { play } = usePlayerActions()
   // const playAndQueueTheRest = (track: Track) => {
   //   // player.updateQueue(track)
   // }
@@ -67,7 +66,7 @@ const ArtistPage: FC = () => {
               <SongItem
                 key={song.id}
                 song={song}
-                onPlay={player.play}
+                onPlay={play}
               />
             ))}
           </div>

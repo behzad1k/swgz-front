@@ -1,6 +1,6 @@
-import { FC, ReactElement, useContext } from 'react';
+import { useIsAuthenticated } from '@hooks/selectors/useAuthSelectors.ts';
+import { FC, ReactElement } from 'react';
 import { Navigate } from './Navigate';
-import AppContext from '@/contexts/AppContext';
 
 interface ProtectedRouteProps {
   children: ReactElement;
@@ -11,8 +11,8 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
                                                           children,
                                                           redirectTo = '/login'
                                                         }) => {
-  const { state } = useContext(AppContext)!;
-  if (!state.auth.isAuthenticated) {
+  const isAuthenticated = useIsAuthenticated();
+  if (!isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
 

@@ -1,4 +1,4 @@
-import { useApp } from '@/contexts/AppContext.tsx';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { FC } from 'react';
 import SongItem from './SongItem';
 import { Track } from '@/types/models.ts';
@@ -11,7 +11,7 @@ interface SongListProps {
 }
 
 const SongList: FC<SongListProps> = ({ songs, onLike, onMore, currentSongId }) => {
-  const { player } = useApp();
+  const { play } = usePlayerActions()
   if (songs.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -26,7 +26,7 @@ const SongList: FC<SongListProps> = ({ songs, onLike, onMore, currentSongId }) =
         <SongItem
           key={'song' + index}
           song={song}
-          onPlay={player?.play}
+          onPlay={play}
           onLike={onLike}
           onMore={onMore}
           isPlaying={song.id != undefined && song.id === currentSongId}

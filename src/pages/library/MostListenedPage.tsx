@@ -1,12 +1,10 @@
-import { useApp } from '@/contexts/AppContext.tsx';
-import { MostListened } from '@/types/states.ts';
+import { useMostListened } from '@hooks/selectors/useLibrarySelectors.ts';
 import { TrendingUp } from 'lucide-react';
 import SongList from '@/components/music/SongList';
-import { FC, useState } from 'react';
+import { FC } from 'react';
 
 const MostListenedPage: FC = () => {
-  const { state } = useApp()
-  const [mostListened, _setMostListened] = useState<MostListened[]>(state.library.mostListened);
+  const mostListened = useMostListened();
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-8">

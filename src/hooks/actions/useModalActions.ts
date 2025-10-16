@@ -1,25 +1,36 @@
-// hooks/useModal.ts
-import { ModalConfig } from '@/types/modal.ts';
+// hooks/useModalActions.ts
 import { useCallback } from 'react';
 import { useModalContext } from '@/contexts/ModalContext';
 import { ModalActionKeys } from '@store/slices/modalSlice';
+import { ModalConfig } from '@/types/modal';
 
-export const useModal = () => {
-  const { state, dispatch } = useModalContext();
+export const useModalActions = () => {
+  const { dispatch } = useModalContext();
 
   const openModal = useCallback(
     (config: Omit<ModalConfig, 'id'> & { id?: string }) => {
       const modalId = config.id || `modal-${Date.now()}-${Math.random()}`;
 
+      const modalConfig: ModalConfig = {
+        id: modalId,
+        component: config.component,
+        props: config.props,
+        size: config.size || 'md',
+        animation: config.animation || 'fade',
+        closeOnOverlayClick: config.closeOnOverlayClick ?? true,
+        closeOnEscape: config.closeOnEscape ?? true,
+        showCloseButton: config.showCloseButton ?? true,
+        className: config.className,
+        overlayClassName: config.overlayClassName,
+        persistent: config.persistent ?? false,
+        onClose: config.onClose,
+      };
+
       dispatch({
         type: ModalActionKeys.OPEN_MODAL,
-        payload: {
-          ...config,
-          id: modalId,
-        },
+        payload: modalConfig,
       });
 
-      console.log('Modal opened:', modalId);
       return modalId;
     },
     [dispatch]
@@ -59,7 +70,5 @@ export const useModal = () => {
     closeTopModal,
     closeAllModals,
     updateModal,
-    modals: state.modals || [],
-    activeModalId: state.activeModalId || null,
   };
 };

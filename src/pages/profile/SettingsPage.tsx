@@ -1,19 +1,21 @@
-import { useApp } from '@/contexts/AppContext.tsx';
-import Button from '@components/common/Button.tsx';
+import { Qualities } from '@/enums/global.ts';
+import { QualityType } from '@/types/global.ts';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
+import { usePlayerQuality } from '@hooks/selectors/usePlayerSelectors.ts';
+import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
 import { X } from 'lucide-react';
-import { FC, useState } from 'react';
+import { FC } from 'react';
 
 interface SettingsPageProps {
   onClose: () => void;
 }
 
 const SettingsPage: FC<SettingsPageProps> = ({ onClose }) => {
-  const { state, dispatch } = useApp();
-  const [defaultQuality, setDefaultQuality] = useState(state.player.quality);
-
-  const handleSave = (): void => {
-    localStorage.setItem('preferred_quality', defaultQuality);
-    dispatch({ type: 'SET_PLAYER', payload: { quality: defaultQuality } });
+  const quality = usePlayerQuality();
+  const { setQuality } = usePlayerActions()
+  const handleSave = (newQuality: QualityType): void => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.PREFERRED_QUALITY, newQuality);
+    setQuality(newQuality)
     onClose();
   };
 
@@ -32,12 +34,12 @@ const SettingsPage: FC<SettingsPageProps> = ({ onClose }) => {
             <div>
               <label className="text-gray-300 mb-2 block">Default Quality</label>
               <div className="flex gap-2">
-                {(['128', '320', 'flac'] as const).map((q) => (
+                {Object.values(Qualities).map((q) => (
                   <button
                     key={q}
-                    onClick={() => setDefaultQuality(q)}
+                    onClick={() => handleSave(q)}
                     className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                      defaultQuality === q ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                      quality === q ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'
                     }`}
                   >
                     {q}
@@ -46,7 +48,6 @@ const SettingsPage: FC<SettingsPageProps> = ({ onClose }) => {
               </div>
             </div>
           </div>
-          <Button onClick={handleSave} className="w-full">Save Settings</Button>
         </div>
       </div>
     </div>

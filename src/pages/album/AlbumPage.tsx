@@ -1,17 +1,16 @@
-import { useApp } from '@/contexts/AppContext.tsx';
 import { useNavigate, useParams } from '@/router';
 import { Album } from '@/types/models.ts';
 import { musicApi } from '@api/music.api.ts';
 import SongItem from '@components/music/SongItem.tsx';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { X } from 'lucide-react';
 import { FC, useEffect, useState } from 'react';
-
 
 const AlbumPage: FC = () => {
   const { id } = useParams();
   const [album, setAlbum] = useState<Album | null>(null);
   const [_loading, setLoading] = useState(false);
-  const { player } = useApp();
+  const { play } = usePlayerActions();
   const navigate = useNavigate()
 
   const fetchAlbum = async () => {
@@ -48,7 +47,7 @@ const AlbumPage: FC = () => {
             <SongItem
               key={song.id}
               song={song}
-              onPlay={player.play}
+              onPlay={play}
             />
           ))}
         </div>

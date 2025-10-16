@@ -1,5 +1,6 @@
-import { useApp } from '@/contexts/AppContext.tsx';
 import { TrackItemProps } from '@components/music/SongItem.tsx';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
+import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
 import { Heart, Menu, Pause, Play } from 'lucide-react';
 import { FC } from 'react';
 
@@ -11,7 +12,8 @@ interface DraggableSongItemProps extends TrackItemProps {
 }
 
 const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onLike, onDragStart, onDragOver, onDrop }) => {
-  const { player } = useApp();
+  const isPlaying = useIsPlaying();
+  const { play } = usePlayerActions();
   return (
     <div
       draggable
@@ -24,10 +26,10 @@ const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onLike, on
       <div className="relative flex-shrink-0">
         <img src={song.albumCover || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'} alt={song.title} className="w-14 h-14 rounded-lg object-cover" />
         <button
-          onClick={(e) => { e.stopPropagation(); player.play(song); }}
+          onClick={(e) => { e.stopPropagation(); play(song); }}
           className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          {player.isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white fill-white" />}
+          {isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white fill-white" />}
         </button>
       </div>
       <div className="flex-1 min-w-0">

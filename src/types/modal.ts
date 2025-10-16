@@ -1,26 +1,20 @@
-
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
-export type ModalAnimation = 'fade' | 'slideUp' | 'slideDown' | 'scale';
+// types/modal.ts
+import { ComponentType } from 'react';
 
 export interface ModalConfig {
   id: string;
-  component: React.ComponentType<any>;
+  component: ComponentType<any>;
   props?: Record<string, any>;
-  size?: ModalSize;
-  animation?: ModalAnimation;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  animation?: 'fade' | 'slideUp' | 'slideDown' | 'scale';
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
   showCloseButton?: boolean;
   className?: string;
   overlayClassName?: string;
-  persistent?: boolean; // Won't close on overlay click or escape
+  persistent?: boolean;
   onClose?: () => void;
 }
 
-export type ModalAction =
-  | { type: 'OPEN_MODAL'; payload: ModalConfig }
-  | { type: 'CLOSE_MODAL'; payload: string }
-  | { type: 'CLOSE_ALL_MODALS' }
-  | { type: 'CLOSE_TOP_MODAL' }
-  | { type: 'UPDATE_MODAL'; payload: { id: string; props: Record<string, any> } };
-
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
+export type ModalAnimation = 'fade' | 'slideUp' | 'slideDown' | 'scale';

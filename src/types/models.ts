@@ -44,7 +44,6 @@ export interface UserProfile extends User{
   stalkingsCount: number;
   stalkersCount: number;
   swgzScore: number;
-  isPremium: boolean;
   isPrivate?: boolean;
   songOfTheDay?: Track;
 }
@@ -95,4 +94,9 @@ export interface SearchHistory {
   id: string;
   query: string;
   filter: SearchFilters
+}
+
+export interface MostListened {
+  count: number;
+  song: Track;
 }
