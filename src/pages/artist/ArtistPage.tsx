@@ -23,13 +23,23 @@ const ArtistPage: FC = () => {
     const response = await musicApi.getArtist(id);
 
     setArtist(response)
+
+    setLoading(false);
   }
 
   useEffect(() => {
     if (id) fetchArtist()
   }, [id])
 
+  useEffect(() => {
+    return () => {
+      console.log('exiting');
+      setArtist(null)
+    }
+  }, [])
+
   if (!artist) return null;
+
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 overflow-auto">
       <div className="max-w-6xl mx-auto p-6">
