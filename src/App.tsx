@@ -11,6 +11,7 @@ import { useAuthActions } from '@hooks/actions/useAuthActions.ts';
 import { useLibraryActions } from '@hooks/actions/useLibraryActions.ts';
 import { useIsOnline, useShowDownloadManager } from '@hooks/selectors/useAppSelectors.ts';
 import { useAuthToken, useCurrentUser, useIsAuthenticated } from '@hooks/selectors/useAuthSelectors.ts';
+import { useAudioFocus } from '@hooks/useAudioFocus.ts';
 import { usePlayerInitialization } from '@hooks/usePlayerInitialization.ts';
 import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
 import { FC, useEffect } from 'react';
@@ -22,6 +23,7 @@ import { WifiOff } from 'lucide-react';
 
 const App: FC = () => {
   usePlayerInitialization();
+  useAudioFocus();
   const navigate = useNavigate()
   const isOnline = useIsOnline();
   const { login } = useAuthActions()

@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { musicApi } from '@api/music.api';
 import { usePlayerActions } from './actions/usePlayerActions';
-import { useCurrentSong, useIsPlaying, usePlayerQuality, usePlayerRepeat } from './selectors/usePlayerSelectors';
+import {
+  useCurrentSong,
+  useIsPlaying,
+  usePlayerQuality,
+  usePlayerRepeat
+} from './selectors/usePlayerSelectors';
 import { useCurrentUser } from './selectors/useAuthSelectors';
 
 export const useAudioPlayer = () => {
@@ -16,22 +21,45 @@ export const useAudioPlayer = () => {
     setProgress,
     setCurrentSong,
     playNext: playNextAction,
+    setAudioRef,
   } = usePlayerActions();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isLoadingRef = useRef(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
-  // Initialize audio element
+  // Initialize audio element with iOS optimizations
   useEffect(() => {
     if (!audioRef.current) {
-      audioRef.current = new Audio();
+      const audio = new Audio();
+
+      // iOS-specific attributes
+      audio.setAttribute('playsinline', 'true'); // Prevent fullscreen on iOS
+      audio.preload = 'auto'; // Preload audio
+
+      audioRef.current = audio;
+      setAudioRef(audio);
     }
 
     const audio = audioRef.current;
 
     const updateProgress = () => {
       if (audio.duration) {
-        setProgress((audio.currentTime / audio.duration) * 100);
+        const progressPercent = (audio.currentTime / audio.duration) * 100;
+        setProgress(progressPercent);
+
+        // Update position state for Media Session API
+        if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
+          try {
+            navigator.mediaSession.setPositionState({
+              duration: audio.duration,
+              playbackRate: audio.playbackRate,
+              position: audio.currentTime,
+            });
+          } catch (error) {
+            console.warn('Failed to update position state:', error);
+          }
+        }
       }
     };
 
@@ -50,18 +78,48 @@ export const useAudioPlayer = () => {
       setIsPlaying(false);
     };
 
+    // iOS wake lock - keep screen awake during playback
+    const handlePlay = async () => {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLockRef.current = await navigator.wakeLock.request('screen');
+          console.log('🔒 Wake lock activated');
+        } catch (error) {
+          console.warn('Wake lock failed:', error);
+        }
+      }
+    };
+
+    const handlePause = () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        console.log('🔓 Wake lock released');
+      }
+    };
+
+    // Audio event listeners
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
 
     return () => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
-    };
-  }, [repeat, setProgress, setIsPlaying, playNextAction]);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
 
-  // Load and play song when currentSong or quality changes
+      // Release wake lock on cleanup
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+      }
+    };
+  }, [repeat, setProgress, setIsPlaying, playNextAction, setAudioRef]);
+
+  // Load and play song
   useEffect(() => {
     const loadAndPlaySong = async () => {
       if (!currentSong || !audioRef.current || isLoadingRef.current) {
@@ -92,16 +150,37 @@ export const useAudioPlayer = () => {
         }
 
         const audio = audioRef.current;
-        const streamUrl = musicApi.getStreamUrl(songObj?.id || '', quality, user?.apiKey || '');
+        const streamUrl = musicApi.getStreamUrl(songObj.id || '', quality, user?.apiKey || '');
 
         console.log('🌐 Setting stream URL');
+
+        // For iOS: Set crossOrigin to allow CORS
+        audio.crossOrigin = 'anonymous';
         audio.src = streamUrl;
         audio.load();
 
         if (isPlaying) {
           console.log('▶️ Attempting to play...');
-          await audio.play();
-          console.log('✅ Playback started');
+
+          // iOS requires user interaction to play audio
+          // This should work if triggered by a user action
+          try {
+            await audio.play();
+            console.log('✅ Playback started');
+
+            // Update Media Session playback state
+            if ('mediaSession' in navigator) {
+              navigator.mediaSession.playbackState = 'playing';
+            }
+          } catch (playError: any) {
+            console.error('❌ Play error:', playError);
+
+            // Handle iOS autoplay restrictions
+            if (playError.name === 'NotAllowedError') {
+              console.warn('⚠️ Autoplay blocked - user interaction required');
+              setIsPlaying(false);
+            }
+          }
         }
       } catch (error) {
         console.error('❌ Failed to load song:', error);
@@ -122,12 +201,27 @@ export const useAudioPlayer = () => {
 
     if (isPlaying && audio.paused) {
       console.log('▶️ Playing audio');
-      audio.play().catch((e) => console.error('❌ Play failed:', e));
+      audio.play()
+      .then(() => {
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'playing';
+        }
+      })
+      .catch((e) => {
+        console.error('❌ Play failed:', e);
+        if (e.name === 'NotAllowedError') {
+          setIsPlaying(false);
+        }
+      });
     } else if (!isPlaying && !audio.paused) {
       console.log('⏸️ Pausing audio');
       audio.pause();
+
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
     }
-  }, [isPlaying, currentSong]);
+  }, [isPlaying, currentSong, setIsPlaying]);
 
   return audioRef;
 };

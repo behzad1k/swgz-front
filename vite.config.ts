@@ -16,19 +16,21 @@ export default defineConfig({
       '@services': path.resolve(__dirname, './src/services'),
       '@assets': path.resolve(__dirname, './src/assets'),
       '@types': path.resolve(__dirname, './src/@types'),
+      '@workers': path.resolve(__dirname, './src/workers'),
     },
   },
   server: {
     port: 3001,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-    },
   },
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
   },
 });
