@@ -14,17 +14,6 @@ export interface QualityInfo {
   size?: number;
 }
 
-export interface AvailableQualitiesResponse {
-  songId: string;
-  title: string;
-  artist: string;
-  hasFlac: boolean;
-  availableQualities: QualityInfo[];
-  unavailableQualities: string[];
-  totalAvailable: number;
-  totalUnavailable: number;
-}
-
 export interface QualityFallbackResponse {
   requestedQuality: string;
   fallbackChain: QualityType[];
@@ -55,8 +44,8 @@ export const musicApi = {
   getAlbum: (albumId: string, signal?: AbortSignal) =>
     ApiService.get<Album>(`/music/album/${albumId}`, signal),
 
-  getAvailableQualities: (songId: string, signal?: AbortSignal) =>
-    ApiService.get<AvailableQualitiesResponse>(`/music/qualities/${songId}`, signal),
+  getKnownQualities: (songId: string, signal?: AbortSignal) =>
+    ApiService.get<QualityInfo[]>(`/music/qualities/${songId}`, signal),
 
   getSongInfo: (songId: string, signal?: AbortSignal) =>
     ApiService.get<Track & { availableQualities: QualityInfo[]; unavailableQualities: string[] }>(
@@ -70,8 +59,8 @@ export const musicApi = {
   resetUnavailableQuality: (songId: string, quality: string) =>
     ApiService.post(`/music/reset-quality/${songId}/${quality}`, {}),
 
-  getStreamUrl: (songId: string, flac = false, apiKey: string)=>
-  `${API_BASE_URL}/music/stream/${songId}?flac=${flac}&api-key=${apiKey}`
+  getStreamUrl: (songId: string, quality: QualityType, apiKey: string)=>
+  `${API_BASE_URL}/music/stream/${songId}?quality=${quality}&api-key=${apiKey}`
 
 
 };

@@ -17,13 +17,9 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
   const [quality, setQuality] = useState<QualityType>(
     (localStorage.getItem('preferred_quality') as QualityType) || '320'
   );
-  const [actualQuality, setActualQuality] = useState<string | null>(null); // What's actually playing
-  const [qualityFallbackUsed, setQualityFallbackUsed] = useState(false);
   const [queue, setQueue] = useState<Track[]>([]);
   const [repeat, setRepeat] = useState(false);
   const [shuffle, setShuffle] = useState(false);
-  const [availableQualities, setAvailableQualities] = useState<QualityType[]>([]);
-  const [unavailableQualities, setUnavailableQualities] = useState<QualityType[]>([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isLoadingRef = useRef(false);
@@ -50,21 +46,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     }
   }, [state.player.quality]);
 
-  // const checkQualities = async () => {
-  //   if (!currentSong?.id) return;
-  //
-  //   try {
-  //     const qualitiesInfo = await musicApi.getAvailableQualities(currentSong.id);
-  //     setAvailableQualities(qualitiesInfo.availableQualities.map(q => q.quality));
-  //     setUnavailableQualities(qualitiesInfo.unavailableQualities);
-  //
-  //     console.log('📊 Available qualities:', qualitiesInfo.availableQualities);
-  //     console.log('❌ Unavailable qualities:', qualitiesInfo.unavailableQualities);
-  //   } catch (error) {
-  //     console.error('Failed to check qualities:', error);
-  //   }
-  // };
-
   // Use refs for latest values in event handlers
   const queueRef = useRef(queue);
   const repeatRef = useRef(repeat);
@@ -87,8 +68,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     setCurrentSong(song);
     setIsPlaying(true);
     setProgress(0);
-    setQualityFallbackUsed(false);
-    setActualQuality(null);
     // Reset prepared next song
     preparedNextSongRef.current = null;
     isPreparingNextRef.current = false;
@@ -136,16 +115,13 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     const handleError = (e: ErrorEvent) => {
       console.error('❌ Audio playback error:', e);
 
-      // If quality fallback failed, notify user
-      if (qualityFallbackUsed) {
-        dispatch({
-          type: 'SHOW_NOTIFICATION',
-          payload: {
-            message: 'Playback failed. This track may not be available.',
-            type: 'error'
-          }
-        });
-      }
+      // dispatch({
+      //   type: 'SHOW_NOTIFICATION',
+      //   payload: {
+      //     message: 'Playback failed. This track may not be available.',
+      //     type: 'error'
+      //   }
+      // });
     };
 
     audio.addEventListener('loadstart', () => console.log('🔄 Audio: Load start'));
@@ -166,7 +142,7 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [play, qualityFallbackUsed, dispatch]);
+  }, [play, dispatch]);
 
   // Handle song changes and quality changes
   useEffect(() => {
@@ -203,8 +179,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
           console.log('✅ Song prepared:', songObj);
 
           setCurrentSong(songObj);
-          setAvailableQualities(songObj.qualities.filter((e: any) => !e.unavailable).map((e: any) => e.quality))
-          setUnavailableQualities(songObj.qualities.filter((e: any) => e.unavailable).map((e: any) => e.quality))
           dispatch({
             type: 'SET_CURRENT_SONG',
             payload: songObj
@@ -215,51 +189,11 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
 
         const audio = audioRef.current;
 
-        // Check if requested quality is available (proactively)
-        const isRequestedQualityUnavailable = unavailableQualities.includes(quality);
-
-        if (isRequestedQualityUnavailable) {
-          console.warn(`⚠️ Requested quality ${quality} is unavailable for this track`);
-
-          // Get fallback chain
-          try {
-            const fallbackInfo = await musicApi.getQualityFallback(quality);
-            console.log('📊 Fallback chain:', fallbackInfo.fallbackChain);
-
-            // Find first available fallback
-            const availableFallback = fallbackInfo.fallbackChain.find(
-              q => availableQualities.includes(q)
-            );
-
-            if (availableFallback) {
-              console.log(`✅ Using fallback quality: ${availableFallback}`);
-              setActualQuality(availableFallback);
-              setQualityFallbackUsed(true);
-
-              dispatch({
-                type: 'SHOW_NOTIFICATION',
-                payload: {
-                  message: `Playing ${availableFallback} quality instead of ${quality}`,
-                  type: 'info'
-                }
-              });
-            }
-          } catch (error) {
-            console.error('Failed to get fallback chain:', error);
-          }
-        } else {
-          // Reset fallback state if quality is available
-          setActualQuality(quality);
-          setQualityFallbackUsed(false);
-        }
-
-        // Build stream URL directly (no HEAD request)
-        const preferFlac = quality.toLowerCase() === 'flac';
         const apiKey = state.auth?.user?.apiKey ||
           localStorage.getItem('apiKey') ||
           '';
 
-        const streamUrl = musicApi.getStreamUrl(songObj.id, preferFlac, apiKey);
+        const streamUrl = musicApi.getStreamUrl(songObj.id, quality, apiKey);
 
         console.log('🌐 Stream URL:', streamUrl.substring(0, 80) + '...');
 
@@ -363,8 +297,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     currentSong?.artistName,
     quality,
     dispatch,
-    availableQualities,
-    unavailableQualities,
     state.auth?.user?.apiKey,
     isPlaying
   ]);
@@ -552,6 +484,14 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     }
   }, []);
 
+  const updateQueue = useCallback((tracks: Track[]) => {
+    console.log('➕ Updating entire queue');
+    setQueue(tracks)
+
+    preparedNextSongRef.current = null;
+    isPreparingNextRef.current = false;
+  }, [])
+
   const clearQueue = useCallback(() => {
     console.log('🗑️ Clearing queue');
     setQueue([]);
@@ -570,13 +510,11 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
   const changeQuality = useCallback((newQuality: QualityType) => {
     console.log('🎚️ Changing quality to:', newQuality);
     setQuality(newQuality);
-    localStorage.setItem('preferred_quality', newQuality);
+    // localStorage.setItem('preferred_quality', newQuality);
 
     // Trigger reload of current song with new quality
     if (currentSong?.id && isPlaying) {
       console.log('🔄 Reloading current song with new quality');
-      setQualityFallbackUsed(false);
-      setActualQuality(null);
     }
   }, [currentSong, isPlaying]);
 
@@ -590,10 +528,6 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     repeat,
     shuffle,
     quality,
-    actualQuality, // The quality actually being played (may differ from requested)
-    qualityFallbackUsed, // Whether fallback was used
-    availableQualities, // Qualities available for current song
-    unavailableQualities, // Qualities marked unavailable
 
     // Audio ref
     audioRef,
@@ -607,6 +541,7 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
     changeVolume,
     addToQueue,
     removeFromQueue,
+    updateQueue,
     clearQueue,
     toggleRepeat,
     toggleShuffle,

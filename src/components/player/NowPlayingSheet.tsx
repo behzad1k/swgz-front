@@ -3,7 +3,9 @@ import PlayerControls from '@/components/player/PlayerControls';
 import ProgressBar from '@/components/player/ProgressBar';
 import QueueList from '@/components/player/QueueList';
 import VolumeControl from '@/components/player/VolumeControl';
+import Button from '@components/common/Button.tsx';
 import QualitySelector from '@components/player/QualitySelector.tsx';
+import { useModal } from '@hooks/useModal.ts';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FC, memo, useState, useRef, useEffect } from 'react';
 
@@ -18,8 +20,8 @@ const NowPlayingSheet: FC = () => {
   const [dragOffset, setDragOffset] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
   const [isDesktop, setIsDesktop] = useState(false);
-
-  const { currentSong, isPlaying, progress, quality, seek, togglePlay, changeQuality, playNext, playPrevious, play, queue, volume, changeVolume, shuffle, toggleShuffle, repeat, toggleRepeat, actualQuality, availableQualities, unavailableQualities} = player;
+  const { openModal, closeModal } = useModal();
+  const { currentSong, isPlaying, progress, quality, seek, togglePlay, changeQuality, playNext, playPrevious, play, queue, volume, changeVolume, shuffle, toggleShuffle, repeat, toggleRepeat } = player;
 
   const isPremium = state.auth?.user?.subscriptionPlan === 'premium';
 
@@ -229,15 +231,23 @@ const NowPlayingSheet: FC = () => {
             {/* Quality Controls */}
             {sheetState === 'full' && (
               <>
-                <QualitySelector
-                  songId={currentSong?.id}
-                  currentQuality={quality}
-                  actualQuality={actualQuality}
-                  availableQualities={availableQualities}
-                  unavailableQualities={unavailableQualities}
-                  onQualityChange={changeQuality}
-                  isPremium={isPremium}
-                />
+                <Button size={'md'} className={'btn-primary'} onClick={() => openModal({
+                  id: 'QualityChange',
+                  animation: 'slideUp',
+                  size: 'lg',
+                  onClose: () => closeModal('QualityChange'),
+                  component: QualitySelector,
+                  props: {
+                    songId: currentSong.id,
+                    onQualityChange: changeQuality,
+                    quality,
+                    isPremium
+                  },
+                  closeOnOverlayClick: true,
+                  closeOnEscape: true,
+                })}>
+                  quality
+                </Button>
                 {/* <div className="px-6 mb-6"> */}
                 {/*   <div className="flex items-center justify-center gap-3"> */}
                 {/*     <span className="text-gray-400 text-sm">Quality:</span> */}

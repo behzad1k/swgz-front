@@ -36,14 +36,14 @@ export interface AppContextType {
     addToQueue: (song: any) => void;
     removeFromQueue: (index: number) => void;
     clearQueue: () => void;
-    // updateQueue: (song: Track[]) => void;
+    updateQueue: (song: Track[]) => void;
     toggleRepeat: () => void;
     toggleShuffle: () => void;
     changeQuality: (quality: QualityType) => void;
-    actualQuality: string | null, // The quality actually being played (may differ from requested)
-    qualityFallbackUsed: boolean, // Whether fallback was used
-    availableQualities: QualityType[], // Qualities available for current song
-    unavailableQualities: QualityType[], // Qualities marked unavailable
+    // actualQuality: string | null, // The quality actually being played (may differ from requested)
+    // qualityFallbackUsed: boolean, // Whether fallback was used
+    // availableQualities: QualityType[], // Qualities available for current song
+    // unavailableQualities: QualityType[], // Qualities marked unavailable
   };
 }
 
