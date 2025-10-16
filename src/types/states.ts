@@ -36,7 +36,7 @@ export interface AppContextType {
     addToQueue: (song: any) => void;
     removeFromQueue: (index: number) => void;
     clearQueue: () => void;
-    updateQueue: (song: Track[]) => void;
+    // updateQueue: (song: Track[]) => void;
     toggleRepeat: () => void;
     toggleShuffle: () => void;
     changeQuality: (quality: QualityType) => void;

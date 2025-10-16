@@ -1,4 +1,5 @@
 import AppContent from '@/AppContent.tsx';
+import { QualityType } from '@/types/global.ts';
 import { RootState } from '@/types/states.ts';
 import appReducer from '@store/reducer.ts';
 import { usePlayer } from '@hooks/usePlayer';
@@ -20,7 +21,7 @@ export const initialState: RootState = {
     volume: 1,
     repeat: false,
     shuffle: false,
-    quality: (localStorage.getItem('preferred_quality') as '128' | '320' | 'flac') || '320',
+    quality: (localStorage.getItem('preferred_quality') as QualityType) || '320',
   },
   library: {
     librarySongs: [],

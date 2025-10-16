@@ -1,5 +1,6 @@
 // music.api.ts - SIMPLIFIED VERSION
 import { SearchFilters } from '@/enums/global.ts';
+import { QualityType } from '@/types/global.ts';
 import ApiService, { API_BASE_URL } from '@/utils/api';
 import { Track, SearchHistory, Artist, Album } from '@/types/models';
 
@@ -26,7 +27,7 @@ export interface AvailableQualitiesResponse {
 
 export interface QualityFallbackResponse {
   requestedQuality: string;
-  fallbackChain: string[];
+  fallbackChain: QualityType[];
 }
 
 export const musicApi = {

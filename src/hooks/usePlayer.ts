@@ -22,8 +22,8 @@ export const usePlayer = ({ state, dispatch }: UsePlayerProps) => {
   const [queue, setQueue] = useState<Track[]>([]);
   const [repeat, setRepeat] = useState(false);
   const [shuffle, setShuffle] = useState(false);
-  const [availableQualities, setAvailableQualities] = useState<string[]>([]);
-  const [unavailableQualities, setUnavailableQualities] = useState<string[]>([]);
+  const [availableQualities, setAvailableQualities] = useState<QualityType[]>([]);
+  const [unavailableQualities, setUnavailableQualities] = useState<QualityType[]>([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isLoadingRef = useRef(false);
