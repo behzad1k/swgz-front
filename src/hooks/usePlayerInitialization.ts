@@ -6,7 +6,7 @@ import { useAudioContextInit } from './useAudioContextInit';
 import { useEffect } from 'react';
 
 export const usePlayerInitialization = () => {
-  const audioRef = useAudioPlayer();
+  const { audioRef } = useAudioPlayer();
   const { setAudioRef } = usePlayerActions();
 
   // Initialize AudioContext on user interaction (CRITICAL for iOS/PWA)

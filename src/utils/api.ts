@@ -41,6 +41,14 @@ class ApiService {
     const response = await this.request(endpoint, { signal });
     return response.json();
   }
+  static async head<T>(endpoint: string, headers?: Headers, signal?: AbortSignal): Promise<T> {
+    const response = await this.request(endpoint, {
+      method: 'HEAD',
+      headers,
+      signal,
+    });
+    return response.json();
+  }
 
   static async post<T>(endpoint: string, data: unknown, signal?: AbortSignal): Promise<T> {
     const response = await this.request(endpoint, {

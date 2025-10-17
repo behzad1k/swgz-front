@@ -22,7 +22,7 @@ export type PlayerState = {
   volume: number;
   repeat: boolean;
   shuffle: boolean;
-  quality: QualityType;
+  quality: QualityType | null;
 };
 
 // Library State

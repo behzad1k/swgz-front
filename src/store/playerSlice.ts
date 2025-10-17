@@ -12,7 +12,8 @@ export const initialPlayerState: PlayerState = {
   volume: 1,
   repeat: false,
   shuffle: false,
-  quality: (localStorage.getItem(LOCAL_STORAGE_KEYS.PREFERRED_QUALITY) as QualityType) || '320',
+  // quality: (localStorage.getItem(LOCAL_STORAGE_KEYS.PREFERRED_QUALITY) as QualityType) || '320',
+  quality: null,
 };
 
 export enum PlayerActionKeys {

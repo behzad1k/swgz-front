@@ -2,6 +2,7 @@ import { SearchFilters } from '@/enums/global.ts';
 import { QualityType } from '@/types/global.ts';
 import ApiService, { API_BASE_URL } from '@/utils/api';
 import { Track, SearchHistory, Artist, Album } from '@/types/models';
+import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
 
 export interface QualityDetails {
   songId: string,
@@ -72,8 +73,18 @@ export const musicApi = {
   resetUnavailableQuality: (songId: string, quality: string) =>
     ApiService.post(`/music/reset-quality/${songId}/${quality}`, {}),
 
-  getStreamUrl: (songId: string, quality: QualityType, apiKey: string)=>
-  `${API_BASE_URL}/music/stream/${songId}?quality=${quality}&api-key=${apiKey}`
+  getStreamUrl: (songId: string, apiKey: string, quality?: QualityType | null)=> {
+    let mainUrl = `${API_BASE_URL}/music/stream/${songId}?api-key=${apiKey}`;
+    if (quality) mainUrl += `&quality=${quality}`;
+    return mainUrl
+  },
 
-
+  getStreamMetadata: (streamUrl: string) =>
+    fetch(streamUrl, {
+      method: 'HEAD',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)}`,
+      }
+    })
 };
