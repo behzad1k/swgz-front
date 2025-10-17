@@ -72,7 +72,7 @@ const PlaylistDetailPage: FC = () => {
           <div className="relative group">
             <img
               src={playlist.coverUrl || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
-              alt={playlist.name}
+              alt={playlist.title}
               className="w-64 h-64 rounded-2xl object-cover shadow-2xl"
             />
             <button className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity">
@@ -81,7 +81,7 @@ const PlaylistDetailPage: FC = () => {
           </div>
           <div className="flex-1">
             <p className="text-gray-400 text-sm uppercase mb-2">Playlist</p>
-            <h1 className="text-5xl font-bold text-white mb-4">{playlist.name}</h1>
+            <h1 className="text-5xl font-bold text-white mb-4">{playlist.title}</h1>
             <p className="text-gray-300 mb-2">{playlist.description}</p>
             <p className="text-gray-400">
               {songs.length} songs • {playlist.isPublic ? 'Public' : 'Private'}

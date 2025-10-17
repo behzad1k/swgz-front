@@ -1,4 +1,5 @@
 import { useIsActive, useNavigate } from '@/router';
+import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
 import { Search, Library, User } from 'lucide-react';
 
 const Navigation = () => {
@@ -6,6 +7,7 @@ const Navigation = () => {
   const isSearchActive = useIsActive('/search');
   const isLibraryActive = useIsActive('/library');
   const isProfileActive = useIsActive('/profile');
+  const isMusicPlaying = useIsPlaying()
 
   const navItems = [
     // { path: '/home', icon: Home, label: 'Home', isActive: isHomeActive },
@@ -15,7 +17,7 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed bottom-32 right-5">
+    <nav className={`fixed ${isMusicPlaying ? 'bottom-32' : 'bottom-10'} right-5`}>
       <div className="flex flex-col justify-around items-center w-16 h-60">
         {navItems.map((item) => {
           const Icon = item.icon;

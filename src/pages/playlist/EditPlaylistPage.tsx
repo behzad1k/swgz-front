@@ -25,7 +25,7 @@ const EditPlaylistPage: FC = () => {
     try {
       const data = await playlistApi.getPlaylist(playlistId);
       setPlaylist(data);
-      setName(data.name);
+      setName(data.title);
       setDescription(data.description || '');
     } catch (error) {
       console.error('Error loading playlist:', error);

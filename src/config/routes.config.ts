@@ -1,10 +1,9 @@
+import DefaultPlaylistPage from '@pages/library/DefaultPlaylistPage.tsx';
 import { FC } from 'react';
 
 // Pages
 import SearchPage from '@pages/search/SearchPage.tsx';
 import LibraryPage from '@pages/library/LibraryPage.tsx';
-import LikedSongsPage from '@pages/library/LikedSongsPage.tsx';
-import MostListenedPage from '@pages/library/MostListenedPage.tsx';
 import ProfilePage from '@pages/profile/ProfilePage.tsx';
 import EditProfilePage from '@pages/profile/EditProfilePage.tsx';
 import UserProfilePage from '@pages/profile/UserProfilePage.tsx';
@@ -93,33 +92,6 @@ export const routes: Routes = {
     description: 'Your music collection',
     showHeader: true,
   },
-  likedSongs: {
-    path: '/library/liked',
-    component: LikedSongsPage,
-    protected: true,
-    title: 'Liked Songs',
-    description: 'Songs you love',
-    showHeader: true,
-    headerBackButton: true,
-  },
-  mostListened: {
-    path: '/library/most-listened',
-    component: MostListenedPage,
-    protected: true,
-    title: 'Most Listened',
-    description: 'Your top tracks',
-    showHeader: true,
-    headerBackButton: true,
-  },
-  // recentlyPlayed: {
-  //   path: '/library/recently-played',
-  //   component: Recent,
-  //   protected: true,
-  //   title: 'Most Listened',
-  //   description: 'Your top tracks',
-  //   showHeader: true,
-  //   headerBackButton: true,
-  // },
 
   // Profile Routes
   profile: {
@@ -159,6 +131,26 @@ export const routes: Routes = {
     headerBackButton: true,
   },
 
+
+  // playlist
+  defaultPlaylist: {
+    path: '/playlist/default/:slug',
+    component: DefaultPlaylistPage,
+    protected: true,
+    showHeader: true,
+    headerBackButton: true,
+  },
+  // recentlyPlayed: {
+  //   path: '/playlist/recently-played',
+  //   component: Rece,
+  //   protected: true,
+  //   title: 'Most Listened',
+  //   description: 'Your top tracks',
+  //   showHeader: true,
+  //   headerBackButton: true,
+  // },
+
+
   // Playlist Routes
   createPlaylist: {
     path: '/playlist/create',
@@ -170,7 +162,7 @@ export const routes: Routes = {
     headerBackButton: true,
   },
   playlistDetail: {
-    path: '/playlist/:id',
+    path: '/playlist/get/:id',
     component: PlaylistDetailPage,
     protected: true,
     exact: true,
@@ -180,10 +172,11 @@ export const routes: Routes = {
     headerBackButton: true,
   },
   editPlaylist: {
-    path: '/playlist/:id/edit',
+    path: '/playlist/edit/:id',
     component: EditPlaylistPage,
     protected: true,
     title: 'Edit Playlist',
+    exact: true,
     description: 'Update playlist details',
     showHeader: true,
     headerBackButton: true,

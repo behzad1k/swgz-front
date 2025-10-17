@@ -285,7 +285,8 @@ export const useAudioPlayer = () => {
           await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(() => {
               reject(new Error('Audio load timeout'));
-            }, 60000); // 10 second timeout
+              loadAndPlaySong()
+            }, 60 * 1000); // 10 second timeout
 
             const canPlayHandler = () => {
               clearTimeout(timeout);

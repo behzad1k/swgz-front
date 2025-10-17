@@ -149,6 +149,7 @@ const NowPlayingSheet: FC = () => {
 
         {/* Mini Player */}
         {sheetState === 'mini' && (
+          <>
           <div
             className="flex items-center px-4 py-2 gap-3 cursor-pointer"
             onClick={() => setSheetState('half')}
@@ -192,6 +193,8 @@ const NowPlayingSheet: FC = () => {
               </svg>
             </button>
           </div>
+            <div className="h-full bg-white transition-all duration-300" style={{ width: `${progress}%` }} />
+          </>
         )}
 
         {/* Half/Full Player */}

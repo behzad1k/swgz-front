@@ -1,4 +1,3 @@
-// hooks/usePlayerInitialization.ts
 import { useAudioPlayer } from './useAudioPlayer';
 import { useQueueManager } from './useQueueManager';
 import { useMediaSession } from './useMediaSession';

@@ -74,7 +74,7 @@ const App: FC = () => {
   }, [isAuthenticated, currentUser]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900">
+    <div className="app-container bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 ">
       {!isOnline && (
         <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black px-4 py-2 text-center z-50 flex items-center justify-center gap-2">
           <WifiOff size={20} />

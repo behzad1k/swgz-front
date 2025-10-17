@@ -1,36 +1,39 @@
-import { buildPath, routes } from '@/config/routes.config.ts';
-import { useNavigate } from '@/router';
-import { useLikedSongs, useMostListened, useRecentlyPlayed } from '@hooks/selectors/useLibrarySelectors.ts';
-import { FC, useState } from 'react';
-import { Music, Heart, Clock, TrendingUp, Plus, Search, List, Grid as GridIcon } from 'lucide-react';
+import { playlistApi } from '@/api/playlist.api';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
-import SongList from '@/components/music/SongList';
-import PlaylistCard from '@/components/music/PlaylistCard';
 import Modal from '@/components/common/Modal';
 import CreatePlaylistForm from '@/components/forms/CreatePlaylistForm';
-import { playlistApi } from '@/api/playlist.api';
-import { Track, Playlist } from '@/types/models.ts';
+import PlaylistCard from '@/components/music/PlaylistCard';
+import SongList from '@/components/music/SongList';
+import { buildPath, routes } from '@/config/routes.config.ts';
+import { useNavigate } from '@/router';
+import { Playlist, Track } from '@/types/models.ts';
+import { useLibrarySongs, useLikedSongs, useMostListened, useRecentlyPlayed } from '@hooks/selectors/useLibrarySelectors.ts';
+import { Clock, Grid as GridIcon, Heart, List, Music, Plus, Search, TrendingUp } from 'lucide-react';
+import { FC, useEffect, useState } from 'react';
 
 const LibraryPage: FC = () => {
   // hooks
   const likedSongs = useLikedSongs();
   const mostListened = useMostListened();
   const recentlyPlayed = useRecentlyPlayed();
-
+  const librarySongs = useLibrarySongs();
   //states
+  const [songs, setSongs] = useState<Track[]>([]);
   const [activeTab, setActiveTab] = useState<'songs' | 'playlists'>('songs');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchQuery, setSearchQuery] = useState('');
-  const [songs, _setSongs] = useState<Track[]>(likedSongs);
   const [playlists, _setPlaylists] = useState<Playlist[]>([]);
-  const [loading, _setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleCreatePlaylist = async (name: string, description: string) => {
     try {
-      await playlistApi.createPlaylist({ name, description });
+      await playlistApi.createPlaylist({
+        name,
+        description
+      });
       setShowCreatePlaylist(false);
     } catch (error) {
       console.error('Error creating playlist:', error);
@@ -44,28 +47,55 @@ const LibraryPage: FC = () => {
   );
 
   const filteredPlaylists = playlists.filter((playlist) =>
-    playlist.name.toLowerCase().includes(searchQuery.toLowerCase())
+    playlist.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const tabs = [
-    { value: 'songs', label: 'Songs', icon: <Music size={18} /> },
-    { value: 'playlists', label: 'Playlists', icon: <List size={18} /> },
+    {
+      value: 'songs',
+      label: 'Songs',
+      icon: <Music size={18}/>
+    },
+    {
+      value: 'playlists',
+      label: 'Playlists',
+      icon: <List size={18}/>
+    },
   ];
 
   const quickLinks = [
-    { value: 'likedSongs', label: 'Liked Songs', icon: <Heart size={20} />, count: likedSongs.length },
-    { value: 'recentlyPlayed', label: 'Recently Played', icon: <Clock size={20} />, count: recentlyPlayed.length },
-    { value: 'mostListened', label: 'Most Listened', icon: <TrendingUp size={20} />, count: mostListened.length },
+    {
+      value: 'liked-songs',
+      label: 'Liked Songs',
+      icon: <Heart size={20}/>,
+      count: likedSongs.length
+    },
+    {
+      value: 'recently-played',
+      label: 'Recently Played',
+      icon: <Clock size={20}/>,
+      count: recentlyPlayed.length
+    },
+    {
+      value: 'most-listened',
+      label: 'Most Listened',
+      icon: <TrendingUp size={20}/>,
+      count: mostListened.length
+    },
   ];
 
-
-
+  useEffect(() => {
+    if (librarySongs.length) {
+      setSongs(librarySongs.map(e => e.song));
+      setLoading(false)
+    }
+  }, [librarySongs]);
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your Library</h1>
         {activeTab === 'playlists' && (
-          <Button icon={<Plus size={20} />} onClick={() => setShowCreatePlaylist(true)}>
+          <Button icon={<Plus size={20}/>} onClick={() => setShowCreatePlaylist(true)}>
             Create Playlist
           </Button>
         )}
@@ -77,7 +107,7 @@ const LibraryPage: FC = () => {
           <div
             key={idx}
             className="bg-white/5 hover:bg-white/10 rounded-xl p-6 cursor-pointer transition-all duration-200 group"
-            onClick={() => navigate(buildPath(routes[link.value]))}
+            onClick={() => navigate(buildPath(routes.defaultPlaylist, { slug: link.value }))}
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -101,7 +131,7 @@ const LibraryPage: FC = () => {
             placeholder="Search in your library..."
             value={searchQuery}
             onChange={setSearchQuery}
-            icon={<Search size={20} />}
+            icon={<Search size={20}/>}
           />
         </div>
         <div className="flex gap-2">
@@ -113,7 +143,7 @@ const LibraryPage: FC = () => {
                   viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-400'
                 }`}
               >
-                <List size={20} />
+                <List size={20}/>
               </button>
               <button
                 onClick={() => setViewMode('grid')}
@@ -121,7 +151,7 @@ const LibraryPage: FC = () => {
                   viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-gray-400'
                 }`}
               >
-                <GridIcon size={20} />
+                <GridIcon size={20}/>
               </button>
             </div>
           )}
@@ -155,11 +185,11 @@ const LibraryPage: FC = () => {
             <div className="space-y-2">
               {filteredSongs.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
-                  <Heart size={48} className="mx-auto mb-4 opacity-50" />
+                  <Heart size={48} className="mx-auto mb-4 opacity-50"/>
                   <p>No songs in your library yet</p>
                 </div>
               ) : (
-                <SongList songs={filteredSongs} />
+                <SongList songs={filteredSongs}/>
               )}
             </div>
           )}
@@ -170,12 +200,13 @@ const LibraryPage: FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filteredPlaylists.length === 0 ? (
                     <div className="col-span-full text-center py-12 text-gray-400">
-                      <List size={48} className="mx-auto mb-4 opacity-50" />
+                      <List size={48} className="mx-auto mb-4 opacity-50"/>
                       <p>No playlists yet</p>
                     </div>
                   ) : (
                     filteredPlaylists.map((playlist) => (
-                      <PlaylistCard key={playlist.id} playlist={playlist} onClick={() => {}} />
+                      <PlaylistCard key={playlist.id} playlist={playlist} onClick={() => {
+                      }}/>
                     ))
                   )}
                 </div>
@@ -188,13 +219,14 @@ const LibraryPage: FC = () => {
                     >
                       <img
                         src={playlist.coverUrl || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'}
-                        alt={playlist.name}
+                        alt={playlist.title}
                         className="w-16 h-16 rounded-lg object-cover"
                       />
                       <div className="flex-1">
-                        <h3 className="text-white font-semibold">{playlist.name}</h3>
+                        <h3 className="text-white font-semibold">{playlist.title}</h3>
                         <p className="text-gray-400 text-sm">
-                          {playlist.songCount || 0} songs • {playlist.isPublic ? 'Public' : 'Private'}
+                          {/* {playlist.songCount || 0}  */}
+                          songs • {playlist.isPublic ? 'Public' : 'Private'}
                         </p>
                       </div>
                     </div>
@@ -208,7 +240,7 @@ const LibraryPage: FC = () => {
 
       {/* Create Playlist Modal */}
       <Modal isOpen={showCreatePlaylist} onClose={() => setShowCreatePlaylist(false)} title="Create New Playlist">
-        <CreatePlaylistForm onSubmit={handleCreatePlaylist} />
+        <CreatePlaylistForm onSubmit={handleCreatePlaylist}/>
       </Modal>
     </div>
   );

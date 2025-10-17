@@ -36,15 +36,6 @@ const SearchPage: FC = () => {
   const debouncedQuery = useDebounce(query, 300);
   const navigate = useNavigate()
   const recentSearches = useRecentSearches();
-  // useEffect(() => {
-  //   if (debouncedQuery.trim()) {
-  //     if (debouncedQuery.trim().length > 10) {
-  //       handleSearch()
-  //     }
-  //   } else {
-  //     setResults({ track: [], stalker: [], artist: [], album: [] });
-  //   }
-  // }, [debouncedQuery]);
 
   const handleSearch = async (query: string = debouncedQuery, customFitler = filter) => {
     setLoading(true);
@@ -113,9 +104,11 @@ const SearchPage: FC = () => {
   const shouldShowSection = (section: SearchFilters) => {
     return filter == section;
   };
+
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      <div className="space-y-6">
+    <div className="h-screen flex flex-col p-6 max-w-6xl mx-auto">
+      {/* Fixed header section */}
+      <div className="flex-shrink-0 space-y-6 mb-6">
         <h1 className="text-3xl font-bold text-white">Search</h1>
 
         <SearchBar placeholder="Search for track, artist, album, or stalker..." value={query} onChange={setQuery} onSearch={handleSearch}/>
@@ -137,98 +130,99 @@ const SearchPage: FC = () => {
         </div>
       </div>
 
-      {/* Results */}
-      {loading ? (
-        <div className="text-center py-12 text-gray-400">
-          <div className="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"/>
-          <p className="mt-4">Searching...</p>
-        </div>
-      ) : !query ? (
-        <div className="text-center py-12 text-gray-400">
-          {recentSearches.length ? (
-            <div className="flex flex-col gap-4 ">
-              {recentSearches.filter(e => filter != SearchFilters.all ? e.filter == filter : true).map(e =>
-                <div className="flex justify-between" key={e.id}>
-                  <div className="flex flex-col gap-1 " onClick={async () => await selectSearchHistory(e)}>
-                    <span className="text-m">{e.query}</span>
-                    <span className="text-sm">{e.filter}</span>
-                  </div>
-                  <ArchiveRestoreIcon size={12}/>
+      {/* Scrollable results section */}
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">
+            <div className="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"/>
+            <p className="mt-4">Searching...</p>
+          </div>
+        ) : !query ? (
+          <div className="text-center py-12 text-gray-400">
+            {recentSearches.length ? (
+                <div className="flex flex-col gap-4 ">
+                  {recentSearches.filter(e => filter != SearchFilters.all ? e.filter == filter : true).map(e =>
+                    <div className="flex justify-between" key={e.id}>
+                      <div className="flex flex-col gap-1 " onClick={async () => await selectSearchHistory(e)}>
+                        <span className="text-m">{e.query}</span>
+                        <span className="text-sm">{e.filter}</span>
+                      </div>
+                      <ArchiveRestoreIcon size={12}/>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ) :
-          <>
-            <Search size={48} className="mx-auto mb-4 opacity-50"/>
-            <p>Start typing to search for music and stalker</p>
-          </>}
-
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {/* Songs */}
-          {shouldShowSection(SearchFilters.track) && results.track.length > 0 && (
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">Songs</h2>
-              <SongList songs={results.track}/>
-            </div>
-          )}
-
-          {/* Users */}
-          {shouldShowSection(SearchFilters.stalker) && results.stalker.length > 0 && (
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">Users</h2>
-              <div className="space-y-2">
-                {results.stalker.map((user) => (
-                  <UserCard key={user.id} user={user} onStalk={() => {
-                  }} onView={() => {
-                  }}/>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Artists */}
-          {shouldShowSection(SearchFilters.artist) && results.artist.length > 0 && (
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">Artists</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {results.artist.map((artist) => (
-                  <ArtistCard key={artist.id} artist={artist} onClick={() => navigate(buildPath(routes.artist, { id: artist.id }))}/>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Albums */}
-          {shouldShowSection(SearchFilters.album) && results.album.length > 0 && (
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">Albums</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {results.album.map((album) => (
-                  <AlbumCard key={album.id} album={album} onClick={() => {
-                  }}/>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* No Results */}
-          {query &&
-            !loading &&
-            results.track.length === 0 &&
-            results.stalker.length === 0 &&
-            results.artist.length === 0 &&
-            results.album.length === 0 &&
-            (
-              <div className="text-center py-12 text-gray-400">
+              ) :
+              <>
                 <Search size={48} className="mx-auto mb-4 opacity-50"/>
-                <p className="text-lg mb-2">No results found for "{query}"</p>
-                <p className="text-sm">Try different keywords or check your spelling</p>
+                <p>Start typing to search for music and stalker</p>
+              </>}
+          </div>
+        ) : (
+          <div className="space-y-8 pb-6">
+            {/* Songs */}
+            {shouldShowSection(SearchFilters.track) && results.track.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-4">Songs</h2>
+                <SongList songs={results.track}/>
               </div>
             )}
-        </div>
-      )}
+
+            {/* Users */}
+            {shouldShowSection(SearchFilters.stalker) && results.stalker.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-4">Users</h2>
+                <div className="space-y-2">
+                  {results.stalker.map((user) => (
+                    <UserCard key={user.id} user={user} onStalk={() => {
+                    }} onView={() => {
+                    }}/>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Artists */}
+            {shouldShowSection(SearchFilters.artist) && results.artist.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-4">Artists</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {results.artist.map((artist) => (
+                    <ArtistCard key={artist.id} artist={artist} onClick={() => navigate(buildPath(routes.artist, { id: artist.id }))}/>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Albums */}
+            {shouldShowSection(SearchFilters.album) && results.album.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-4">Albums</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {results.album.map((album) => (
+                    <AlbumCard key={album.id} album={album} onClick={() => {
+                    }}/>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* No Results */}
+            {query &&
+              !loading &&
+              results.track.length === 0 &&
+              results.stalker.length === 0 &&
+              results.artist.length === 0 &&
+              results.album.length === 0 &&
+              (
+                <div className="text-center py-12 text-gray-400">
+                  <Search size={48} className="mx-auto mb-4 opacity-50"/>
+                  <p className="text-lg mb-2">No results found for "{query}"</p>
+                  <p className="text-sm">Try different keywords or check your spelling</p>
+                </div>
+              )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

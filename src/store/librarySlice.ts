@@ -1,5 +1,4 @@
-// store/slices/librarySlice.ts
-import { MostListened, Playlist, SearchHistory, Track } from '@/types/models.ts';
+import { LibrarySong, MostListened, Playlist, RecentlyPlayed, SearchHistory } from '@/types/models.ts';
 import { LibraryState } from '@/types/states.ts';
 
 export const initialLibraryState: LibraryState = {
@@ -20,22 +19,26 @@ export enum LibraryActionKeys {
   SET_RECENT_SEARCHES = 'SET_RECENT_SEARCHES',
   SET_LIBRARY = 'SET_LIBRARY',
   ADD_LIKED_SONG = 'ADD_LIKED_SONG',
+  ADD_LIBRARY_SONG = 'ADD_LIBRARY_SONG',
   REMOVE_LIKED_SONG = 'REMOVE_LIKED_SONG',
+  REMOVE_LIBRARY_SONG = 'REMOVE_LIBRARY_SONG',
   ADD_PLAYLIST = 'ADD_PLAYLIST',
   REMOVE_PLAYLIST = 'REMOVE_PLAYLIST',
   UPDATE_PLAYLIST = 'UPDATE_PLAYLIST',
 }
 
 export type LibraryAction =
-  | { type: LibraryActionKeys.SET_LIKED_SONGS; payload: Track[] }
+  | { type: LibraryActionKeys.SET_LIKED_SONGS; payload: LibrarySong[] }
   | { type: LibraryActionKeys.SET_PLAYLISTS; payload: Playlist[] }
-  | { type: LibraryActionKeys.SET_RECENTLY_PLAYED; payload: Track[] }
+  | { type: LibraryActionKeys.SET_RECENTLY_PLAYED; payload: RecentlyPlayed[] }
   | { type: LibraryActionKeys.SET_MOST_LISTENED; payload: MostListened[] }
-  | { type: LibraryActionKeys.SET_LIBRARY_SONGS; payload: Track[] }
+  | { type: LibraryActionKeys.SET_LIBRARY_SONGS; payload: LibrarySong[] }
   | { type: LibraryActionKeys.SET_RECENT_SEARCHES; payload: SearchHistory[] }
   | { type: LibraryActionKeys.SET_LIBRARY; payload: LibraryState }
-  | { type: LibraryActionKeys.ADD_LIKED_SONG; payload: Track }
+  | { type: LibraryActionKeys.ADD_LIKED_SONG; payload: LibrarySong }
+  | { type: LibraryActionKeys.ADD_LIBRARY_SONG; payload: LibrarySong }
   | { type: LibraryActionKeys.REMOVE_LIKED_SONG; payload: string }
+  | { type: LibraryActionKeys.REMOVE_LIBRARY_SONG; payload: string }
   | { type: LibraryActionKeys.ADD_PLAYLIST; payload: Playlist }
   | { type: LibraryActionKeys.REMOVE_PLAYLIST; payload: string }
   | { type: LibraryActionKeys.UPDATE_PLAYLIST; payload: Playlist };
@@ -61,10 +64,17 @@ export const libraryReducer = (
       return action.payload;
     case LibraryActionKeys.ADD_LIKED_SONG:
       return { ...state, likedSongs: [...state.likedSongs, action.payload] };
+    case LibraryActionKeys.ADD_LIBRARY_SONG:
+      return { ...state, librarySongs: [...state.librarySongs, action.payload] };
     case LibraryActionKeys.REMOVE_LIKED_SONG:
       return {
         ...state,
         likedSongs: state.likedSongs.filter((song) => song.id !== action.payload),
+      };
+    case LibraryActionKeys.REMOVE_LIBRARY_SONG:
+      return {
+        ...state,
+        librarySongs: state.librarySongs.filter((librarySong) => librarySong.songId !== action.payload),
       };
     case LibraryActionKeys.ADD_PLAYLIST:
       return { ...state, playlists: [...state.playlists, action.payload] };

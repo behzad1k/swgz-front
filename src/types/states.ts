@@ -1,11 +1,6 @@
 import { QualityType } from '@/types/global.ts';
 import { ModalConfig } from '@/types/modal.ts';
-import { MostListened, Playlist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
-import { AppAction } from '@store/appSlice.ts';
-import { AuthAction } from '@store/authSlice.ts';
-import { LibraryAction } from '@store/librarySlice.ts';
-import { ModalAction } from '@store/modalSlice.ts';
-import { PlayerAction } from '@store/playerSlice.ts';
+import { LibrarySong, MostListened, Playlist, RecentlyPlayed, SearchHistory, Track, UserProfile } from '@/types/models.ts';
 
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string;
@@ -32,11 +27,11 @@ export type PlayerState = {
 
 // Library State
 export type LibraryState = {
-  likedSongs: Track[];
+  likedSongs: LibrarySong[];
   playlists: Playlist[];
-  recentlyPlayed: Track[];
+  recentlyPlayed: RecentlyPlayed[];
   mostListened: MostListened[];
-  librarySongs: Track[];
+  librarySongs: LibrarySong[];
   recentSearches: SearchHistory[];
 };
 
@@ -59,23 +54,3 @@ export type ModalState = {
   modals: ModalConfig[];
   activeModalId: string | null;
 };
-
-
-export type RootState = {
-  auth: AuthState;
-  player: PlayerState;
-  app: AppState;
-  library: LibraryState;
-  modal: ModalState;
-}
-export type RootAction = ModalAction | AppAction | PlayerAction | LibraryAction | AuthAction;
-
-// export type Action =
-//   | { type: 'SET_MODAL'; payload: Partial<ModalState> }
-//   | { type: 'SET_AUTH'; payload: Partial<AuthState> }
-//   | { type: 'SET_PLAYER'; payload: Partial<PlayerState> }
-//   | { type: 'SET_LIBRARY'; payload: Partial<LibraryState> }
-//   | { type: 'SET_DOWNLOADS'; payload: Partial<DownloadsState> }
-//   | { type: 'SET_APP'; payload: Partial<AppState> }
-//   | { type: 'UPDATE_DOWNLOAD_PROGRESS'; payload: { id: string; progress: number } }
-//   | { type: 'COMPLETE_DOWNLOAD'; payload: { id: string } };

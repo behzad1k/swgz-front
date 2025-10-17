@@ -20,11 +20,10 @@ export interface Image {
 
 export interface Playlist {
   id: string;
-  name: string;
+  title: string;
   description?: string;
   coverUrl?: string;
-  songCount?: number;
-  songs?: Track[];
+  songs: Track[];
   isPublic?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -99,4 +98,22 @@ export interface SearchHistory {
 export interface MostListened {
   count: number;
   song: Track;
+}
+export interface RecentlyPlayed {
+  song: Track;
+  id: string;
+  userId:	string;
+  songId:	string;
+  playedAt: Date;
+}
+
+export interface LibrarySong {
+  id: string;
+  userId: string;
+  songId: string;
+  isLiked: boolean;
+  isDownloaded: boolean;
+  addedAt: Date;
+  song: Track;
+  user?: User;
 }

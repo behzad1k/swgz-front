@@ -1,7 +1,6 @@
-// hooks/useLibraryActions.ts
 import { useLibraryContext } from '@/contexts/LibraryContext';
 import { LibraryActionKeys } from '@store/librarySlice.ts';
-import { MostListened, Playlist, SearchHistory, Track } from '@/types/models';
+import { LibrarySong, MostListened, Playlist, RecentlyPlayed, SearchHistory } from '@/types/models';
 import { LibraryState } from '@/types/states';
 import { useCallback } from 'react';
 
@@ -9,7 +8,7 @@ export const useLibraryActions = () => {
   const { dispatch } = useLibraryContext();
 
   const setLikedSongs = useCallback(
-    (songs: Track[]) => {
+    (songs: LibrarySong[]) => {
       dispatch({ type: LibraryActionKeys.SET_LIKED_SONGS, payload: songs });
     },
     [dispatch]
@@ -23,7 +22,7 @@ export const useLibraryActions = () => {
   );
 
   const setRecentlyPlayed = useCallback(
-    (songs: Track[]) => {
+    (songs: RecentlyPlayed[]) => {
       dispatch({ type: LibraryActionKeys.SET_RECENTLY_PLAYED, payload: songs });
     },
     [dispatch]
@@ -37,7 +36,7 @@ export const useLibraryActions = () => {
   );
 
   const setLibrarySongs = useCallback(
-    (songs: Track[]) => {
+    (songs: LibrarySong[]) => {
       dispatch({ type: LibraryActionKeys.SET_LIBRARY_SONGS, payload: songs });
     },
     [dispatch]
@@ -58,7 +57,7 @@ export const useLibraryActions = () => {
   );
 
   const addLikedSong = useCallback(
-    (song: Track) => {
+    (song: LibrarySong) => {
       dispatch({ type: LibraryActionKeys.ADD_LIKED_SONG, payload: song });
     },
     [dispatch]
@@ -67,6 +66,20 @@ export const useLibraryActions = () => {
   const removeLikedSong = useCallback(
     (songId: string) => {
       dispatch({ type: LibraryActionKeys.REMOVE_LIKED_SONG, payload: songId });
+    },
+    [dispatch]
+  );
+
+  const addLibrarySong = useCallback(
+    (song: LibrarySong) => {
+      dispatch({ type: LibraryActionKeys.ADD_LIBRARY_SONG, payload: song });
+    },
+    [dispatch]
+  );
+
+  const removeLibrarySong = useCallback(
+    (songId: string) => {
+      dispatch({ type: LibraryActionKeys.REMOVE_LIBRARY_SONG, payload: songId });
     },
     [dispatch]
   );
@@ -101,7 +114,9 @@ export const useLibraryActions = () => {
     setRecentSearches,
     setLibrary,
     addLikedSong,
+    addLibrarySong,
     removeLikedSong,
+    removeLibrarySong,
     addPlaylist,
     removePlaylist,
     updatePlaylist,
