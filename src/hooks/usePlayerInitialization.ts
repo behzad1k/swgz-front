@@ -9,8 +9,7 @@ export const usePlayerInitialization = () => {
   const { audioRef } = useAudioPlayer();
   const { setAudioRef } = usePlayerActions();
 
-  // Initialize AudioContext on user interaction (CRITICAL for iOS/PWA)
-  useAudioContextInit();
+    useAudioContextInit();
 
   useEffect(() => {
     if (audioRef.current) {
@@ -21,14 +20,11 @@ export const usePlayerInitialization = () => {
   useQueueManager();
   useMediaSession();
 
-  // Handle visibility change
-  useEffect(() => {
+    useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('📱 App went to background');
-      } else {
-        console.log('📱 App came to foreground');
-      }
+              } else {
+              }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);

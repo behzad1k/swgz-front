@@ -1,7 +1,8 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 import { useNavigate } from '@/router/hooks';
 import { useCurrentRoute } from '@/router/hooks';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/assets/svg';
 
 interface PageHeaderProps {
   title?: string;
@@ -44,7 +45,7 @@ const PageHeader: FC<PageHeaderProps> = ({
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
               aria-label="Go back"
             >
-              <ArrowLeft size={24} />
+              <img src={ArrowLeft} alt={getAltFromPath(ArrowLeft)} width={24}/>
             </button>
           )}
 

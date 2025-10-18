@@ -1,6 +1,7 @@
 import { useIsActive, useNavigate } from '@/router';
 import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
-import { Search, Library, User } from 'lucide-react';
+import { Search, Library, User } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const Navigation = () => {
                 item.isActive ? 'text-purple-400' : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              <Icon size={24} />
+              <img src={Icon} alt={getAltFromPath(Icon)} />
             </button>
           );
         })}

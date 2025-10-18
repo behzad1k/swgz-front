@@ -1,4 +1,3 @@
-// hooks/useAppActions.ts
 import { useAppContext } from '@/contexts/AppContext';
 import { AppActionKeys } from '@store/appSlice.ts';
 import { useCallback } from 'react';

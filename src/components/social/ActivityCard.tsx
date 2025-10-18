@@ -1,4 +1,5 @@
-import { Heart, MessageCircle, Repeat } from 'lucide-react';
+import { Heart, MessageCircle, Repeat } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 import { Activity } from '@/types/models.ts';
 import SongItem from '../music/SongItem';
@@ -46,19 +47,19 @@ const ActivityCard: FC<ActivityCardProps> = ({ activity, onLike, onComment, onRe
       <div className="flex items-center gap-4 pt-2">
         {onLike && (
           <button onClick={onLike} className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors">
-            <Heart size={18} />
+            <img src={Heart} alt={getAltFromPath(Heart)} width={18} />
             <span className="text-sm">Like</span>
           </button>
         )}
         {onComment && (
           <button onClick={onComment} className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors">
-            <MessageCircle size={18} />
+            <img src={MessageCircle} alt={getAltFromPath(MessageCircle)} width={18} />
             <span className="text-sm">Comment</span>
           </button>
         )}
         {onRepost && (
           <button onClick={onRepost} className="flex items-center gap-2 text-gray-400 hover:text-green-400 transition-colors">
-            <Repeat size={18} />
+            <img src={Repeat} alt={getAltFromPath(Repeat)} width={18} />
             <span className="text-sm">Repost</span>
           </button>
         )}

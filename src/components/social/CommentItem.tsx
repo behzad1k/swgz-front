@@ -1,4 +1,5 @@
-import { Heart, MessageCircle, MoreVertical } from 'lucide-react';
+import { Heart, MessageCircle, MoveVertical } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 interface Comment {
@@ -37,13 +38,13 @@ const CommentItem: FC<CommentItemProps> = ({ comment, onReply, onLike, onMore })
         <div className="flex items-center gap-4">
           {onLike && (
             <button onClick={onLike} className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
-              <Heart size={14} />
+              <img src={Heart} alt={getAltFromPath(Heart)} width={14} />
               {comment.likes && <span className="text-xs">{comment.likes}</span>}
             </button>
           )}
           {onReply && (
             <button onClick={onReply} className="flex items-center gap-1 text-gray-400 hover:text-blue-400 transition-colors">
-              <MessageCircle size={14} />
+              <img src={MessageCircle} alt={getAltFromPath(MessageCircle)} width={14} />
               {comment.replyCount && <span className="text-xs">{comment.replyCount}</span>}
             </button>
           )}
@@ -51,7 +52,7 @@ const CommentItem: FC<CommentItemProps> = ({ comment, onReply, onLike, onMore })
       </div>
       {onMore && (
         <button onClick={onMore} className="text-gray-400 hover:text-white transition-colors">
-          <MoreVertical size={18} />
+          <img src={MoveVertical} alt={getAltFromPath(MoveVertical)} width={18} />
         </button>
       )}
     </div>

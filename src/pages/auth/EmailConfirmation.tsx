@@ -1,6 +1,7 @@
 import { useQuery } from '@/router';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useEffect, useState } from 'react';
-import { Music } from 'lucide-react';
+import { Music } from '@/assets/svg';
 import Button from '@/components/common/Button';
 import { authApi } from '@/api/auth.api';
 
@@ -42,7 +43,7 @@ const EmailConfirmation: FC = () => {
       <div className="bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md shadow-2xl">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Music size={48} className="text-purple-500" />
+            <img src={Music} alt={getAltFromPath(Music)} width={48} className="text-purple-500" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">swgz</h1>
           <p className="text-gray-400">Your premium music experience</p>

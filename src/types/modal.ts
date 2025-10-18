@@ -1,4 +1,3 @@
-// types/modal.ts
 import { ComponentType } from 'react';
 
 export interface ModalConfig {

@@ -22,18 +22,15 @@ export const useAudioContextInit = () => {
           await audioContext.resume();
         }
 
-        console.log('🎚️ AudioContext initialized on user interaction:', audioContext.state);
-        initializedRef.current = true;
+                initializedRef.current = true;
 
-        // Clean up
-        await audioContext.close();
+                await audioContext.close();
       } catch (error) {
         console.error('Failed to initialize AudioContext:', error);
       }
     };
 
-    // Listen for first user interaction
-    const events = ['touchstart', 'touchend', 'mousedown', 'keydown', 'click'];
+        const events = ['touchstart', 'touchend', 'mousedown', 'keydown', 'click'];
 
     events.forEach(event => {
       document.addEventListener(event, initAudioContext, { once: true, passive: true });

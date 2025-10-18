@@ -1,12 +1,13 @@
 // @ts-nocheck
 import Modal from '@components/common/Modal.tsx';
-import { Check, Download, X } from 'lucide-react';
+import { Check, DownloadCloud, X } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 interface DownloadManagerProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
+// TODO: Refactor based on new states
 const DownloadManager: FC<DownloadManagerProps> = ({ isOpen, onClose }) => {
   const { downloads } = state;
 
@@ -21,7 +22,7 @@ const DownloadManager: FC<DownloadManagerProps> = ({ isOpen, onClose }) => {
         {Object.keys(downloads.active).length > 0 && (
           <div>
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Download size={20} className="text-purple-400" />
+              <img src={DownloadCloud} alt={getAltFromPath(DownloadCloud)} width={20} className="text-purple-400" />
               Active Downloads
             </h3>
             <div className="space-y-3">
@@ -30,7 +31,7 @@ const DownloadManager: FC<DownloadManagerProps> = ({ isOpen, onClose }) => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-white font-medium">Song {id}</span>
                     <button onClick={() => handleCancelDownload(id)} className="text-red-400 hover:text-red-300">
-                      <X size={20} />
+                      <img src={X} alt={getAltFromPath(X)} width={20} />
                     </button>
                   </div>
                   <div className="w-full bg-white/10 rounded-full h-2">
@@ -46,14 +47,14 @@ const DownloadManager: FC<DownloadManagerProps> = ({ isOpen, onClose }) => {
         {downloads.completed.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Check size={20} className="text-green-400" />
+              <img src={Check} alt={getAltFromPath(Check)} width={20} className="text-green-400" />
               Completed
             </h3>
             <div className="space-y-2">
               {downloads.completed.map((download, idx) => (
                 <div key={idx} className="bg-white/5 rounded-xl p-3 flex items-center justify-between">
                   <span className="text-white">Song {download.id}</span>
-                  <Check size={20} className="text-green-400" />
+                  <img src={Check} alt={getAltFromPath(Check)} width={20} className="text-green-400" />
                 </div>
               ))}
             </div>
@@ -62,7 +63,7 @@ const DownloadManager: FC<DownloadManagerProps> = ({ isOpen, onClose }) => {
 
         {Object.keys(downloads.active).length === 0 && downloads.completed.length === 0 && (
           <div className="text-center py-12 text-gray-400">
-            <Download size={48} className="mx-auto mb-4 opacity-50" />
+            <img src={DownloadCloud} alt={getAltFromPath(DownloadCloud)} width={48} className="mx-auto mb-4 opacity-50" />
             <p>No downloads yet</p>
           </div>
         )}

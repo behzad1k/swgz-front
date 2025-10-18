@@ -1,6 +1,7 @@
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useCurrentSong, useIsPlaying, usePlayerProgress } from '@hooks/selectors/usePlayerSelectors.ts';
-import { Pause, Play } from 'lucide-react';
+import { Pause, Play } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 interface MiniPlayerProps {
@@ -24,7 +25,7 @@ const MiniPlayer: FC<MiniPlayerProps> = ({ onClick }) => {
           <p className="text-gray-300 text-xs truncate">{currentSong.artistName}</p>
         </div>
         <button onClick={(e) => { e.stopPropagation(); togglePlay() }} className="p-2">
-          {isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white fill-white" />}
+          {isPlaying ? <img src={Pause} alt={getAltFromPath(Pause)} width={24} className="text-white" /> : <img src={Play} alt={getAltFromPath(Play)} width={24} className="text-white fill-white" />}
         </button>
       </div>
       <div className="h-1 bg-white/20">

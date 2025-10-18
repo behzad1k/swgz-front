@@ -1,4 +1,5 @@
-import { Search, Library, Plus, Heart, Clock, TrendingUp } from 'lucide-react';
+import { Search, Library, Plus, Heart, Clock, TrendingUp } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 interface SidebarProps {
@@ -40,7 +41,7 @@ const Sidebar: FC<SidebarProps> = ({ currentPage, onNavigate }) => {
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Icon size={22} />
+                <img src={Icon} alt={getAltFromPath(Icon)} width={22} />
                 <span className="font-medium">{item.label}</span>
               </button>
             );
@@ -49,7 +50,7 @@ const Sidebar: FC<SidebarProps> = ({ currentPage, onNavigate }) => {
 
         <div className="mt-8">
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all text-gray-400 hover:text-white">
-            <Plus size={22} />
+            <img src={Plus} alt={getAltFromPath(Plus)} width={22} />
             <span className="font-medium">Create Playlist</span>
           </button>
         </div>
@@ -65,7 +66,7 @@ const Sidebar: FC<SidebarProps> = ({ currentPage, onNavigate }) => {
                   onClick={() => onNavigate(item.id)}
                   className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
                 >
-                  <Icon size={18} />
+                  <img src={Icon} alt={getAltFromPath(Icon)} width={18} />
                   <span className="text-sm">{item.label}</span>
                 </button>
               );

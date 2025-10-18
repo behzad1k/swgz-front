@@ -73,3 +73,8 @@ export const throttle = <T extends (...args: any[]) => any>(
     }
   };
 };
+
+export const getAltFromPath = (path: string) => {
+  const filename = path.split('/').pop()
+  return filename?.replace('.svg', '')
+}

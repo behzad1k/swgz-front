@@ -6,7 +6,8 @@ import Button from '@components/common/Button.tsx';
 import AlbumCard from '@components/music/AlbumCard.tsx';
 import SongItem from '@components/music/SongItem.tsx';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
-import { X } from 'lucide-react';
+import { X } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useEffect, useState } from 'react';
 
 
@@ -16,9 +17,6 @@ const ArtistPage: FC = () => {
   const [_loading, setLoading] = useState(false);
   const navigate = useNavigate()
   const { play } = usePlayerActions()
-  // const playAndQueueTheRest = (track: Track) => {
-  //   // player.updateQueue(track)
-  // }
 
   const fetchArtist = async () => {
     setLoading(true);
@@ -47,7 +45,7 @@ const ArtistPage: FC = () => {
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 overflow-auto">
       <div className="max-w-6xl mx-auto p-6">
         <button className="mb-6 text-gray-400 hover:text-white transition-colors">
-          <X size={28} onClick={() => navigate(-1)} />
+          <img src={X} alt={getAltFromPath(X)} width={28} onClick={() => navigate(-1)} />
         </button>
         <div className="flex flex-col items-start gap-6 mb-8">
           <img src={artist?.pfp} alt={artist?.name} className="rounded-2xl object-cover shadow-2xl" />

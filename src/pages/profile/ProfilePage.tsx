@@ -1,6 +1,7 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState, useEffect } from 'react';
 import { useNavigate } from '@/router/hooks';
-import { Edit2, Settings, LogOut } from 'lucide-react';
+import { Edit2, Settings, LogOut } from '@/assets/svg';
 import Button from '@/components/common/Button';
 import Badge from '@/components/common/Badge';
 import SongItem from '@/components/music/SongItem';
@@ -55,7 +56,7 @@ const ProfilePage: FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 pb-32">
       <div className="max-w-6xl mx-auto p-6">
-        {/* Header */}
+
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-2xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start gap-6">
             <img
@@ -67,17 +68,17 @@ const ProfilePage: FC = () => {
               <div className="flex items-center gap-4 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold text-white">{profile.username}</h1>
                 {profile.subscriptionPlan == 'premium' && <Badge variant="warning">Premium</Badge>}
-                <Button size="sm" icon={<Edit2 size={16} />} onClick={() => navigate('/profile/edit')}>
+                <Button size="sm" icon={<img src={Edit2} alt={getAltFromPath(Edit2)} width={16} />} onClick={() => navigate('/profile/edit')}>
                   Edit
                 </Button>
                 <button
                   onClick={() => navigate('/settings')}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
-                  <Settings size={20} className="text-gray-400" />
+                  <img src={Settings} alt={getAltFromPath(Settings)} width={20} className="text-gray-400" />
                 </button>
                 <button onClick={handleLogout} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                  <LogOut size={20} className="text-gray-400" />
+                  <img src={LogOut} alt={getAltFromPath(LogOut)} width={20} className="text-gray-400" />
                 </button>
               </div>
               <p className="text-gray-300 mb-4">{profile.bio || 'No bio yet'}</p>
@@ -106,7 +107,7 @@ const ProfilePage: FC = () => {
           )}
         </div>
 
-        {/* Tabs */}
+
         <div className="flex gap-2 border-b border-white/10 overflow-x-auto mb-8">
           {tabs.map((tab) => (
             <button
@@ -121,7 +122,7 @@ const ProfilePage: FC = () => {
           ))}
         </div>
 
-        {/* Tab Content */}
+
         <div className="text-center py-12 text-gray-400">
           <p>Content for {activeTab} will be displayed here</p>
         </div>

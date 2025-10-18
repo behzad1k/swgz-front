@@ -124,19 +124,19 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
       role="dialog"
       aria-modal="true"
     >
-      {/* Overlay */}
+
       <div
         className="absolute inset-0 bg-black transition-opacity duration-300"
         style={{ opacity: opacity * 0.5 }}
         aria-hidden="true"
       />
 
-      {/* Modal Content */}
+
       <div
         className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full ${sizeClasses[size]} ${animationClasses[animation]} ${className}`}
         style={{ maxHeight: '90vh' }}
       >
-        {/* Close Button */}
+
         {showCloseButton && (
           <button
             onClick={onClose}
@@ -160,7 +160,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
           </button>
         )}
 
-        {/* Modal Body */}
+
         <div className="overflow-y-auto max-h-[90vh]">
           <Component {...props} onClose={onClose} />
         </div>

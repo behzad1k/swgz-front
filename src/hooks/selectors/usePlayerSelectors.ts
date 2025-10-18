@@ -1,4 +1,3 @@
-// hooks/usePlayerSelectors.ts
 import { usePlayerContext } from '@/contexts/PlayerContext';
 import { useMemo } from 'react';
 
@@ -52,7 +51,6 @@ export const usePlayerQuality = () => {
   return state.quality;
 };
 
-// Computed selectors
 export const useQueueLength = () => {
   const { state } = usePlayerContext();
   return useMemo(() => state.queue.length, [state.queue.length]);

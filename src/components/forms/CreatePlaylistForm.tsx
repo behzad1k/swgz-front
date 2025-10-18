@@ -1,7 +1,8 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState } from 'react';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/assets/svg';
 
 interface CreatePlaylistFormProps {
   onSubmit: (name: string, description: string, coverImage?: File) => void;
@@ -36,7 +37,7 @@ const CreatePlaylistForm: FC<CreatePlaylistFormProps> = ({ onSubmit, loading = f
                 className="w-full h-full object-cover rounded-xl"
               />
             ) : (
-              <Upload size={32} className="text-gray-400" />
+              <img src={Upload} alt={getAltFromPath(Upload)} width={32} className="text-gray-400" />
             )}
           </div>
           <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />

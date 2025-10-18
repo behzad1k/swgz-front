@@ -1,4 +1,5 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, ReactNode, useState, useRef, useEffect } from 'react';
 
 interface DropdownOption {
@@ -42,7 +43,7 @@ const Dropdown: FC<DropdownProps> = ({ options, value, onChange, placeholder = '
           {selectedOption?.icon}
           {selectedOption?.label || placeholder}
         </span>
-        <ChevronDown size={20} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <img src={ChevronDown} alt={getAltFromPath(ChevronDown)} width={20} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (

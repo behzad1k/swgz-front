@@ -25,7 +25,6 @@ export type PlayerState = {
   quality: QualityType | null;
 };
 
-// Library State
 export type LibraryState = {
   likedSongs: LibrarySong[];
   playlists: Playlist[];
@@ -35,21 +34,18 @@ export type LibraryState = {
   recentSearches: SearchHistory[];
 };
 
-// Auth State
 export type AuthState = {
   token: string | null;
   user: UserProfile | null;
   isAuthenticated: boolean;
 };
 
-// App State
 export type AppState = {
   isOnline: boolean;
   showNowPlaying: boolean;
   showDownloadManager: boolean;
 };
 
-// Modal State (add if you have it)
 export type ModalState = {
   modals: ModalConfig[];
   activeModalId: string | null;

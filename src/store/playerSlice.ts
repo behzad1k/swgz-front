@@ -9,7 +9,7 @@ export const initialPlayerState: PlayerState = {
   queue: [],
   isPlaying: false,
   progress: 0,
-  volume: 1,
+  volume: 100,
   repeat: false,
   shuffle: false,
   // quality: (localStorage.getItem(LOCAL_STORAGE_KEYS.PREFERRED_QUALITY) as QualityType) || '320',

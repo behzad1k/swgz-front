@@ -1,4 +1,3 @@
-// store/slices/authSlice.ts
 import { UserProfile } from '@/types/models.ts';
 import { AuthState } from '@/types/states.ts';
 

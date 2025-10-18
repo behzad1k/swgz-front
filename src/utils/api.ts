@@ -90,14 +90,12 @@ class ApiService {
     let receivedLength = 0;
     const chunks: Uint8Array[] = [];
 
-    // Check if already aborted
-    if (signal?.aborted) {
+        if (signal?.aborted) {
       reader.cancel();
       throw new DOMException('Download aborted', 'AbortError');
     }
 
-    // Listen for abort events during download
-    const abortHandler = () => {
+        const abortHandler = () => {
       reader.cancel();
     };
     signal?.addEventListener('abort', abortHandler);

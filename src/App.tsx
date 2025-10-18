@@ -14,12 +14,13 @@ import { useAuthToken, useCurrentUser, useIsAuthenticated } from '@hooks/selecto
 import { useAudioFocus } from '@hooks/useAudioFocus.ts';
 import { usePlayerInitialization } from '@hooks/usePlayerInitialization.ts';
 import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useEffect } from 'react';
 
 // Components
 import DownloadManager from '@components/download/DownloadManager.tsx';
 import Navigation from '@components/layout/Navigation.tsx';
-import { WifiOff } from 'lucide-react';
+import { WifiOff } from '@/assets/svg';
 
 const App: FC = () => {
   usePlayerInitialization();
@@ -77,7 +78,7 @@ const App: FC = () => {
     <div className="app-container bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 ">
       {!isOnline && (
         <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black px-4 py-2 text-center z-50 flex items-center justify-center gap-2">
-          <WifiOff size={20} />
+          <img src={WifiOff} alt={getAltFromPath(WifiOff)} width={20}/>
           <span>You're offline. Playing downloaded music.</span>
         </div>
       )}
@@ -110,7 +111,7 @@ const App: FC = () => {
         </Routes>
       </div>
 
-      {/* <MiniPlayer onClick={() => dispatch({ type: 'SET_APP', payload: { showNowPlaying: true } })} /> */}
+
       {isAuthenticated && <Navigation/>}
 
       <NowPlayingSheet />
@@ -122,7 +123,7 @@ const App: FC = () => {
         />
       )}
 
-      {/* Modal Manager for all modals */}
+
       <ModalManager />
     </div>
   );

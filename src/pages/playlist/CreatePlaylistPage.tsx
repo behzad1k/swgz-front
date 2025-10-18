@@ -1,6 +1,7 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState } from 'react';
 import { useNavigate } from '@/router/hooks';
-import { X } from 'lucide-react';
+import { X } from '@/assets/svg';
 import CreatePlaylistForm from '@/components/forms/CreatePlaylistForm';
 import { playlistApi } from '@/api/playlist.api';
 
@@ -28,7 +29,7 @@ const CreatePlaylistPage: FC = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Create Playlist</h1>
           <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-white transition-colors">
-            <X size={28} />
+            <img src={X} alt={getAltFromPath(X)} width={28} />
           </button>
         </div>
 

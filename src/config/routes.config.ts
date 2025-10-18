@@ -33,8 +33,7 @@ interface Routes {
 }
 
 export const routes: Routes = {
-  // Auth Routes
-  login: {
+    login: {
     path: '/login',
     component: LoginPage,
     protected: false,
@@ -58,8 +57,7 @@ export const routes: Routes = {
     showHeader: false,
   },
 
-  // Main Routes
-  root: {
+    root: {
     path: '/',
     component: LibraryPage,
     protected: true,
@@ -140,16 +138,6 @@ export const routes: Routes = {
     showHeader: true,
     headerBackButton: true,
   },
-  // recentlyPlayed: {
-  //   path: '/playlist/recently-played',
-  //   component: Rece,
-  //   protected: true,
-  //   title: 'Most Listened',
-  //   description: 'Your top tracks',
-  //   showHeader: true,
-  //   headerBackButton: true,
-  // },
-
 
   // Playlist Routes
   createPlaylist: {

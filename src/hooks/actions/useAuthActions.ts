@@ -1,4 +1,3 @@
-// hooks/useAuthActions.ts
 import { useAuthContext } from '@/contexts/AuthContext';
 import { AuthActionKeys } from '@store/authSlice.ts';
 import { UserProfile } from '@/types/models';

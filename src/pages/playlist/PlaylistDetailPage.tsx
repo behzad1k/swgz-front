@@ -1,6 +1,7 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState, useEffect } from 'react';
 import { useParams, useNavigate } from '@/router/hooks';
-import { X, Play, Shuffle, Edit2, MoreVertical, Plus } from 'lucide-react';
+import { X, Play, Shuffle, Edit2, MoveVertical, Plus } from '@/assets/svg';
 import Button from '@/components/common/Button';
 import DraggableSongItem from '@/components/music/DraggableSongItem';
 import { playlistApi } from '@/api/playlist.api';
@@ -64,10 +65,10 @@ const PlaylistDetailPage: FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900">
       <div className="max-w-6xl mx-auto p-6">
         <button onClick={() => navigate(-1)} className="mb-6 text-gray-400 hover:text-white transition-colors">
-          <X size={28} />
+          <img src={X} alt={getAltFromPath(X)} width={28} />
         </button>
 
-        {/* Header */}
+
         <div className="flex items-end gap-6 mb-8">
           <div className="relative group">
             <img
@@ -76,7 +77,7 @@ const PlaylistDetailPage: FC = () => {
               className="w-64 h-64 rounded-2xl object-cover shadow-2xl"
             />
             <button className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity">
-              <Edit2 size={32} className="text-white" />
+              <img src={Edit2} alt={getAltFromPath(Edit2)} width={32} className="text-white" />
             </button>
           </div>
           <div className="flex-1">
@@ -84,41 +85,41 @@ const PlaylistDetailPage: FC = () => {
             <h1 className="text-5xl font-bold text-white mb-4">{playlist.title}</h1>
             <p className="text-gray-300 mb-2">{playlist.description}</p>
             <p className="text-gray-400">
-              {songs.length} songs • {playlist.isPublic ? 'Public' : 'Private'}
+              {songs.length} songs {playlist.isPublic ? 'Public' : 'Private'}
             </p>
           </div>
         </div>
 
-        {/* Actions */}
+
         <div className="flex gap-4 mb-8">
-          <Button size="lg" icon={<Play size={24} className="fill-white" />} onClick={handlePlayAll}>
+          <Button size="lg" icon={<img src={Play} alt={getAltFromPath(Play)} width={24} className="fill-white" />} onClick={handlePlayAll}>
             Play All
           </Button>
-          <Button size="lg" variant="secondary" icon={<Shuffle size={24} />} onClick={handleShuffle}>
+          <Button size="lg" variant="secondary" icon={<img src={Shuffle} alt={getAltFromPath(Shuffle)} width={24} />} onClick={handleShuffle}>
             Shuffle
           </Button>
           <Button
             size="lg"
             variant="secondary"
-            icon={<Edit2 size={24} />}
+            icon={<img src={Edit2} alt={getAltFromPath(Edit2)} width={24} />}
             onClick={() => navigate(`/playlist/${id}/edit`)}
           >
             Edit
           </Button>
-          <Button size="lg" variant="secondary" icon={<Plus size={24} />}>
+          <Button size="lg" variant="secondary" icon={<img src={Plus} alt={getAltFromPath(Plus)} width={24} />}>
             Add Songs
           </Button>
           <button className="p-3 hover:bg-white/10 rounded-full transition-colors">
-            <MoreVertical size={24} className="text-gray-400" />
+            <img src={MoveVertical} alt={getAltFromPath(MoveVertical)} width={24} className="text-gray-400" />
           </button>
         </div>
 
-        {/* Song List with Drag and Drop */}
+
         <div className="space-y-1">
           {songs.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <p>No songs in this playlist yet</p>
-              <Button className="mt-4" icon={<Plus size={20} />}>
+              <Button className="mt-4" icon={<img src={Plus} alt={getAltFromPath(Plus)} width={20} />}>
                 Add Songs
               </Button>
             </div>

@@ -1,4 +1,3 @@
-// hooks/useLibrarySelectors.ts
 import { useLibraryContext } from '@/contexts/LibraryContext.tsx';
 import { useMemo } from 'react';
 
@@ -37,7 +36,6 @@ export const useRecentSearches = () => {
   return state.recentSearches;
 };
 
-// Computed selectors
 export const useIsLiked = (songId: string) => {
   const { state } = useLibraryContext();
   return useMemo(

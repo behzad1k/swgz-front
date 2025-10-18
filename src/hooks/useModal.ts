@@ -1,4 +1,3 @@
-// hooks/useModal.ts
 import { ModalConfig } from '@/types/modal.ts';
 import { useCallback } from 'react';
 import { useModalContext } from '@/contexts/ModalContext';

@@ -9,7 +9,8 @@ import { buildPath, routes } from '@/config/routes.config.ts';
 import { useNavigate } from '@/router';
 import { Playlist, Track } from '@/types/models.ts';
 import { useLibrarySongs, useLikedSongs, useMostListened, useRecentlyPlayed } from '@hooks/selectors/useLibrarySelectors.ts';
-import { Clock, Grid as GridIcon, Heart, List, Music, Plus, Search, TrendingUp } from 'lucide-react';
+import { Clock, Heart, LayoutGrid, List, Music, Plus, Search, TrendingUp } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useEffect, useState } from 'react';
 
 const LibraryPage: FC = () => {
@@ -54,12 +55,13 @@ const LibraryPage: FC = () => {
     {
       value: 'songs',
       label: 'Songs',
-      icon: <Music size={18}/>
+      icon:  <img src={Music} alt={getAltFromPath(Music)} width={18}/>
+
     },
     {
       value: 'playlists',
       label: 'Playlists',
-      icon: <List size={18}/>
+      icon: <img src={List} alt={getAltFromPath(List)} width={18}/>
     },
   ];
 
@@ -67,19 +69,19 @@ const LibraryPage: FC = () => {
     {
       value: 'liked-songs',
       label: 'Liked Songs',
-      icon: <Heart size={20}/>,
+      icon: <img src={Heart} alt={getAltFromPath(Heart)} width={20}/>,
       count: likedSongs.length
     },
     {
       value: 'recently-played',
       label: 'Recently Played',
-      icon: <Clock size={20}/>,
+      icon: <img src={Clock} alt={getAltFromPath(Clock)} width={20}/>,
       count: recentlyPlayed.length
     },
     {
       value: 'most-listened',
       label: 'Most Listened',
-      icon: <TrendingUp size={20}/>,
+      icon: <img src={TrendingUp} alt={getAltFromPath(TrendingUp)} width={20}/>,
       count: mostListened.length
     },
   ];
@@ -95,13 +97,13 @@ const LibraryPage: FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your Library</h1>
         {activeTab === 'playlists' && (
-          <Button icon={<Plus size={20}/>} onClick={() => setShowCreatePlaylist(true)}>
+          <Button icon={<img src={Plus} alt={getAltFromPath(Plus)} width={18}/>} onClick={() => setShowCreatePlaylist(true)}>
             Create Playlist
           </Button>
         )}
       </div>
 
-      {/* Quick Links */}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {quickLinks.map((link, idx) => (
           <div
@@ -124,14 +126,14 @@ const LibraryPage: FC = () => {
         ))}
       </div>
 
-      {/* Search and View Controls */}
+
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="w-full sm:w-96">
           <Input
             placeholder="Search in your library..."
             value={searchQuery}
             onChange={setSearchQuery}
-            icon={<Search size={20}/>}
+            icon={<img src={Search} alt={getAltFromPath(Search)} width={18}/>}
           />
         </div>
         <div className="flex gap-2">
@@ -143,7 +145,7 @@ const LibraryPage: FC = () => {
                   viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-400'
                 }`}
               >
-                <List size={20}/>
+                <img src={List} alt={getAltFromPath(List)} width={18}/>
               </button>
               <button
                 onClick={() => setViewMode('grid')}
@@ -151,14 +153,14 @@ const LibraryPage: FC = () => {
                   viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-gray-400'
                 }`}
               >
-                <GridIcon size={20}/>
+                <img src={LayoutGrid} alt={getAltFromPath(LayoutGrid)} width={18}/>
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
+
       <div className="flex gap-2 border-b border-white/10">
         {tabs.map((tab) => (
           <button
@@ -176,7 +178,7 @@ const LibraryPage: FC = () => {
         ))}
       </div>
 
-      {/* Content */}
+
       {loading ? (
         <div className="text-center py-12 text-gray-400">Loading...</div>
       ) : (
@@ -185,7 +187,7 @@ const LibraryPage: FC = () => {
             <div className="space-y-2">
               {filteredSongs.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
-                  <Heart size={48} className="mx-auto mb-4 opacity-50"/>
+                  <img src={Heart} alt={getAltFromPath(Heart)} width={48}/>
                   <p>No songs in your library yet</p>
                 </div>
               ) : (
@@ -200,7 +202,7 @@ const LibraryPage: FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filteredPlaylists.length === 0 ? (
                     <div className="col-span-full text-center py-12 text-gray-400">
-                      <List size={48} className="mx-auto mb-4 opacity-50"/>
+                      <img src={List} alt={getAltFromPath(List)} width={48}/>
                       <p>No playlists yet</p>
                     </div>
                   ) : (
@@ -225,8 +227,8 @@ const LibraryPage: FC = () => {
                       <div className="flex-1">
                         <h3 className="text-white font-semibold">{playlist.title}</h3>
                         <p className="text-gray-400 text-sm">
-                          {/* {playlist.songCount || 0}  */}
-                          songs • {playlist.isPublic ? 'Public' : 'Private'}
+
+                          songs {playlist.isPublic ? 'Public' : 'Private'}
                         </p>
                       </div>
                     </div>
@@ -238,7 +240,7 @@ const LibraryPage: FC = () => {
         </>
       )}
 
-      {/* Create Playlist Modal */}
+
       <Modal isOpen={showCreatePlaylist} onClose={() => setShowCreatePlaylist(false)} title="Create New Playlist">
         <CreatePlaylistForm onSubmit={handleCreatePlaylist}/>
       </Modal>

@@ -1,4 +1,4 @@
-import { Search, X } from 'lucide-react';
+import { Search, X } from '@/assets/svg'
 import { FC } from 'react';
 
 interface SearchBarProps {
@@ -18,7 +18,7 @@ const SearchBar: FC<SearchBarProps> = ({ value, onChange, onSearch, placeholder 
   return (
     <div className="relative">
       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-        <Search size={20} />
+        <img src={Search} width={20} />
       </div>
       <input
         type="text"
@@ -33,7 +33,7 @@ const SearchBar: FC<SearchBarProps> = ({ value, onChange, onSearch, placeholder 
           onClick={() => onChange('')}
           className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
         >
-          <X size={20} />
+          <img src={X} width={20} />
         </button>
       )}
     </div>

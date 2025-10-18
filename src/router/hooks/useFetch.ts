@@ -19,8 +19,7 @@ export function useFetch<T>(
   useEffect(() => {
     if (options.skip) return;
 
-    // Cancel previous request if still running
-    if (abortControllerRef.current) {
+        if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
@@ -52,7 +51,7 @@ export function useFetch<T>(
     return () => {
       controller.abort();
     };
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  }, deps);
 
   return { data, loading, error, refetch: () => {} };
 }

@@ -1,4 +1,3 @@
-// store/slices/modalSlice.ts
 import { ModalConfig } from '@/types/modal.ts';
 import { ModalState } from '@/types/states.ts';
 

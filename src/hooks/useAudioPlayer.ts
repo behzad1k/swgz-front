@@ -6,7 +6,7 @@ import {
   useCurrentSong,
   useIsPlaying,
   usePlayerQuality,
-  usePlayerRepeat
+  usePlayerRepeat, usePlayerVolume
 } from './selectors/usePlayerSelectors';
 import { useCurrentUser } from './selectors/useAuthSelectors';
 
@@ -16,7 +16,7 @@ export const useAudioPlayer = () => {
   const quality = usePlayerQuality();
   const repeat = usePlayerRepeat();
   const user = useCurrentUser();
-
+  const volume = usePlayerVolume();
   const [actualQuality, setActualQuality] = useState<string | null>(null);
   const [isAutoSelected, setIsAutoSelected] = useState(false);
 
@@ -33,8 +33,7 @@ export const useAudioPlayer = () => {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize audio element with iOS/PWA optimizations
-  useEffect(() => {
+    useEffect(() => {
     if (!audioRef.current) {
       const audio = new Audio();
 
@@ -42,13 +41,12 @@ export const useAudioPlayer = () => {
       audio.setAttribute('webkit-playsinline', 'true');
       audio.preload = 'auto';
       audio.crossOrigin = 'anonymous';
-      audio.volume = 1;
+      audio.volume = volume / 100;
 
       audioRef.current = audio;
       setAudioRef(audio);
 
-      console.log('🎵 Audio element initialized');
-    }
+          }
 
     const audio = audioRef.current;
 
@@ -56,8 +54,7 @@ export const useAudioPlayer = () => {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioContext) {
         audioContextRef.current = new AudioContext();
-        console.log('🎚️ AudioContext initialized:', audioContextRef.current.state);
-      }
+              }
     }
 
     const updateProgress = () => {
@@ -73,15 +70,13 @@ export const useAudioPlayer = () => {
               position: audio.currentTime,
             });
           } catch (error) {
-            // Ignore position state errors
-          }
+                      }
         }
       }
     };
 
     const handleEnded = () => {
-      console.log('🎵 Song ended');
-      if (repeat) {
+            if (repeat) {
         audio.currentTime = 0;
         audio.play().catch(err => console.error('Repeat play failed:', err));
       } else {
@@ -90,7 +85,7 @@ export const useAudioPlayer = () => {
     };
 
     const handleError = (e: Event) => {
-      console.error('❌ Audio playback error:', e);
+      console.error('Audio playback error:', e);
       console.error('Audio error details:', {
         error: audio.error,
         networkState: audio.networkState,
@@ -101,41 +96,37 @@ export const useAudioPlayer = () => {
     };
 
     const handleCanPlay = () => {
-      console.log('✅ Audio: Can play');
+      console.log('Audio: Can play');
 
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume().then(() => {
-          console.log('🎚️ AudioContext resumed');
-        }).catch(e => console.error(e));
+                  }).catch(e => console.error(e));
       }
     };
 
     const handlePlay = async () => {
-      console.log('▶️ Audio: Play event fired');
+      console.log('️ Audio: Play event fired');
 
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         await audioContextRef.current.resume();
-        console.log('🎚️ AudioContext resumed on play');
-      }
+              }
 
       if ('wakeLock' in navigator) {
         try {
           wakeLockRef.current = await navigator.wakeLock.request('screen');
-          console.log('🔒 Wake lock activated');
-        } catch (error) {
+                  } catch (error) {
           console.warn('Wake lock failed:', error);
         }
       }
     };
 
     const handlePause = () => {
-      console.log('⏸️ Audio: Pause event fired');
+      console.log('️ Audio: Pause event fired');
 
       if (wakeLockRef.current) {
         wakeLockRef.current.release();
         wakeLockRef.current = null;
-        console.log('🔓 Wake lock released');
-      }
+              }
     };
 
     audio.addEventListener('timeupdate', updateProgress);
@@ -163,21 +154,19 @@ export const useAudioPlayer = () => {
     };
   }, [repeat, setProgress, setIsPlaying, playNextAction, setAudioRef]);
 
-  // Load and play song with quality detection
-  useEffect(() => {
+    useEffect(() => {
     const loadAndPlaySong = async () => {
       if (!currentSong || !audioRef.current || isLoadingRef.current) {
         return;
       }
 
-      console.log('🎵 Loading song:', currentSong.title);
 
       try {
         isLoadingRef.current = true;
         let songObj = currentSong;
 
         if (!currentSong.id) {
-          console.log('⚠️ Song has no ID, preparing...');
+          console.log('️ Song has no ID, preparing...');
           songObj = await musicApi.prepareForPlaying({
             title: currentSong.title,
             artistName: currentSong.artistName,
@@ -188,37 +177,34 @@ export const useAudioPlayer = () => {
             lastFMLink: currentSong.lastFMLink,
           });
 
-          console.log('✅ Song prepared:', songObj);
+          console.log('Song prepared:', songObj);
           setCurrentSong(songObj);
         }
 
         const audio = audioRef.current;
         const apiKey = user?.apiKey || '';
 
-        // Get stream URL - pass quality only if explicitly set by user
-        const streamUrl = musicApi.getStreamUrl(songObj.id || '', apiKey, quality);
+                const streamUrl = musicApi.getStreamUrl(songObj.id || '', apiKey, quality);
 
-        // Try to detect actual quality being served
-        const metadata = await fetchMetaData(streamUrl)
+                const metadata = await fetchMetaData(streamUrl)
 
         if (metadata) {
-          console.log('📊 Stream metadata:', metadata);
+          console.log('Stream metadata:', metadata);
           setActualQuality(metadata.actualQuality || metadata.qualityFallback || quality || null);
           setIsAutoSelected(metadata.autoSelected);
 
           if (metadata.autoSelected) {
-            console.log(`🎵 Auto-selected quality: ${metadata.actualQuality}`);
-          } else if (metadata.qualityFallback) {
-            console.log(`⚠️ Using fallback quality: ${metadata.qualityFallback} (requested: ${metadata.requestedQuality})`);
+                      } else if (metadata.qualityFallback) {
+            console.log(`️ Using fallback quality: ${metadata.qualityFallback} (requested: ${metadata.requestedQuality})`);
           }
         }
 
-        console.log('🌐 Setting stream URL');
+        console.log('Setting stream URL');
         audio.src = streamUrl;
         audio.load();
 
         if (isPlaying) {
-          console.log('▶️ Attempting to play...');
+          console.log('️ Attempting to play...');
 
           await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -245,39 +231,39 @@ export const useAudioPlayer = () => {
           });
 
           if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-            console.log('🎚️ Resuming AudioContext before play...');
+            console.log('Resuming AudioContext before play...');
             await audioContextRef.current.resume();
           }
 
           try {
             await audio.play();
-            console.log('✅ Playback started successfully');
+            console.log('Playback started successfully');
 
             if ('mediaSession' in navigator) {
               navigator.mediaSession.playbackState = 'playing';
             }
           } catch (playError: any) {
-            console.error('❌ Play error:', playError);
+            console.error('Play error:', playError);
 
             if (playError.name === 'NotAllowedError') {
-              console.warn('⚠️ Autoplay blocked - user interaction required');
+              console.warn('️Autoplay blocked - user interaction required');
               setIsPlaying(false);
             } else {
-              console.log('🔄 Retrying play after 500ms...');
+              console.log('Retrying play after 500ms...');
               await new Promise(resolve => setTimeout(resolve, 500));
 
               try {
                 await audio.play();
-                console.log('✅ Playback started on retry');
+                console.log('Playback started on retry');
               } catch (retryError) {
-                console.error('❌ Retry failed:', retryError);
+                console.error('Retry failed:', retryError);
                 setIsPlaying(false);
               }
             }
           }
         }
       } catch (error) {
-        console.error('❌ Failed to load song:', error);
+        console.error('Failed to load song:', error);
         setIsPlaying(false);
       } finally {
         isLoadingRef.current = false;
@@ -287,15 +273,14 @@ export const useAudioPlayer = () => {
     loadAndPlaySong();
   }, [currentSong?.id, currentSong?.title, quality, user?.apiKey, setCurrentSong, setIsPlaying]);
 
-  // Sync isPlaying with audio element
-  useEffect(() => {
+    useEffect(() => {
     if (!audioRef.current || !currentSong) return;
 
     const audio = audioRef.current;
 
     const syncPlayback = async () => {
       if (isPlaying && audio.paused) {
-        console.log('▶️ Syncing: Playing audio (was paused)');
+        console.log('️ Syncing: Playing audio (was paused)');
 
         if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
           await audioContextRef.current.resume();
@@ -303,19 +288,19 @@ export const useAudioPlayer = () => {
 
         audio.play()
         .then(() => {
-          console.log('✅ Sync play successful');
+          console.log('Sync play successful');
           if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = 'playing';
           }
         })
         .catch((e) => {
-          console.error('❌ Sync play failed:', e);
+          console.error('Sync play failed:', e);
           if (e.name === 'NotAllowedError') {
             setIsPlaying(false);
           }
         });
       } else if (!isPlaying && !audio.paused) {
-        console.log('⏸️ Syncing: Pausing audio');
+        console.log('️ Syncing: Pausing audio');
         audio.pause();
 
         if ('mediaSession' in navigator) {
@@ -339,6 +324,12 @@ export const useAudioPlayer = () => {
       contentLength: response.headers.get('Content-Length'),
     };
   };
+
+  useEffect(() => {
+    if (audioRef){
+      // audioRef.current?.volume =
+    }
+  }, [volume, audioRef])
 
   return {
     audioRef,

@@ -1,4 +1,5 @@
-import { Play } from 'lucide-react';
+import { Play } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 import { Album } from '@/types/models.ts';
 
@@ -20,11 +21,11 @@ const AlbumCard: FC<AlbumCardProps> = ({ album, onClick }) => {
           className="w-full aspect-square rounded-lg object-cover"
         />
         <button className="absolute bottom-2 right-2 bg-purple-500 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110">
-          <Play size={20} className="text-white fill-white" />
+          <img src={Play} alt={getAltFromPath(Play)} width={20} className="text-white fill-white" />
         </button>
       </div>
       <h3 className="text-white font-semibold truncate">{album.title}</h3>
-      <p className="text-gray-400 text-sm truncate">{album.artistName} • {album?.releaseDate}</p>
+      <p className="text-gray-400 text-sm truncate">{album.artistName} {album?.releaseDate}</p>
     </div>
   );
 };

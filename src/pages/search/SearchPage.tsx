@@ -11,7 +11,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@/router';
 import { Album, Artist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
 import { useRecentSearches } from '@hooks/selectors/useLibrarySelectors.ts';
-import { ArchiveRestoreIcon, Disc, Music, Search, User, Users } from 'lucide-react';
+import { RefreshCcw, Disc3, Music, Search, User, Users } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, ReactElement, useState } from 'react';
 
 interface SearchResult {
@@ -71,27 +72,27 @@ const SearchPage: FC = () => {
     {
       value: SearchFilters.all,
       label: 'All',
-      icon: <Search size={16}/>
+      icon: <img src={Search} alt={getAltFromPath(Search)} width={16}/>
     },
     {
       value: SearchFilters.track,
       label: 'Songs',
-      icon: <Music size={16}/>
+      icon: <img src={Music} alt={getAltFromPath(Music)} width={16}/>
     },
     {
       value: SearchFilters.artist,
       label: 'Artists',
-      icon: <User size={16}/>
+      icon: <img src={User} alt={getAltFromPath(User)} width={16}/>
     },
     {
       value: SearchFilters.album,
       label: 'Albums',
-      icon: <Disc size={16}/>
+      icon: <img src={Disc3} alt={getAltFromPath(Disc3)} width={16}/>
     },
     {
       value: SearchFilters.stalker,
       label: 'Stalkers',
-      icon: <Users size={16}/>
+      icon: <img src={Users} alt={getAltFromPath(Users)} width={16}/>
     },
   ] as const;
 
@@ -107,13 +108,13 @@ const SearchPage: FC = () => {
 
   return (
     <div className="h-screen flex flex-col p-6 max-w-6xl mx-auto">
-      {/* Fixed header section */}
+
       <div className="flex-shrink-0 space-y-6 mb-6">
         <h1 className="text-3xl font-bold text-white">Search</h1>
 
         <SearchBar placeholder="Search for track, artist, album, or stalker..." value={query} onChange={setQuery} onSearch={handleSearch}/>
 
-        {/* Filters */}
+
         <div className="flex gap-2 overflow-x-auto pb-2 row-reverse">
           {filters.map((f) => (
             <button
@@ -130,7 +131,7 @@ const SearchPage: FC = () => {
         </div>
       </div>
 
-      {/* Scrollable results section */}
+
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-center py-12 text-gray-400">
@@ -147,19 +148,19 @@ const SearchPage: FC = () => {
                         <span className="text-m">{e.query}</span>
                         <span className="text-sm">{e.filter}</span>
                       </div>
-                      <ArchiveRestoreIcon size={12}/>
+                      <img src={RefreshCcw} alt={getAltFromPath(RefreshCcw)} width={18} className="mx-auto mb-4 opacity-50"/>
                     </div>
                   )}
                 </div>
               ) :
               <>
-                <Search size={48} className="mx-auto mb-4 opacity-50"/>
+                <img src={Search} alt={getAltFromPath(Search)} width={48} className="mx-auto mb-4 opacity-50"/>
                 <p>Start typing to search for music and stalker</p>
               </>}
           </div>
         ) : (
           <div className="space-y-8 pb-6">
-            {/* Songs */}
+
             {shouldShowSection(SearchFilters.track) && results.track.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">Songs</h2>
@@ -167,7 +168,7 @@ const SearchPage: FC = () => {
               </div>
             )}
 
-            {/* Users */}
+
             {shouldShowSection(SearchFilters.stalker) && results.stalker.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">Users</h2>
@@ -181,7 +182,7 @@ const SearchPage: FC = () => {
               </div>
             )}
 
-            {/* Artists */}
+
             {shouldShowSection(SearchFilters.artist) && results.artist.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">Artists</h2>
@@ -193,7 +194,7 @@ const SearchPage: FC = () => {
               </div>
             )}
 
-            {/* Albums */}
+
             {shouldShowSection(SearchFilters.album) && results.album.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">Albums</h2>
@@ -206,7 +207,7 @@ const SearchPage: FC = () => {
               </div>
             )}
 
-            {/* No Results */}
+
             {query &&
               !loading &&
               results.track.length === 0 &&
@@ -215,7 +216,7 @@ const SearchPage: FC = () => {
               results.album.length === 0 &&
               (
                 <div className="text-center py-12 text-gray-400">
-                  <Search size={48} className="mx-auto mb-4 opacity-50"/>
+                  <img src={Search} alt={getAltFromPath(Search)} width={48} className="mx-auto mb-4"/>
                   <p className="text-lg mb-2">No results found for "{query}"</p>
                   <p className="text-sm">Try different keywords or check your spelling</p>
                 </div>

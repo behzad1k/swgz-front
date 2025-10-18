@@ -1,4 +1,3 @@
-// hooks/useAuthSelectors.ts
 import { useAuthContext } from '@/contexts/AuthContext';
 
 export const useAuthState = () => {

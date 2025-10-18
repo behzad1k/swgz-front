@@ -1,4 +1,5 @@
-import { Check, X, AlertCircle, Info } from 'lucide-react';
+import { Check, X, AlertCircle, Info } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useEffect } from 'react';
 
 interface ToastProps {
@@ -20,10 +21,10 @@ const Toast: FC<ToastProps> = ({ message, type = 'info', isVisible, onClose, dur
   if (!isVisible) return null;
 
   const icons = {
-    success: <Check size={20} />,
-    error: <X size={20} />,
-    warning: <AlertCircle size={20} />,
-    info: <Info size={20} />,
+    success: <img src={Check} alt={getAltFromPath(Check)} width={20} />,
+    error: <img src={X} alt={getAltFromPath(X)} width={20} />,
+    warning: <img src={AlertCircle} alt={getAltFromPath(AlertCircle)} width={20} />,
+    info: <img src={Info} alt={getAltFromPath(Info)} width={20} />,
   };
 
   const colors = {
@@ -39,7 +40,7 @@ const Toast: FC<ToastProps> = ({ message, type = 'info', isVisible, onClose, dur
         {icons[type]}
         <span className="flex-1">{message}</span>
         <button onClick={onClose} className="hover:opacity-80 transition-opacity">
-          <X size={18} />
+          <img src={X} alt={getAltFromPath(X)} width={18} />
         </button>
       </div>
     </div>

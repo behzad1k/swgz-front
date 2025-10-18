@@ -1,4 +1,5 @@
-import { UserPlus, UserMinus } from 'lucide-react';
+import { UserPlus, UserMinus } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 import Button from '../common/Button';
 
@@ -14,7 +15,7 @@ const StalkButton: FC<StalkButtonProps> = ({ isStalkeding, onToggle, loading = f
       variant={isStalkeding ? 'secondary' : 'primary'}
       onClick={onToggle}
       disabled={loading}
-      icon={isStalkeding ? <UserMinus size={18} /> : <UserPlus size={18} />}
+      icon={isStalkeding ? <img src={UserMinus} alt={getAltFromPath(UserMinus)} width={18} /> : <img src={UserPlus} alt={getAltFromPath(UserPlus)} width={18} />}
     >
       {isStalkeding ? 'Unstalk' : 'Stalk'}
     </Button>

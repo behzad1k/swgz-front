@@ -1,7 +1,8 @@
 import { TrackItemProps } from '@components/music/SongItem.tsx';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
-import { Heart, Menu, Pause, Play } from 'lucide-react';
+import { Heart, Menu, Pause, Play } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 interface DraggableSongItemProps extends TrackItemProps {
@@ -29,7 +30,7 @@ const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onLike, on
           onClick={(e) => { e.stopPropagation(); play(song); }}
           className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          {isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white fill-white" />}
+          {isPlaying ? <img src={Pause} alt={getAltFromPath(Pause)} width={24} className="text-white" /> : <img src={Play} alt={getAltFromPath(Play)} width={24} className="text-white fill-white" />}
         </button>
       </div>
       <div className="flex-1 min-w-0">
@@ -38,11 +39,11 @@ const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onLike, on
       </div>
       {onLike && (
         <button onClick={(e) => { e.stopPropagation(); onLike(song); }} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-          <Heart size={20} className={song.isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
+          <img src={Heart} alt={getAltFromPath(Heart)} width={20} className={song.isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
         </button>
       )}
       <div className="text-gray-400">
-        <Menu size={20} />
+        <img src={Menu} alt={getAltFromPath(Menu)} width={20} />
       </div>
     </div>
   );

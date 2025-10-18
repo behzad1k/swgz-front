@@ -49,12 +49,12 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({
   useEffect(() => {
     if (songId) fetchKnownQualities();
   }, [songId]);
-  console.log(quality);
+
   return (
     <div className={`w-screen bg-gray-600${className}`}>
       <h3>Audio Quality</h3>
 
-      {/* Quick selector */}
+
       <div className="flex flex-col gap-4 ">
         {allQualities.map(q => {
           const isSelected = q === quality;
@@ -77,63 +77,14 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({
               }
             >
               <span className="quality-label">{info.label}</span>
-              {isSelected && <span className="checkmark">✓</span>}
+              {isSelected && <span className="checkmark"></span>}
               {!isSelected && <span className="playing-indicator">🎵</span>}
               {requiresPremium && <span className="premium-badge">👑</span>}
-              {status === 'unavailable' && <span className="unavailable-badge">✗</span>}
+              {status === 'unavailable' && <span className="unavailable-badge"></span>}
             </button>
           );
         })}
       </div>
-
-      {/* Detailed quality info */}
-      {/* {showDetails && ( */}
-      {/*   <div className="quality-details"> */}
-      {/*     {isLoading ? ( */}
-      {/*       <div className="loading">Loading quality information...</div> */}
-      {/*     ) : detailedQualities.length > 0 ? ( */}
-      {/*       <table className="quality-table"> */}
-      {/*         <thead> */}
-      {/*         <tr> */}
-      {/*           <th>Quality</th> */}
-      {/*           <th>Format</th> */}
-      {/*           <th>Size</th> */}
-      {/*           <th>Status</th> */}
-      {/*         </tr> */}
-      {/*         </thead> */}
-      {/*         <tbody> */}
-      {/*         {detailedQualities.map(q => ( */}
-      {/*           <tr key={q.quality} className={q.quality === quality ? 'selected' : ''}> */}
-      {/*             <td>{QUALITY_LABELS[q.quality]?.label || q.quality}</td> */}
-      {/*             <td>{q.format.toUpperCase()}</td> */}
-      {/*             <td>{formatFileSize(q.size)}</td> */}
-      {/*             <td> */}
-      {/*                 <span className={`status-badge ${q.available ? 'available' : 'unavailable'}`}> */}
-      {/*                   {q.available ? '✓ Available' : '✗ Not available'} */}
-      {/*                 </span> */}
-      {/*             </td> */}
-      {/*           </tr> */}
-      {/*         ))} */}
-      {/*         </tbody> */}
-      {/*       </table> */}
-      {/*     ) : ( */}
-      {/*       <div className="no-info">No quality information available yet</div> */}
-      {/*     )} */}
-
-      {/*     {unavailableQualities.length > 0 && ( */}
-      {/*       <div className="unavailable-list"> */}
-      {/*         <p>Not available on Soulseek:</p> */}
-      {/*         <div className="unavailable-badges"> */}
-      {/*           {unavailableQualities.map(q => ( */}
-      {/*             <span key={q} className="unavailable-badge"> */}
-      {/*               {QUALITY_LABELS[q]?.label || q} */}
-      {/*             </span> */}
-      {/*           ))} */}
-      {/*         </div> */}
-      {/*       </div> */}
-      {/*     )} */}
-      {/*   </div> */}
-      {/* )} */}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-// hooks/useAppSelectors.ts
 import { useAppContext } from '@/contexts/AppContext';
 
 export const useAppState = () => {

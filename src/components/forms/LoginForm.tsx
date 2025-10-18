@@ -1,7 +1,8 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState } from 'react';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from '@/assets/svg';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
@@ -25,14 +26,14 @@ const LoginForm: FC<LoginFormProps> = ({ onSubmit, onGoogleLogin, loading = fals
         placeholder="Email"
         value={email}
         onChange={setEmail}
-        icon={<Mail size={20} />}
+        icon={<img src={Mail} alt={getAltFromPath(Mail)} width={20} />}
       />
       <Input
         type="password"
         placeholder="Password"
         value={password}
         onChange={setPassword}
-        icon={<Lock size={20} />}
+        icon={<img src={Lock} alt={getAltFromPath(Lock)} width={20} />}
       />
       <Button type="submit" className="w-full" size="lg" disabled={loading}>
         {loading ? 'Logging in...' : 'Login'}

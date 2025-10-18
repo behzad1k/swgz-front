@@ -1,6 +1,7 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState, useEffect } from 'react';
 import { useNavigate, useParams } from '@/router/hooks';
-import { X, Upload } from 'lucide-react';
+import { X, Upload } from '@/assets/svg';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { playlistApi } from '@/api/playlist.api';
@@ -68,7 +69,7 @@ const EditPlaylistPage: FC = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Edit Playlist</h1>
           <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-white transition-colors">
-            <X size={28} />
+            <img src={X} alt={getAltFromPath(X)} width={28} />
           </button>
         </div>
 
@@ -84,7 +85,7 @@ const EditPlaylistPage: FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Upload size={48} className="text-gray-400" />
+                    <img src={Upload} alt={getAltFromPath(Upload)} width={48} className="text-gray-400" />
                   )}
                 </div>
                 <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />

@@ -1,6 +1,7 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState, useEffect } from 'react';
 import { useParams, useNavigate } from '@/router/hooks';
-import { X, UserPlus, UserMinus } from 'lucide-react';
+import { X, UserPlus, UserMinus } from '@/assets/svg';
 import Button from '@/components/common/Button';
 import Badge from '@/components/common/Badge';
 import SongItem from '@/components/music/SongItem';
@@ -74,10 +75,10 @@ const UserProfilePage: FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 pb-32">
       <div className="max-w-6xl mx-auto p-6">
         <button onClick={() => navigate(-1)} className="mb-6 text-gray-400 hover:text-white transition-colors">
-          <X size={28} />
+          <img src={X} alt={getAltFromPath(X)} width={28} />
         </button>
 
-        {/* Header */}
+
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-2xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start gap-6">
             <img
@@ -92,7 +93,7 @@ const UserProfilePage: FC = () => {
                 <Button
                   size="sm"
                   variant={isStalkeding ? 'secondary' : 'primary'}
-                  icon={isStalkeding ? <UserMinus size={16} /> : <UserPlus size={16} />}
+                  icon={isStalkeding ? <img src={UserMinus} alt={getAltFromPath(UserMinus)} width={16} /> : <img src={UserPlus} alt={getAltFromPath(UserPlus)} width={16} />}
                   onClick={handleStalkToggle}
                 >
                   {isStalkeding ? 'Unstalk' : 'Stalk'}
@@ -124,7 +125,7 @@ const UserProfilePage: FC = () => {
           )}
         </div>
 
-        {/* Tabs */}
+
         {!profile.isPrivate && (
           <>
             <div className="flex gap-2 border-b border-white/10 overflow-x-auto mb-8">
@@ -143,7 +144,7 @@ const UserProfilePage: FC = () => {
               ))}
             </div>
 
-            {/* Tab Content */}
+
             <div className="text-center py-12 text-gray-400">
               <p>Content for {activeTab} will be displayed here</p>
             </div>

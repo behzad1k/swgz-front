@@ -1,4 +1,5 @@
-import { Check, X } from 'lucide-react';
+import { Check, X } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 interface DownloadItemProps {
@@ -17,11 +18,11 @@ const DownloadItem: FC<DownloadItemProps> = ({ id, progress, status, songName, o
         <span className="text-white font-medium truncate">{songName}</span>
         {status === 'active' && onCancel && (
           <button onClick={onCancel} className="text-red-400 hover:text-red-300">
-            <X size={20} />
+            <img src={X} alt={getAltFromPath(X)} width={20} />
           </button>
         )}
-        {status === 'completed' && <Check size={20} className="text-green-400" />}
-        {status === 'failed' && <X size={20} className="text-red-400" />}
+        {status === 'completed' && <img src={Check} alt={getAltFromPath(Check)} width={20} className="text-green-400" />}
+        {status === 'failed' && <img src={X} alt={getAltFromPath(X)} width={20} className="text-red-400" />}
       </div>
       {status === 'active' && (
         <>

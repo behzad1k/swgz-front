@@ -12,8 +12,7 @@ const GoogleCallback: FC = () => {
 
       if (code) {
         try {
-          // Exchange code for token - this depends on your backend implementation
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/google/callback?code=${code}`);
+                    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/google/callback?code=${code}`);
           const data = await response.json();
 
           if (data.access_token) {

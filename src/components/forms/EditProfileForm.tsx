@@ -1,7 +1,8 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState } from 'react';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/assets/svg';
 import { UserProfile } from '@/types/models.ts';
 
 interface EditProfileFormProps {
@@ -37,7 +38,7 @@ const EditProfileForm: FC<EditProfileFormProps> = ({ profile, onSubmit, loading 
             className="w-32 h-32 rounded-full object-cover"
           />
           <div className="absolute bottom-0 right-0 bg-purple-500 p-2 rounded-full">
-            <Upload size={20} className="text-white" />
+            <img src={Upload} alt={getAltFromPath(Upload)} width={20} className="text-white" />
           </div>
           <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
         </label>

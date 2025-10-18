@@ -14,11 +14,9 @@ export const useMediaSession = () => {
     setProgress
   } = usePlayerActions();
 
-  // Store audio ref for seek operations
-  const audioRefForSeek = useRef<HTMLAudioElement | null>(null);
+    const audioRefForSeek = useRef<HTMLAudioElement | null>(null);
 
-  // Get audio element reference
-  useEffect(() => {
+    useEffect(() => {
     const audioElements = document.getElementsByTagName('audio');
     if (audioElements.length > 0) {
       audioRefForSeek.current = audioElements[0];
@@ -33,8 +31,7 @@ export const useMediaSession = () => {
 
     if (!currentSong) return;
 
-    // Set metadata
-    navigator.mediaSession.metadata = new MediaMetadata({
+        navigator.mediaSession.metadata = new MediaMetadata({
       title: currentSong.title,
       artist: currentSong.artistName,
       album: currentSong.albumName,
@@ -72,14 +69,11 @@ export const useMediaSession = () => {
       ],
     });
 
-    // Set playback state
-    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+        navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
 
-    console.log('📱 Media Session metadata updated');
-  }, [currentSong, isPlaying]);
+      }, [currentSong, isPlaying]);
 
-  // Update position state
-  useEffect(() => {
+    useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     if (!currentSong || !audioRefForSeek.current) return;
 
@@ -101,40 +95,34 @@ export const useMediaSession = () => {
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
 
-    // Set action handlers
-    const actionHandlers: Array<[MediaSessionAction, MediaSessionActionHandler]> = [
+        const actionHandlers: Array<[MediaSessionAction, MediaSessionActionHandler]> = [
       [
         'play',
         () => {
-          console.log('📱 Media Session: Play');
-          togglePlay();
+                    togglePlay();
         },
       ],
       [
         'pause',
         () => {
-          console.log('📱 Media Session: Pause');
-          togglePlay();
+                    togglePlay();
         },
       ],
       [
         'previoustrack',
         () => {
-          console.log('📱 Media Session: Previous');
-          playPrevious();
+                    playPrevious();
         },
       ],
       [
         'nexttrack',
         () => {
-          console.log('📱 Media Session: Next');
-          playNext();
+                    playNext();
         },
       ],
       [
         'seekbackward',
         (details) => {
-          console.log('📱 Media Session: Seek backward', details);
 
           if (!audioRefForSeek.current) {
             console.warn('No audio element available for seeking');
@@ -144,16 +132,13 @@ export const useMediaSession = () => {
           const audio = audioRefForSeek.current;
           const skipTime = details.seekOffset || 10; // Default 10 seconds
 
-          // Calculate new time (don't go below 0)
-          const newTime = Math.max(0, audio.currentTime - skipTime);
+                    const newTime = Math.max(0, audio.currentTime - skipTime);
 
-          console.log(`⏪ Seeking backward: ${audio.currentTime}s -> ${newTime}s`);
+          console.log(`Seeking backward: ${audio.currentTime}s -> ${newTime}s`);
 
-          // Update audio element
-          audio.currentTime = newTime;
+                    audio.currentTime = newTime;
 
-          // Update progress in state (as percentage)
-          if (audio.duration) {
+                    if (audio.duration) {
             const newProgress = (newTime / audio.duration) * 100;
             setProgress(newProgress);
           }
@@ -162,7 +147,6 @@ export const useMediaSession = () => {
       [
         'seekforward',
         (details) => {
-          console.log('📱 Media Session: Seek forward', details);
 
           if (!audioRefForSeek.current) {
             console.warn('No audio element available for seeking');
@@ -172,16 +156,13 @@ export const useMediaSession = () => {
           const audio = audioRefForSeek.current;
           const skipTime = details.seekOffset || 10; // Default 10 seconds
 
-          // Calculate new time (don't exceed duration)
-          const newTime = Math.min(audio.duration, audio.currentTime + skipTime);
+                    const newTime = Math.min(audio.duration, audio.currentTime + skipTime);
 
-          console.log(`⏩ Seeking forward: ${audio.currentTime}s -> ${newTime}s`);
+          console.log(`Seeking forward: ${audio.currentTime}s -> ${newTime}s`);
 
-          // Update audio element
-          audio.currentTime = newTime;
+                    audio.currentTime = newTime;
 
-          // Update progress in state (as percentage)
-          if (audio.duration) {
+                    if (audio.duration) {
             const newProgress = (newTime / audio.duration) * 100;
             setProgress(newProgress);
           }
@@ -190,7 +171,6 @@ export const useMediaSession = () => {
       [
         'seekto',
         (details) => {
-          console.log('📱 Media Session: Seek to', details.seekTime);
 
           if (!audioRefForSeek.current) {
             console.warn('No audio element available for seeking');
@@ -205,16 +185,13 @@ export const useMediaSession = () => {
           const audio = audioRefForSeek.current;
           const seekTime = details.seekTime;
 
-          // Ensure seekTime is within valid range
-          const validSeekTime = Math.max(0, Math.min(audio.duration, seekTime));
+                    const validSeekTime = Math.max(0, Math.min(audio.duration, seekTime));
 
-          console.log(`⏭️ Seeking to: ${validSeekTime}s`);
+          console.log(`️ Seeking to: ${validSeekTime}s`);
 
-          // Update audio element
-          audio.currentTime = validSeekTime;
+                    audio.currentTime = validSeekTime;
 
-          // Update progress in state (as percentage)
-          if (audio.duration) {
+                    if (audio.duration) {
             const newProgress = (validSeekTime / audio.duration) * 100;
             setProgress(newProgress);
           }
@@ -223,8 +200,7 @@ export const useMediaSession = () => {
       [
         'stop',
         () => {
-          console.log('📱 Media Session: Stop');
-          if (audioRefForSeek.current) {
+                    if (audioRefForSeek.current) {
             audioRefForSeek.current.pause();
             audioRefForSeek.current.currentTime = 0;
           }
@@ -233,24 +209,21 @@ export const useMediaSession = () => {
       ],
     ];
 
-    // Register all handlers
-    actionHandlers.forEach(([action, handler]) => {
+        actionHandlers.forEach(([action, handler]) => {
       try {
         navigator.mediaSession.setActionHandler(action, handler);
-        console.log(`✅ Media Session: Registered "${action}" handler`);
+        console.log(`Media Session: Registered "${action}" handler`);
       } catch (error) {
-        console.warn(`⚠️ Media Session: Action "${action}" not supported`, error);
+        console.warn(`️ Media Session: Action "${action}" not supported`, error);
       }
     });
 
-    // Cleanup
-    return () => {
+        return () => {
       actionHandlers.forEach(([action]) => {
         try {
           navigator.mediaSession.setActionHandler(action, null);
         } catch (error) {
-          // Ignore cleanup errors
-        }
+                  }
       });
     };
   }, [togglePlay, playNext, playPrevious, seek, setProgress]);

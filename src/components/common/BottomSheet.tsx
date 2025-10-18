@@ -1,4 +1,5 @@
-import { X } from 'lucide-react';
+import { X } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, ReactNode } from 'react';
 
 interface BottomSheetProps {
@@ -21,7 +22,7 @@ const BottomSheet: FC<BottomSheetProps> = ({ isOpen, onClose, children, title })
           <div className="px-6 pb-4 flex items-center justify-between">
             <h3 className="text-xl font-bold text-white">{title}</h3>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-              <X size={24} />
+              <img src={X} alt={getAltFromPath(X)} width={24} />
             </button>
           </div>
         )}

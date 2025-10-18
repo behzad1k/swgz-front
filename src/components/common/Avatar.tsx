@@ -1,4 +1,5 @@
-import { User } from 'lucide-react';
+import { User } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 interface AvatarProps {
@@ -19,7 +20,7 @@ const Avatar: FC<AvatarProps> = ({ src, alt = 'Avatar', size = 'md', className =
   if (!src) {
     return (
       <div className={`${sizes[size]} rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center ${className}`}>
-        <User size={size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 48} className="text-white" />
+        <img src={User} alt={getAltFromPath(User)} width={size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 48} className="text-white" />
       </div>
     );
   }

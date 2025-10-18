@@ -1,4 +1,5 @@
-import { X } from 'lucide-react';
+import { X } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, ReactNode } from 'react';
 
 interface ModalProps {
@@ -19,7 +20,7 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h2 className="text-2xl font-bold text-white">{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-            <X size={24} />
+            <img src={X} alt={getAltFromPath(X)} width={24} />
           </button>
         </div>
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">{children}</div>

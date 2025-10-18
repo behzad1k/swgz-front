@@ -8,7 +8,8 @@ import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useCurrentUser } from '@hooks/selectors/useAuthSelectors.ts';
 import { useCurrentSong, useIsPlaying, usePlayerProgress, usePlayerQuality, usePlayerRepeat, usePlayerShuffle, usePlayerVolume, useQueue } from '@hooks/selectors/usePlayerSelectors.ts';
 import { useModal } from '@hooks/useModal.ts';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, memo, useState, useRef, useEffect } from 'react';
 
 type SheetState = 'closed' | 'mini' | 'half' | 'full';
@@ -120,7 +121,7 @@ const NowPlayingSheet: FC = () => {
 
   return (
     <>
-      {/* Backdrop */}
+
       {(sheetState === 'half' || sheetState === 'full') && (
         <div
           className="fixed inset-0 bg-black z-40 transition-opacity duration-300"
@@ -129,7 +130,7 @@ const NowPlayingSheet: FC = () => {
         />
       )}
 
-      {/* Bottom Sheet */}
+
       <div
         ref={sheetRef}
         className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 shadow-2xl z-50 rounded-t-3xl overflow-hidden"
@@ -142,12 +143,12 @@ const NowPlayingSheet: FC = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Drag Handle */}
+
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1.5 bg-gray-500 rounded-full" />
         </div>
 
-        {/* Mini Player */}
+
         {sheetState === 'mini' && (
           <>
           <div
@@ -197,18 +198,18 @@ const NowPlayingSheet: FC = () => {
           </>
         )}
 
-        {/* Half/Full Player */}
+
         {(sheetState === 'half' || sheetState === 'full') && (
           <div className="flex flex-col h-full overflow-y-auto pb-6">
-            {/* Collapse Button */}
+
             <button
               onClick={() => setSheetState('mini')}
               className="self-center mb-2 text-gray-400 hover:text-white transition-colors"
             >
-              <ChevronDown size={28} />
+              <img src={ChevronDown} alt={getAltFromPath(ChevronDown)} width={28}/>
             </button>
 
-            {/* Album Art */}
+
             <div className="flex justify-center px-6 mb-6">
               <img
                 src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
@@ -217,19 +218,19 @@ const NowPlayingSheet: FC = () => {
               />
             </div>
 
-            {/* Song Info */}
+
             <div className="px-6 mb-6 text-center">
               <h1 className="text-2xl font-bold text-white mb-2">{currentSong.title}</h1>
               <p className="text-lg text-gray-300">{currentSong.artistName}</p>
               <p className="text-md text-gray-400">{currentSong.albumName}</p>
             </div>
 
-            {/* Progress Bar */}
+
             <div className="px-6 mb-6">
               <ProgressBar progress={progress} duration={currentSong.duration || 200} onSeek={seek} />
             </div>
 
-            {/* Player Controls */}
+
             <div className="px-6 mb-6">
               <PlayerControls
                 isPlaying={isPlaying}
@@ -243,7 +244,7 @@ const NowPlayingSheet: FC = () => {
               />
             </div>
 
-            {/* Quality Controls */}
+
             {sheetState === 'full' && (
               <>
                 <Button size={'md'} className={'btn-primary'} onClick={() => openModal({
@@ -263,26 +264,7 @@ const NowPlayingSheet: FC = () => {
                 })}>
                   quality
                 </Button>
-                {/* <div className="px-6 mb-6"> */}
-                {/*   <div className="flex items-center justify-center gap-3"> */}
-                {/*     <span className="text-gray-400 text-sm">Quality:</span> */}
-                {/*     {(['128', '320', 'flac'] as const).map((q) => ( */}
-                {/*       <button */}
-                {/*         key={q} */}
-                {/*         onClick={() => changeQuality(q)} */}
-                {/*         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${ */}
-                {/*           quality === q */}
-                {/*             ? 'bg-purple-500 text-white' */}
-                {/*             : 'bg-white/10 text-gray-400 hover:bg-white/20' */}
-                {/*         }`} */}
-                {/*       > */}
-                {/*         {q} */}
-                {/*       </button> */}
-                {/*     ))} */}
-                {/*   </div> */}
-                {/* </div> */}
 
-                {/* Volume Control */}
                 <div className="px-6 mb-6">
                   <VolumeControl
                     volume={volume}
@@ -300,7 +282,7 @@ const NowPlayingSheet: FC = () => {
                       onClick={() => setSheetState('half')}
                       className="text-gray-400 hover:text-white transition-colors"
                     >
-                      <ChevronUp size={24} />
+                      <img src={ChevronUp} alt={getAltFromPath(ChevronUp)} width={24}/>
                     </button>
                   </div>
                   <QueueList queue={queue} onPlay={play} />
@@ -354,7 +336,7 @@ const DesktopNowPlaying: FC = () => {
             onClick={() => setIsExpanded(false)}
             className="self-end mb-4 text-gray-400 hover:text-white transition-colors"
           >
-            <ChevronDown size={24} className="rotate-90" />
+            <img src={ChevronDown} alt={getAltFromPath(ChevronDown)} width={24}/>
           </button>
 
           <img

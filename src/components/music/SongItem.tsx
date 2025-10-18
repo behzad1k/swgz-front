@@ -1,4 +1,5 @@
-import { BookMinus, BookPlus, Heart, ListPlus, MoreVertical, Pause, Play } from 'lucide-react';
+import { BookMinus, BookPlus, Heart, ListPlus, MoveVertical, Pause, Play } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 import { Track } from '@/types/models.ts';
 
@@ -23,7 +24,7 @@ const TrackItem: FC<TrackItemProps> = ({ song, onPlay, onLike, onMore, onQueueNe
           onClick={(e) => { e.stopPropagation(); console.log(song); onPlay(song); }}
           className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          {isPlaying ? <Pause size={24} className="text-white" /> : <Play size={24} className="text-white fill-white" />}
+          {isPlaying ? <img src={Pause} alt={getAltFromPath(Pause)} width={24} className="text-white" /> : <img src={Play} alt={getAltFromPath(Play)} width={24} className="text-white fill-white" />}
         </button>
       </div>
       <div className="flex-1 min-w-0">
@@ -34,25 +35,25 @@ const TrackItem: FC<TrackItemProps> = ({ song, onPlay, onLike, onMore, onQueueNe
       <div className="flex items-center group-hover:opacity-100 gap-1 transition-opacity">
         {onQueueNext &&
             <button onClick={(e) => { e.stopPropagation(); onQueueNext(song); }} className="hover:bg-white/10 rounded-full transition-colors">
-                <ListPlus size={25} className="text-gray-700 hover:bg-gray-300"/>
+                <img src={ListPlus} alt={getAltFromPath(ListPlus)} width={25} className="text-gray-700 hover:bg-gray-300"/>
             </button>
         }
         {onLike && (
           <button onClick={(e) => { e.stopPropagation(); onLike(song); }} className="hover:bg-white/10 rounded-full transition-colors">
-            <Heart size={25} className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 stroke-1 stroke-red-600'} />
+            <img src={Heart} alt={getAltFromPath(Heart)} width={25} className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 stroke-1 stroke-red-600'} />
           </button>
         )}
         {onToggleLibrary &&
           <button onClick={(e) => { e.stopPropagation(); onToggleLibrary(song); }} className=" hover:bg-white/10 rounded-full transition-colors">
             {songInLibrary ?
-              <BookMinus size={25} className={'stroke-red-300 text-red-300'}/> :
-              <BookPlus size={25}  className={'stroke-green-200 text-green-200'}/>
+              <img src={BookMinus} alt={getAltFromPath(BookMinus)} width={25} className={'stroke-red-300 text-red-300'}/> :
+              <img src={BookPlus} alt={getAltFromPath(BookPlus)} width={25}  className={'stroke-green-200 text-green-200'}/>
             }
           </button>
         }
         {onMore && (
           <button onClick={(e) => { e.stopPropagation(); onMore(song); }} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <MoreVertical size={20} className="text-gray-400" />
+            <img src={MoveVertical} alt={getAltFromPath(MoveVertical)} width={20} className="text-gray-400" />
           </button>
         )}
       </div>

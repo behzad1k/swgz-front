@@ -1,7 +1,8 @@
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState } from 'react';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User } from '@/assets/svg';
 
 interface SignUpFormProps {
   onSubmit: (username: string, email: string, password: string) => void;
@@ -31,28 +32,28 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSubmit, onGoogleSignUp, loading = f
         placeholder="Username"
         value={username}
         onChange={setUsername}
-        icon={<User size={20} />}
+        icon={<img src={User} alt={getAltFromPath(User)} width={20} />}
       />
       <Input
         type="email"
         placeholder="Email"
         value={email}
         onChange={setEmail}
-        icon={<Mail size={20} />}
+        icon={<img src={Mail} alt={getAltFromPath(Mail)} width={20} />}
       />
       <Input
         type="password"
         placeholder="Password"
         value={password}
         onChange={setPassword}
-        icon={<Lock size={20} />}
+        icon={<img src={Lock} alt={getAltFromPath(Lock)} width={20} />}
       />
       <Input
         type="password"
         placeholder="Confirm Password"
         value={confirmPassword}
         onChange={setConfirmPassword}
-        icon={<Lock size={20} />}
+        icon={<img src={Lock} alt={getAltFromPath(Lock)} width={20} />}
       />
       <Button type="submit" className="w-full" size="lg" disabled={loading}>
         {loading ? 'Creating account...' : 'Sign Up'}

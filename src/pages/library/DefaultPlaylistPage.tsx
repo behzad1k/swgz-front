@@ -2,7 +2,8 @@ import SongList from '@/components/music/SongList';
 import { useCurrentRoute, useNavigate, useParams } from '@/router';
 import { Playlist } from '@/types/models.ts';
 import { usePlaylistData } from '@hooks/usePlaylistData.ts';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 const DefaultPlaylistPage: FC = () => {
@@ -28,7 +29,7 @@ const DefaultPlaylist: FC<Props> = ({ playList }: Props) => {
   return (
     <div className="p-6 flex-1 overflow-y-auto">
       <div className="flex items-center gap-4 mb-8">
-        {currentRoute?.headerBackButton && <ChevronLeft size={40} color={'grey'} onClick={() => navigate(-1)}/>}
+        {currentRoute?.headerBackButton && <img src={ChevronLeft} alt={getAltFromPath(ChevronLeft)} width={40} className="text-gray-400" onClick={() => navigate(-1)} />}
         <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
           <img src={playList.coverUrl}/>
         </div>

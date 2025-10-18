@@ -48,8 +48,7 @@ class ServiceWorkerManager {
         scope: '/',
       });
 
-      console.log('[App] ✅ Service Worker registered');
-      console.log('[App] 📍 Scope:', this.registration.scope);
+      console.log('[App] Service Worker registered');
 
       this.setupEventListeners();
 
@@ -66,7 +65,7 @@ class ServiceWorkerManager {
       this.checkForUpdates();
 
     } catch (error) {
-      console.error('[App] ❌ Service Worker registration failed:', error);
+      console.error('[App] Service Worker registration failed:', error);
     }
   }
   /**
@@ -80,7 +79,6 @@ class ServiceWorkerManager {
       const newWorker = this.registration?.installing;
       if (!newWorker) return;
 
-      console.log('[App] 🔄 New Service Worker found');
 
       newWorker.addEventListener('statechange', () => {
         console.log('[App] Service Worker state:', newWorker.state);
@@ -94,7 +92,6 @@ class ServiceWorkerManager {
 
     // Listen for controller change (new SW activated)
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('[App] 🔄 Service Worker controller changed');
 
       // Optionally reload the page when a new service worker takes control
       if (this.shouldAutoReload()) {
@@ -116,9 +113,9 @@ class ServiceWorkerManager {
 
     try {
       await this.registration.update();
-      console.log('[App] ✅ Update check complete');
+      console.log('[App] Update check complete');
     } catch (error) {
-      console.error('[App] ❌ Update check failed:', error);
+      console.error('[App] Update check failed:', error);
     }
   }
 
@@ -126,7 +123,7 @@ class ServiceWorkerManager {
    * Handle service worker update available
    */
   private handleUpdate(): void {
-    console.log('[App] ✨ New version available');
+    console.log('[App] New version available');
 
     // You can customize this behavior
     // Option 1: Auto-reload
@@ -174,7 +171,6 @@ class ServiceWorkerManager {
    * Handle messages from service worker
    */
   private handleMessage(event: MessageEvent): void {
-    console.log('[App] 📨 Message from Service Worker:', event.data);
 
     // Handle different message types here
     if (event.data && event.data.type) {
@@ -224,9 +220,9 @@ class ServiceWorkerManager {
   public async clearCache(): Promise<void> {
     try {
       await this.sendMessage({ type: 'CLEAR_CACHE' });
-      console.log('[App] ✅ Cache cleared');
+      console.log('[App] Cache cleared');
     } catch (error) {
-      console.error('[App] ❌ Failed to clear cache:', error);
+      console.error('[App] Failed to clear cache:', error);
     }
   }
 
@@ -236,9 +232,9 @@ class ServiceWorkerManager {
   public async cacheUrls(urls: string[]): Promise<void> {
     try {
       await this.sendMessage({ type: 'CACHE_URLS', urls });
-      console.log('[App] ✅ URLs cached:', urls);
+      console.log('[App] URLs cached:', urls);
     } catch (error) {
-      console.error('[App] ❌ Failed to cache URLs:', error);
+      console.error('[App] Failed to cache URLs:', error);
     }
   }
 
@@ -250,13 +246,13 @@ class ServiceWorkerManager {
 
     try {
       await this.registration.unregister();
-      console.log('[App] ✅ Service Worker unregistered');
+      console.log('[App] Service Worker unregistered');
 
       if (this.updateCheckInterval) {
         clearInterval(this.updateCheckInterval);
       }
     } catch (error) {
-      console.error('[App] ❌ Failed to unregister Service Worker:', error);
+      console.error('[App] Failed to unregister Service Worker:', error);
     }
   }
 

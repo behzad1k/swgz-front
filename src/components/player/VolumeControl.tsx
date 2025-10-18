@@ -1,4 +1,5 @@
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX } from '@/assets/svg';
+import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 
 interface VolumeControlProps {
@@ -12,7 +13,7 @@ const VolumeControl: FC<VolumeControlProps> = ({ volume, onVolumeChange, onMuteT
   return (
     <div className="flex items-center gap-3">
       <button onClick={onMuteToggle} className="text-gray-400 hover:text-white transition-colors">
-        {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        {isMuted || volume === 0 ? <img src={VolumeX} alt={getAltFromPath(VolumeX)} width={20} /> : <img src={Volume2} alt={getAltFromPath(Volume2)} width={20} />}
       </button>
       <input
         type="range"
