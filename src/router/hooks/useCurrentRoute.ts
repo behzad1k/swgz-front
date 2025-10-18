@@ -1,5 +1,5 @@
 import { useLocation } from './useRouteData';
-import { matchPath } from '@/router/RouteMatch';
+import { matchPath } from '../RouteMatch';
 import { Route, routesConfig } from '@/config/routes.config';
 
 export const useCurrentRoute = (): Route | undefined => {

@@ -1,4 +1,4 @@
-import { useRouter } from '@/router/hooks';
+import { useRouter } from './hooks';
 import { FC, useEffect } from 'react';
 
 interface NavigateProps {

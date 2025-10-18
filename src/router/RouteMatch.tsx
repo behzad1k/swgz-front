@@ -5,16 +5,13 @@ export interface RouteMatch {
 }
 
 export const matchPath = (pattern: string, pathname: string, exact = false): RouteMatch | null => {
-  // Remove trailing slashes
   const cleanPattern = pattern.replace(/\/$/, '') || '/';
   const cleanPathname = pathname.replace(/\/$/, '') || '/';
 
-  // Exact match
   if (exact && cleanPattern === cleanPathname) {
     return { path: cleanPathname, params: {} };
   }
 
-  // Convert route pattern to regex
   const paramNames: string[] = [];
   const regexPattern = cleanPattern
   .split('/')
@@ -38,7 +35,6 @@ export const matchPath = (pattern: string, pathname: string, exact = false): Rou
     return null;
   }
 
-  // Extract params
   const params: Record<string, string> = {};
   paramNames.forEach((name, index) => {
     params[name] = match[index + 1];
