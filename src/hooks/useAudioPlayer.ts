@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { musicApi } from '@api/music.api';
 import { usePlayerActions } from './actions/usePlayerActions';
@@ -6,7 +5,8 @@ import {
   useCurrentSong,
   useIsPlaying,
   usePlayerQuality,
-  usePlayerRepeat, usePlayerVolume
+  usePlayerRepeat,
+  usePlayerVolume
 } from './selectors/usePlayerSelectors';
 import { useCurrentUser } from './selectors/useAuthSelectors';
 
@@ -33,7 +33,7 @@ export const useAudioPlayer = () => {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!audioRef.current) {
       const audio = new Audio();
 
@@ -45,8 +45,7 @@ export const useAudioPlayer = () => {
 
       audioRef.current = audio;
       setAudioRef(audio);
-
-          }
+    }
 
     const audio = audioRef.current;
 
@@ -54,7 +53,7 @@ export const useAudioPlayer = () => {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioContext) {
         audioContextRef.current = new AudioContext();
-              }
+      }
     }
 
     const updateProgress = () => {
@@ -70,13 +69,14 @@ export const useAudioPlayer = () => {
               position: audio.currentTime,
             });
           } catch (error) {
-                      }
+            // Ignore position state errors
+          }
         }
       }
     };
 
     const handleEnded = () => {
-            if (repeat) {
+      if (repeat) {
         audio.currentTime = 0;
         audio.play().catch(err => console.error('Repeat play failed:', err));
       } else {
@@ -100,7 +100,8 @@ export const useAudioPlayer = () => {
 
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume().then(() => {
-                  }).catch(e => console.error(e));
+          console.log('AudioContext resumed');
+        }).catch(e => console.error(e));
       }
     };
 
@@ -109,12 +110,12 @@ export const useAudioPlayer = () => {
 
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         await audioContextRef.current.resume();
-              }
+      }
 
       if ('wakeLock' in navigator) {
         try {
           wakeLockRef.current = await navigator.wakeLock.request('screen');
-                  } catch (error) {
+        } catch (error) {
           console.warn('Wake lock failed:', error);
         }
       }
@@ -126,7 +127,7 @@ export const useAudioPlayer = () => {
       if (wakeLockRef.current) {
         wakeLockRef.current.release();
         wakeLockRef.current = null;
-              }
+      }
     };
 
     audio.addEventListener('timeupdate', updateProgress);
@@ -152,14 +153,13 @@ export const useAudioPlayer = () => {
         audioContextRef.current.close();
       }
     };
-  }, [repeat, setProgress, setIsPlaying, playNextAction, setAudioRef]);
+  }, [repeat, setProgress, setIsPlaying, playNextAction, setAudioRef, volume]);
 
-    useEffect(() => {
+  useEffect(() => {
     const loadAndPlaySong = async () => {
       if (!currentSong || !audioRef.current || isLoadingRef.current) {
         return;
       }
-
 
       try {
         isLoadingRef.current = true;
@@ -194,7 +194,7 @@ export const useAudioPlayer = () => {
         //   setIsAutoSelected(metadata.autoSelected);
         //
         //   if (metadata.autoSelected) {
-        //               } else if (metadata.qualityFallback) {
+        //   } else if (metadata.qualityFallback) {
         //     console.log(`️ Using fallback quality: ${metadata.qualityFallback} (requested: ${metadata.requestedQuality})`);
         //   }
         // }
@@ -273,7 +273,7 @@ export const useAudioPlayer = () => {
     loadAndPlaySong();
   }, [currentSong?.id, currentSong?.title, quality, user?.apiKey, setCurrentSong, setIsPlaying]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!audioRef.current || !currentSong) return;
 
     const audio = audioRef.current;
@@ -326,14 +326,14 @@ export const useAudioPlayer = () => {
   // };
 
   useEffect(() => {
-    if (audioRef){
-      // audioRef.current?.volume =
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
     }
-  }, [volume, audioRef])
+  }, [volume]);
 
   return {
     audioRef,
     actualQuality,
     isAutoSelected
   };
-}
+};

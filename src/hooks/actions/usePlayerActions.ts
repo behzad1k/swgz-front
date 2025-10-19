@@ -2,16 +2,14 @@ import { usePlayerContext } from '@/contexts/PlayerContext';
 import { PlayerActionKeys } from '@store/playerSlice.ts';
 import { QualityType } from '@/types/global';
 import { Track } from '@/types/models';
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 export const usePlayerActions = () => {
   const { dispatch, state } = usePlayerContext();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const setAudioRef = useCallback(
     (ref: HTMLAudioElement | null) => {
       console.log(ref);
-      audioRef.current = ref;
       dispatch({ type: PlayerActionKeys.SET_AUDIO_REF, payload: ref });
     },
     [dispatch]
@@ -53,11 +51,11 @@ export const usePlayerActions = () => {
     (value: number) => {
       const volumeValue = value;
       setVolume(volumeValue);
-      if (audioRef.current) {
-        audioRef.current.volume = volumeValue;
+      if (state.audioRef) {
+        state.audioRef.volume = volumeValue / 100;
       }
     },
-    [setVolume]
+    [setVolume, state.audioRef]
   );
 
   const setQuality = useCallback(
@@ -91,7 +89,7 @@ export const usePlayerActions = () => {
   );
 
   const clearQueue = useCallback(() => {
-        dispatch({ type: PlayerActionKeys.CLEAR_QUEUE });
+    dispatch({ type: PlayerActionKeys.CLEAR_QUEUE });
   }, [dispatch]);
 
   const setRepeat = useCallback(
@@ -116,9 +114,9 @@ export const usePlayerActions = () => {
     dispatch({ type: PlayerActionKeys.TOGGLE_SHUFFLE });
   }, [dispatch]);
 
-    const play = useCallback(
+  const play = useCallback(
     (song: Track) => {
-            setCurrentSong(song);
+      setCurrentSong(song);
       setIsPlaying(true);
       setProgress(0);
     },
@@ -131,7 +129,7 @@ export const usePlayerActions = () => {
     if (state.queue.length > 0) {
       const nextSong = state.queue[0];
 
-            dispatch({ type: PlayerActionKeys.SET_QUEUE, payload: state.queue.slice(1) });
+      dispatch({ type: PlayerActionKeys.SET_QUEUE, payload: state.queue.slice(1) });
       play(nextSong);
     } else {
       console.log('️ Queue empty, stopping playback');
@@ -140,32 +138,31 @@ export const usePlayerActions = () => {
   }, [state.queue, dispatch, play, setIsPlaying]);
 
   const playPrevious = useCallback(() => {
-    if (!audioRef.current) return;
+    if (!state.audioRef) return;
 
-    if (audioRef.current.currentTime > 3) {
-      audioRef.current.currentTime = 0;
+    if (state.audioRef.currentTime > 3) {
+      state.audioRef.currentTime = 0;
       setProgress(0);
     } else {
-            console.log('Previous song not implemented yet');
+      console.log('Previous song not implemented yet');
     }
-  }, [setProgress]);
+  }, [setProgress, state.audioRef]);
 
   const seek = useCallback(
     (value: number) => {
-      if (!audioRef.current || !audioRef.current.duration) return;
+      if (!state.audioRef || !state.audioRef.duration) return;
 
-      const newTime = (value / 100) * audioRef.current.duration;
-      audioRef.current.currentTime = newTime;
+      const newTime = (value / 100) * state.audioRef.duration;
+      state.audioRef.currentTime = newTime;
       setProgress(value);
     },
-    [setProgress]
+    [setProgress, state.audioRef]
   );
 
   const changeQuality = useCallback(
     (newQuality: QualityType) => {
-            setQuality(newQuality);
-
-          },
+      setQuality(newQuality);
+    },
     [setQuality]
   );
 
