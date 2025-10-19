@@ -7,15 +7,16 @@ import { Track } from '@/types/models.ts';
 
 interface SongListProps {
   songs: Track[];
+  onPlay: (song: Track) => void;
   onMore?: (song: Track) => void;
   currentSongId?: string;
 }
 
-const SongList: FC<SongListProps> = ({ songs, onMore, currentSongId }) => {
+const SongList: FC<SongListProps> = ({ songs, onMore, onPlay, currentSongId }) => {
   const { toggleLikeSong, toggleLibrary } = useLibrary()
   const librarySongs = useLibrarySongs();
   const likedSongs = useLikedSongs();
-  const { play, addToQueue } = usePlayerActions()
+  const { addToQueue } = usePlayerActions()
   if (songs.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -30,7 +31,7 @@ const SongList: FC<SongListProps> = ({ songs, onMore, currentSongId }) => {
         <SongItem
           key={'song' + index}
           song={song}
-          onPlay={play}
+          onPlay={onPlay}
           onLike={toggleLikeSong}
           onMore={onMore}
           onQueueNext={addToQueue}

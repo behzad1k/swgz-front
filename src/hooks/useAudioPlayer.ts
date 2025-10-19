@@ -17,8 +17,8 @@ export const useAudioPlayer = () => {
   const repeat = usePlayerRepeat();
   const user = useCurrentUser();
   const volume = usePlayerVolume();
-  const [actualQuality, setActualQuality] = useState<string | null>(null);
-  const [isAutoSelected, setIsAutoSelected] = useState(false);
+  const [actualQuality, _setActualQuality] = useState<string | null>(null);
+  const [isAutoSelected, _setIsAutoSelected] = useState(false);
 
   const {
     setIsPlaying,
@@ -184,20 +184,20 @@ export const useAudioPlayer = () => {
         const audio = audioRef.current;
         const apiKey = user?.apiKey || '';
 
-                const streamUrl = musicApi.getStreamUrl(songObj.id || '', apiKey, quality);
+        const streamUrl = musicApi.getStreamUrl(songObj.id || '', apiKey, quality);
 
-                const metadata = await fetchMetaData(streamUrl)
-
-        if (metadata) {
-          console.log('Stream metadata:', metadata);
-          setActualQuality(metadata.actualQuality || metadata.qualityFallback || quality || null);
-          setIsAutoSelected(metadata.autoSelected);
-
-          if (metadata.autoSelected) {
-                      } else if (metadata.qualityFallback) {
-            console.log(`️ Using fallback quality: ${metadata.qualityFallback} (requested: ${metadata.requestedQuality})`);
-          }
-        }
+        // const metadata = await fetchMetaData(streamUrl)
+        //
+        // if (metadata) {
+        //   console.log('Stream metadata:', metadata);
+        //   setActualQuality(metadata.actualQuality || metadata.qualityFallback || quality || null);
+        //   setIsAutoSelected(metadata.autoSelected);
+        //
+        //   if (metadata.autoSelected) {
+        //               } else if (metadata.qualityFallback) {
+        //     console.log(`️ Using fallback quality: ${metadata.qualityFallback} (requested: ${metadata.requestedQuality})`);
+        //   }
+        // }
 
         console.log('Setting stream URL');
         audio.src = streamUrl;
@@ -312,18 +312,18 @@ export const useAudioPlayer = () => {
     syncPlayback();
   }, [isPlaying, currentSong, setIsPlaying]);
 
-  const fetchMetaData = async (streamUrl: string) => {
-    const response: any = await musicApi.getStreamMetadata(streamUrl);
-
-    return {
-      actualQuality: response.headers.get('X-Actual-Quality'),
-      qualityFallback: response.headers.get('X-Quality-Fallback'),
-      requestedQuality: response.headers.get('X-Requested-Quality'),
-      autoSelected: response.headers.get('X-Auto-Selected') === 'true',
-      contentType: response.headers.get('Content-Type'),
-      contentLength: response.headers.get('Content-Length'),
-    };
-  };
+  // const fetchMetaData = async (streamUrl: string) => {
+  //   const response: any = await musicApi.getStreamMetadata(streamUrl);
+  //
+  //   return {
+  //     actualQuality: response.headers.get('X-Actual-Quality'),
+  //     qualityFallback: response.headers.get('X-Quality-Fallback'),
+  //     requestedQuality: response.headers.get('X-Requested-Quality'),
+  //     autoSelected: response.headers.get('X-Auto-Selected') === 'true',
+  //     contentType: response.headers.get('Content-Type'),
+  //     contentLength: response.headers.get('Content-Length'),
+  //   };
+  // };
 
   useEffect(() => {
     if (audioRef){

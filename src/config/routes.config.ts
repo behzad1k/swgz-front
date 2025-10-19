@@ -1,4 +1,4 @@
-import DefaultPlaylistPage from '@pages/library/DefaultPlaylistPage.tsx';
+import DefaultPlaylistPage from '@pages/playlist/DefaultPlaylistPage.tsx';
 import { FC } from 'react';
 
 // Pages

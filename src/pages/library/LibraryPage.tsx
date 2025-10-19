@@ -8,8 +8,10 @@ import SongList from '@/components/music/SongList';
 import { buildPath, routes } from '@/config/routes.config.ts';
 import { useNavigate } from '@/router';
 import { Playlist, Track } from '@/types/models.ts';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useLibrarySongs, useLikedSongs, useMostListened, useRecentlyPlayed } from '@hooks/selectors/useLibrarySelectors.ts';
 import { Clock, Heart, LayoutGrid, List, Music, Plus, Search, TrendingUp } from '@/assets/svg';
+import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
 import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useEffect, useState } from 'react';
 
@@ -19,6 +21,8 @@ const LibraryPage: FC = () => {
   const mostListened = useMostListened();
   const recentlyPlayed = useRecentlyPlayed();
   const librarySongs = useLibrarySongs();
+  const isPlaying = useIsPlaying();
+  const { play, setQueue } = usePlayerActions()
   //states
   const [songs, setSongs] = useState<Track[]>([]);
   const [activeTab, setActiveTab] = useState<'songs' | 'playlists'>('songs');
@@ -28,6 +32,11 @@ const LibraryPage: FC = () => {
   const [loading, setLoading] = useState(true);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const navigate = useNavigate();
+
+  const onPlay = (track: Track) => {
+    setQueue(librarySongs.slice(0, 20).filter(e => e.song.id != track.id).map(e => e.song))
+    play(track)
+  };
 
   const handleCreatePlaylist = async (name: string, description: string) => {
     try {
@@ -93,7 +102,7 @@ const LibraryPage: FC = () => {
     }
   }, [librarySongs]);
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className={`flex flex-col h-screen p-6 space-y-6 max-w-6xl mx-auto${isPlaying ? ' pb-28' : ''}`}>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your Library</h1>
         {activeTab === 'playlists' && (
@@ -184,14 +193,14 @@ const LibraryPage: FC = () => {
       ) : (
         <>
           {activeTab === 'songs' && (
-            <div className="space-y-2">
+            <div className="flex-1 overflow-y-auto space-y-2">
               {filteredSongs.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
                   <img src={Heart} alt={getAltFromPath(Heart)} width={48}/>
                   <p>No songs in your library yet</p>
                 </div>
               ) : (
-                <SongList songs={filteredSongs}/>
+                <SongList songs={filteredSongs} onPlay={onPlay}/>
               )}
             </div>
           )}

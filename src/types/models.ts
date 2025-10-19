@@ -11,6 +11,7 @@ export interface Track {
   isLiked?: boolean;
   trackNumber?: number;
   lastFMLink?: string;
+  externalListens: number;
 }
 
 export interface Image {

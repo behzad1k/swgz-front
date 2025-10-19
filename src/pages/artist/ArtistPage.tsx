@@ -1,10 +1,10 @@
 import { buildPath, routes } from '@/config/routes.config.ts';
 import { useNavigate, useParams } from '@/router';
-import { Artist } from '@/types/models.ts';
+import { Artist, Track } from '@/types/models.ts';
 import { musicApi } from '@api/music.api.ts';
 import Button from '@components/common/Button.tsx';
 import AlbumCard from '@components/music/AlbumCard.tsx';
-import SongItem from '@components/music/SongItem.tsx';
+import SongList from '@components/music/SongList.tsx';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { X } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
@@ -16,7 +16,12 @@ const ArtistPage: FC = () => {
   const [artist, setArtist] = useState<Artist | null>(null);
   const [_loading, setLoading] = useState(false);
   const navigate = useNavigate()
-  const { play } = usePlayerActions()
+  const { play, setQueue } = usePlayerActions()
+
+  const onPlay = (track: Track) => {
+    if (artist?.songs) setQueue(artist?.songs?.filter(e => e.id != track.id))
+    play(track)
+  };
 
   const fetchArtist = async () => {
     setLoading(true);
@@ -34,7 +39,7 @@ const ArtistPage: FC = () => {
 
   useEffect(() => {
     return () => {
-      console.log('exiting');
+      console.log('existing');
       setArtist(null)
     }
   }, [])
@@ -59,15 +64,7 @@ const ArtistPage: FC = () => {
         </div>
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white mb-4">Top Songs</h2>
-          <div className="space-y-2">
-            {artist?.songs?.map((song) => (
-              <SongItem
-                key={song.id}
-                song={song}
-                onPlay={play}
-              />
-            ))}
-          </div>
+          <SongList songs={artist?.songs?.sort((a, b) => b.externalListens - a.externalListens)} onPlay={onPlay} />
         </div>
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white mb-4">Top Albums</h2>

@@ -10,6 +10,7 @@ import { SearchFilters } from '@/enums/global.ts';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@/router';
 import { Album, Artist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
+import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useRecentSearches } from '@hooks/selectors/useLibrarySelectors.ts';
 import { RefreshCcw, Disc3, Music, Search, User, Users } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
@@ -37,12 +38,13 @@ const SearchPage: FC = () => {
   const debouncedQuery = useDebounce(query, 300);
   const navigate = useNavigate()
   const recentSearches = useRecentSearches();
+  const { play } = usePlayerActions();
 
-  const handleSearch = async (query: string = debouncedQuery, customFitler = filter) => {
+  const handleSearch = async (query: string = debouncedQuery, customFilter = filter) => {
     setLoading(true);
     try {
       let promises: Promise<UserProfile[] | Track[] | Artist[] | Album[]>[] = [profileApi.searchStalkers(query.replaceAll(' ', '%20'))];
-      if (filter != SearchFilters.stalker) promises.push(musicApi.search(query, customFitler));
+      if (filter != SearchFilters.stalker) promises.push(musicApi.search(query, customFilter));
 
       const [stalkersData, searchData] = await Promise.all(promises);
 
@@ -54,7 +56,7 @@ const SearchPage: FC = () => {
         track: []
       };
 
-      if (filter != SearchFilters.stalker) newResult[customFitler] = searchData;
+      if (filter != SearchFilters.stalker) newResult[customFilter] = searchData;
 
       setResults(newResult);
     } catch (error) {
@@ -164,7 +166,7 @@ const SearchPage: FC = () => {
             {shouldShowSection(SearchFilters.track) && results.track.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">Songs</h2>
-                <SongList songs={results.track}/>
+                <SongList onPlay={play} songs={results.track}/>
               </div>
             )}
 
