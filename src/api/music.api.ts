@@ -1,5 +1,5 @@
 import { SearchFilters } from '@/enums/global.ts';
-import { QualityType } from '@/types/global.ts';
+import { QualityType, SearchResult } from '@/types/global.ts';
 import ApiService, { API_BASE_URL } from '@/utils/api';
 import { Track, SearchHistory, Artist, Album } from '@/types/models';
 import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
@@ -35,7 +35,7 @@ export interface PrepareForPlayingResponse extends Track{
 
 export const musicApi = {
   search: (query: string, filter: SearchFilters, signal?: AbortSignal) =>
-    ApiService.get<Track[]>(`/music/search?q=${encodeURIComponent(query)}&filter=${filter}`, signal),
+    ApiService.get<SearchResult>(`/music/search?q=${encodeURIComponent(query)}&filter=${filter}`, signal),
 
   getRecentSearches: (signal?: AbortSignal) =>
     ApiService.get<SearchHistory[]>('/music/recent-searches', signal),

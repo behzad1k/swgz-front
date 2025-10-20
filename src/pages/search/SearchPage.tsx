@@ -1,5 +1,6 @@
 import { musicApi } from '@/api/music.api';
 import { profileApi } from '@/api/profile.api';
+import { Disc3, Music, RefreshCcw, Search, User, Users } from '@/assets/svg';
 import SearchBar from '@/components/forms/SearchBar';
 import AlbumCard from '@/components/music/AlbumCard';
 import ArtistCard from '@/components/music/ArtistCard';
@@ -9,54 +10,45 @@ import { buildPath, routes } from '@/config/routes.config.ts';
 import { SearchFilters } from '@/enums/global.ts';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@/router';
-import { Album, Artist, SearchHistory, Track, UserProfile } from '@/types/models.ts';
+import { SearchResult } from '@/types/global.ts';
+import { SearchHistory, UserProfile } from '@/types/models.ts';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useRecentSearches } from '@hooks/selectors/useLibrarySelectors.ts';
-import { RefreshCcw, Disc3, Music, Search, User, Users } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, ReactElement, useState } from 'react';
 
-interface SearchResult {
-  all: any[];
-  track: Track[];
-  stalker: UserProfile[];
-  artist: Artist[];
-  album: Album[];
-}
+const DEFAULT_SEARCH_RESULT = {
+  track: [],
+  stalker: [],
+  artist: [],
+  album: [],
+};
 
 const SearchPage: FC = () => {
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<SearchFilters>(SearchFilters.track);
-  const [results, setResults] = useState<SearchResult>({
-    all: [],
-    track: [],
-    stalker: [],
-    artist: [],
-    album: [],
-  });
+  const [filter, setFilter] = useState<SearchFilters>(SearchFilters.all);
+  const [results, setResults] = useState<SearchResult>(DEFAULT_SEARCH_RESULT);
   const [loading, setLoading] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const recentSearches = useRecentSearches();
   const { play } = usePlayerActions();
 
   const handleSearch = async (query: string = debouncedQuery, customFilter = filter) => {
     setLoading(true);
     try {
-      let promises: Promise<UserProfile[] | Track[] | Artist[] | Album[]>[] = [profileApi.searchStalkers(query.replaceAll(' ', '%20'))];
+      let promises: Promise<UserProfile[] | SearchResult>[] = [profileApi.searchStalkers(query.replaceAll(' ', '%20'))];
       if (filter != SearchFilters.stalker) promises.push(musicApi.search(query, customFilter));
 
       const [stalkersData, searchData] = await Promise.all(promises);
 
-      const newResult: any = {
-        all: [],
-        stalker: (stalkersData as UserProfile[]),
-        artist: [],
-        album: [],
-        track: []
-      };
+      let newResult: SearchResult = DEFAULT_SEARCH_RESULT;
 
-      if (filter != SearchFilters.stalker) newResult[customFilter] = searchData;
+      if (searchData) {
+        newResult = searchData as SearchResult;
+      }
+
+      newResult.stalker = stalkersData as UserProfile[];
 
       setResults(newResult);
     } catch (error) {
@@ -99,13 +91,9 @@ const SearchPage: FC = () => {
   ] as const;
 
   const selectSearchHistory = async (searchHistory: SearchHistory) => {
-    setQuery(searchHistory.query)
-    setFilter(searchHistory.filter || SearchFilters.track)
-    await handleSearch(searchHistory.query, searchHistory.filter)
-  };
-
-  const shouldShowSection = (section: SearchFilters) => {
-    return filter == section;
+    setQuery(searchHistory.query);
+    setFilter(searchHistory.filter || SearchFilters.track);
+    await handleSearch(searchHistory.query, searchHistory.filter);
   };
 
   return (
@@ -163,15 +151,21 @@ const SearchPage: FC = () => {
         ) : (
           <div className="space-y-8 pb-6">
 
-            {shouldShowSection(SearchFilters.track) && results.track.length > 0 && (
-              <div>
-                <h2 className="text-xl font-bold text-white mb-4">Songs</h2>
-                <SongList onPlay={play} songs={results.track}/>
+            {[SearchFilters.all, SearchFilters.artist].includes(filter) && results?.artist?.length > 0 && (
+              <div className="flex flex-col">
+                <h2 className="text-xl font-bold text-white mb-4">Artists</h2>
+                <div className={`${filter == SearchFilters.all ? 'flex flex-1 overflow-x-auto gap-4' : 'flex flex-wrap justify-evenly'}`}>
+                  {results.artist.map((artist) => (
+                    <div className='min-w-36 max-w-36'>
+                      <ArtistCard key={artist.id} artist={artist} onClick={() => navigate(buildPath(routes.artist, { id: artist.id }))}/>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
 
-            {shouldShowSection(SearchFilters.stalker) && results.stalker.length > 0 && (
+            {[SearchFilters.all, SearchFilters.stalker].includes(filter) && results?.stalker?.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">Users</h2>
                 <div className="space-y-2">
@@ -185,30 +179,27 @@ const SearchPage: FC = () => {
             )}
 
 
-            {shouldShowSection(SearchFilters.artist) && results.artist.length > 0 && (
-              <div>
-                <h2 className="text-xl font-bold text-white mb-4">Artists</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {results.artist.map((artist) => (
-                    <ArtistCard key={artist.id} artist={artist} onClick={() => navigate(buildPath(routes.artist, { id: artist.id }))}/>
-                  ))}
-                </div>
-              </div>
-            )}
-
-
-            {shouldShowSection(SearchFilters.album) && results.album.length > 0 && (
-              <div>
+            {[SearchFilters.all, SearchFilters.album].includes(filter) && results?.album?.length > 0 && (
+              <div className='flex flex-col'>
                 <h2 className="text-xl font-bold text-white mb-4">Albums</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className={`${filter == SearchFilters.all ? 'flex flex-1 overflow-x-auto gap-4' : 'flex flex-wrap justify-evenly'}`}>
                   {results.album.map((album) => (
+                    <div className='min-w-36 max-w-36'>
                     <AlbumCard key={album.id} album={album} onClick={() => {
                     }}/>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
+
+            {[SearchFilters.all, SearchFilters.track].includes(filter) && results?.track?.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-4">Songs</h2>
+                <SongList onPlay={play} songs={results.track}/>
+              </div>
+            )}
 
             {query &&
               !loading &&
