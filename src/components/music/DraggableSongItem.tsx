@@ -1,3 +1,4 @@
+import { Track } from '@/types/models.ts';
 import { TrackItemProps } from '@components/music/SongItem.tsx';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
@@ -10,6 +11,7 @@ interface DraggableSongItemProps extends TrackItemProps {
   onDragStart: (e: React.DragEvent, index: number) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, index: number) => void;
+  onLike: (track: Track) => void;
 }
 
 const DraggableSongItem: FC<DraggableSongItemProps> = ({ song, index, onLike, onDragStart, onDragOver, onDrop }) => {

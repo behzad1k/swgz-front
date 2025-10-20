@@ -1,6 +1,6 @@
-import { BookMinus, BookPlus, Heart, ListPlus, MoveVertical, Pause, Play } from '@/assets/svg';
+import { Pause, Play } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
-import { FC, ReactNode } from 'react';
+import { FC } from 'react';
 import { Track } from '@/types/models.ts';
 
 type TrackAction = {

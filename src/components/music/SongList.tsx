@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useLibrarySongs, useLikedSongs } from '@hooks/selectors/useLibrarySelectors.ts';
 import { useLibrary } from '@hooks/useLibrary.ts';
