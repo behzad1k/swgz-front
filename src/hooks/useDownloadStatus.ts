@@ -19,8 +19,8 @@ interface UseDownloadStatusOptions {
   onError?: (error: string) => void;
   onProgress?: (progress: number) => void;
   onMetadata?: (metadata: { quality?: string; duration?: number; fileSize?: number }) => void;
+  onFilenameChanged?: (data: DownloadStatus) => void; // NEW
 }
-
 export const useDownloadStatus = (
   songId: string | null,
   quality: QualityType | null,
@@ -34,10 +34,8 @@ export const useDownloadStatus = (
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  // Track if we've already closed to prevent double-closing
   const hasClosedRef = useRef(false);
 
-  // Build SSE URL
   const sseUrl = songId
     ? `${API_BASE_URL}/music/progress/${songId}${quality ? `?quality=${quality}` : ''}`
     : null;
@@ -46,18 +44,15 @@ export const useDownloadStatus = (
     withCredentials: true,
     onError: (error) => {
       console.log('SSE connection error (this is normal on close)', error);
-      // Don't treat connection close as an error
     },
   });
 
   useEffect(() => {
     if (!isConnected) return;
 
-    // Reset closed flag when connected
     hasClosedRef.current = false;
 
     const handleProgress = (data: DownloadStatus) => {
-      // Validate data exists
       if (!data) {
         console.warn('⚠️ Received null/undefined progress data');
         return;
@@ -70,7 +65,6 @@ export const useDownloadStatus = (
         optionsRef.current.onProgress?.(data.progress);
       }
 
-      // Send metadata when available
       if (data.quality || data.duration || data.fileSize) {
         optionsRef.current.onMetadata?.({
           quality: data.quality,
@@ -80,8 +74,21 @@ export const useDownloadStatus = (
       }
     };
 
+    // NEW: Handle filename changed event
+    const handleFilenameChanged = (data: DownloadStatus) => {
+      if (!data) {
+        console.warn('⚠️ Received null/undefined filename changed data');
+        return;
+      }
+
+      console.log('🔄 Filename changed:', data);
+      setStatus({ ...data, status: 'ready' });
+
+      // Notify the parent that we need to switch URLs
+      optionsRef.current.onFilenameChanged?.(data);
+    };
+
     const handleReady = (data: DownloadStatus) => {
-      // Validate data exists
       if (!data) {
         console.warn('⚠️ Received null/undefined ready data');
         return;
@@ -91,18 +98,11 @@ export const useDownloadStatus = (
       setStatus({ ...data, status: 'ready' });
       optionsRef.current.onReady?.(data);
 
-      // Close connection after a delay to ensure all events are processed
-      if (!hasClosedRef.current) {
-        hasClosedRef.current = true;
-        setTimeout(() => {
-          console.log('🔌 Closing SSE after ready event');
-          close();
-        }, 100);
-      }
+      // Don't close automatically - let the parent control when to close
+      // The parent should call reset() when switching songs
     };
 
     const handleError = (data: DownloadStatus) => {
-      // Validate data exists and has error property
       if (!data) {
         console.warn('⚠️ Received null/undefined error data');
         optionsRef.current.onError?.('Unknown download error');
@@ -113,7 +113,6 @@ export const useDownloadStatus = (
         optionsRef.current.onError?.(data.error || 'Download failed');
       }
 
-      // Close connection after error
       if (!hasClosedRef.current) {
         hasClosedRef.current = true;
         setTimeout(() => {
@@ -124,17 +123,20 @@ export const useDownloadStatus = (
     };
 
     on('progress', handleProgress);
+    on('filename_changed', handleFilenameChanged); // NEW
     on('ready', handleReady);
     on('error', handleError);
 
     return () => {
       off('progress', handleProgress);
+      off('filename_changed', handleFilenameChanged); // NEW
       off('ready', handleReady);
       off('error', handleError);
     };
   }, [isConnected, on, off, close]);
 
   const reset = useCallback(() => {
+    console.log('onRESET');
     setStatus({ status: 'not_started', progress: 0 });
     hasClosedRef.current = false;
     close();

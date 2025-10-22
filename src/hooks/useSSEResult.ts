@@ -38,6 +38,7 @@ export const useSSE = (url: string | null, options: SSEOptions = {}): UseSSEResu
     client.connect();
 
     return () => {
+      console.log('closeeee');
       client.close();
       clientRef.current = null;
       setIsConnected(false);
