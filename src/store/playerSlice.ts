@@ -12,6 +12,7 @@ export const initialPlayerState: PlayerState = {
   volume: 100,
   repeat: false,
   shuffle: false,
+  duration: null,
   // quality: (localStorage.getItem(LOCAL_STORAGE_KEYS.PREFERRED_QUALITY) as QualityType) || '320',
   quality: null,
 };
@@ -32,6 +33,7 @@ export enum PlayerActionKeys {
   TOGGLE_PLAY = 'TOGGLE_PLAY',
   TOGGLE_REPEAT = 'TOGGLE_REPEAT',
   TOGGLE_SHUFFLE = 'TOGGLE_SHUFFLE',
+  SET_DURATION = 'SET_DURATION',
 }
 
 export type PlayerAction =
@@ -49,7 +51,8 @@ export type PlayerAction =
   | { type: PlayerActionKeys.SET_SHUFFLE; payload: boolean }
   | { type: PlayerActionKeys.TOGGLE_PLAY }
   | { type: PlayerActionKeys.TOGGLE_REPEAT }
-  | { type: PlayerActionKeys.TOGGLE_SHUFFLE };
+  | { type: PlayerActionKeys.TOGGLE_SHUFFLE }
+  | { type: PlayerActionKeys.SET_DURATION; payload: number };
 
 export const playerReducer = (
   state: PlayerState,
@@ -90,6 +93,8 @@ export const playerReducer = (
       return { ...state, shuffle: action.payload };
     case PlayerActionKeys.TOGGLE_SHUFFLE:
       return { ...state, shuffle: !state.shuffle };
+    case PlayerActionKeys.SET_DURATION:
+      return { ...state, duration: action.payload };
     default:
       return state;
   }

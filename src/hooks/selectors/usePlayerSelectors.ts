@@ -51,6 +51,11 @@ export const usePlayerQuality = () => {
   return state.quality;
 };
 
+export const useSongDuration = () => {
+  const { state } = usePlayerContext();
+  return state.duration;
+};
+
 export const useQueueLength = () => {
   const { state } = usePlayerContext();
   return useMemo(() => state.queue.length, [state.queue.length]);

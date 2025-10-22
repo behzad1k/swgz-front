@@ -3,10 +3,11 @@ import ProgressBar from '@/components/player/ProgressBar';
 import QueueList from '@/components/player/QueueList';
 import VolumeControl from '@/components/player/VolumeControl';
 import Button from '@components/common/Button.tsx';
+import { DownloadProgress } from '@components/player/DownloadProgress.tsx';
 import QualitySelector from '@components/player/QualitySelector.tsx';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useCurrentUser } from '@hooks/selectors/useAuthSelectors.ts';
-import { useCurrentSong, useIsPlaying, usePlayerProgress, usePlayerQuality, usePlayerRepeat, usePlayerShuffle, usePlayerVolume, useQueue } from '@hooks/selectors/usePlayerSelectors.ts';
+import { useCurrentSong, useIsPlaying, usePlayerProgress, usePlayerQuality, usePlayerRepeat, usePlayerShuffle, usePlayerVolume, useQueue, useSongDuration } from '@hooks/selectors/usePlayerSelectors.ts';
 import { useModal } from '@hooks/useModal.ts';
 import { ChevronDown, ChevronUp } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
@@ -31,6 +32,7 @@ const NowPlayingSheet: FC = () => {
   const repeat = usePlayerRepeat();
   const shuffle = usePlayerShuffle();
   const queue = useQueue();
+  const duration = useSongDuration();
   const volume = usePlayerVolume();
   const progress = usePlayerProgress();
   const quality = usePlayerQuality();
@@ -227,7 +229,7 @@ const NowPlayingSheet: FC = () => {
 
 
             <div className="px-6 mb-6">
-              <ProgressBar progress={progress} duration={currentSong.duration || 200} onSeek={seek} />
+              <ProgressBar progress={progress} duration={duration || currentSong.duration || 666} onSeek={seek} />
             </div>
 
 
@@ -315,6 +317,7 @@ const DesktopNowPlaying: FC = () => {
   // hooks
   const repeat = usePlayerRepeat();
   const shuffle = usePlayerShuffle();
+  const duration = useSongDuration();
   const queue = useQueue();
   const volume = usePlayerVolume();
   const progress = usePlayerProgress();
@@ -350,9 +353,10 @@ const DesktopNowPlaying: FC = () => {
             <p className="text-gray-300 mb-1">{currentSong.artistName}</p>
             <p className="text-sm text-gray-400">{currentSong.albumName}</p>
           </div>
+          <DownloadProgress/>
 
           <div className="mb-4">
-            <ProgressBar progress={progress} duration={currentSong.duration || 200} onSeek={seek} />
+            <ProgressBar progress={progress} duration={duration || currentSong.duration || 666} onSeek={seek} />
           </div>
 
           <div className="mb-4">

@@ -1,3 +1,4 @@
+// src/api/music.api.ts
 import { SearchFilters } from '@/enums/global.ts';
 import { QualityType, SearchResult } from '@/types/global.ts';
 import ApiService, { API_BASE_URL } from '@/utils/api';
@@ -5,14 +6,14 @@ import { Track, SearchHistory, Artist, Album } from '@/types/models';
 import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
 
 export interface QualityDetails {
-  songId: string,
-  title: string,
-  artist: string,
-  hasFlac: boolean,
-  availableQualities: QualityInfo[],
-  unavailableQualities: QualityInfo[],
-  totalAvailable: number,
-  totalUnavailable: number,
+  songId: string;
+  title: string;
+  artist: string;
+  hasFlac: boolean;
+  availableQualities: QualityInfo[];
+  unavailableQualities: QualityInfo[];
+  totalAvailable: number;
+  totalUnavailable: number;
 }
 
 export interface QualityInfo {
@@ -29,8 +30,32 @@ export interface QualityFallbackResponse {
   fallbackChain: QualityType[];
 }
 
-export interface PrepareForPlayingResponse extends Track{
+export interface PrepareForPlayingResponse extends Track {
   id: string;
+}
+
+export interface TriggerDownloadResponse {
+  status: 'ready' | 'accepted';
+  message: string;
+  streamUrl?: string;
+  progressUrl?: string;
+  songId: string;
+  quality?: string;
+  duration?: number;
+  fileSize?: number;
+}
+
+export interface StreamInfo {
+  status: 'ready' | 'downloading' | 'searching' | 'not_started';
+  ready: boolean;
+  filePath?: string;
+  quality?: string;
+  duration?: number;
+  fileSize?: number;
+  mimeType?: string;
+  progress?: number;
+  estimatedTime?: number;
+  message?: string;
 }
 
 export const musicApi = {
@@ -73,11 +98,43 @@ export const musicApi = {
   resetUnavailableQuality: (songId: string, quality: string) =>
     ApiService.post(`/music/reset-quality/${songId}/${quality}`, {}),
 
-  getStreamUrl: (songId: string, apiKey: string, quality?: QualityType | null)=> {
-    let mainUrl = `${API_BASE_URL}/music/stream/${songId}?api-key=${apiKey}`;
-    if (quality) mainUrl += `&quality=${quality}`;
-    return mainUrl
+  /**
+   * Get stream info - returns immediately with file status
+   */
+  getStreamInfo: (songId: string, quality?: QualityType | null, signal?: AbortSignal) =>
+    ApiService.get<StreamInfo>(
+      `/music/stream-info/${songId}${quality ? `?quality=${quality}` : ''}`,
+      signal
+    ),
+
+  /**
+   * Get stream URL (only call when file is ready)
+   */
+  getStreamUrl: (songId: string, apiKey: string, quality?: QualityType | null) => {
+    let url = `${API_BASE_URL}/music/stream/${songId}?api-key=${apiKey}`;
+    if (quality) url += `&quality=${quality}`;
+    return url;
   },
+
+  /**
+   * Get SSE progress URL - no longer needs manual token
+   * Cookies are sent automatically with EventSource
+   */
+  getProgressUrl: (songId: string, quality?: QualityType | null) => {
+    let url = `${API_BASE_URL}/music/progress/${songId}`;
+    if (quality) url += `?quality=${quality}`;
+    return url;
+  },
+
+  /**
+   * Trigger download
+   */
+  triggerDownload: (songId: string, quality?: QualityType | null, signal?: AbortSignal) =>
+    ApiService.post<TriggerDownloadResponse>(
+      `/music/download/${songId}${quality ? `?quality=${quality}` : ''}`,
+      {},
+      signal
+    ),
 
   getStreamMetadata: (streamUrl: string) =>
     fetch(streamUrl, {
@@ -85,6 +142,6 @@ export const musicApi = {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)}`,
-      }
-    })
+      },
+    }),
 };

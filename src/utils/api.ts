@@ -22,6 +22,7 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      credentials: 'include',
     });
 
     if (response.status === 401 && !publicEndpoints.includes(endpoint)) {

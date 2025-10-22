@@ -22,6 +22,7 @@ export type PlayerState = {
   volume: number;
   repeat: boolean;
   shuffle: boolean;
+  duration: number | null;
   quality: QualityType | null;
 };
 

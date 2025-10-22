@@ -166,6 +166,13 @@ export const usePlayerActions = () => {
     [setQuality]
   );
 
+  const setDuration = useCallback(
+    (duration: number) => {
+      dispatch({ type: PlayerActionKeys.SET_DURATION, payload: duration });
+    },
+    [dispatch]
+  );
+
   return {
     setAudioRef,
     setCurrentSong,
@@ -188,5 +195,6 @@ export const usePlayerActions = () => {
     playNext,
     playPrevious,
     seek,
+    setDuration
   };
 };
