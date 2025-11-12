@@ -11,11 +11,14 @@ import Clock from '@/assets/svg/clock.svg';
 import MessageCircle from '@/assets/svg/message-circle.svg';
 import Disc3 from '@/assets/svg/disc-3.svg';
 import Heart from '@/assets/svg/heart.svg';
+import HeartFilled from '@/assets/svg/heart-filled.svg';
 import Info from '@/assets/svg/info.svg';
 import LayoutGrid from '@/assets/svg/layout-grid.svg';
 import Library from '@/assets/svg/library.svg';
 import List from '@/assets/svg/list.svg';
 import ListPlus from '@/assets/svg/list-plus.svg';
+import ListMinus from '@/assets/svg/list-minus.svg';
+import ListEnd from '@/assets/svg/list-end.svg';
 import Lock from '@/assets/svg/lock.svg';
 import LogOut from '@/assets/svg/log-out.svg';
 import Mail from '@/assets/svg/mail.svg';
@@ -58,6 +61,8 @@ export {
   Info,
   List,
   ListPlus,
+  ListMinus,
+  ListEnd,
   Lock,
   LogOut,
   Mail,
@@ -85,6 +90,7 @@ export {
   WifiOff,
   MessageCircle,
   Heart,
+  HeartFilled,
   Disc3,
   Bell,
   LayoutGrid,

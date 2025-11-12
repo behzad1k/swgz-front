@@ -69,7 +69,7 @@ export const libraryReducer = (
     case LibraryActionKeys.REMOVE_LIKED_SONG:
       return {
         ...state,
-        likedSongs: state.likedSongs.filter((song) => song.id !== action.payload),
+        likedSongs: state.likedSongs.filter((song) => song.songId !== action.payload),
       };
     case LibraryActionKeys.REMOVE_LIBRARY_SONG:
       return {

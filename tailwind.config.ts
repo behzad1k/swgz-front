@@ -4,6 +4,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      filter: {
+        'svg-red': 'brightness(0) saturate(100%) invert(47%) sepia(91%) saturate(1310%) hue-rotate(316deg) brightness(91%) contrast(101%)',
+      },
       colors: {
         primary: {
           50: '#faf5ff',
@@ -44,5 +47,7 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwindcss-filters')
+  ],
 } satisfies Config;

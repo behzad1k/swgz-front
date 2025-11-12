@@ -1,3 +1,4 @@
+import { useTrackActions } from '@hooks/useTrackActions.ts';
 import { FC } from 'react';
 import { Track } from '@/types/models.ts';
 import SongItem from '../music/SongItem';
@@ -10,6 +11,7 @@ interface QueueListProps {
 }
 
 const QueueList: FC<QueueListProps> = ({ queue, currentSongId, onPlay }) => {
+  const { deleteFromQueueButton } = useTrackActions()
   if (queue.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -27,6 +29,9 @@ const QueueList: FC<QueueListProps> = ({ queue, currentSongId, onPlay }) => {
           song={song}
           onPlay={onPlay}
           isPlaying={song.id === currentSongId}
+          actions={[
+            deleteFromQueueButton(queue.findIndex(e => e.id == song.id))
+          ]}
         />
       ))}
     </div>

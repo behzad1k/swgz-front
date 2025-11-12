@@ -8,3 +8,14 @@ export interface SearchResult {
   artist: Artist[];
   album: Album[];
 }
+
+export type TrackAction = {
+  icon: string;
+  alt: string;
+  onClick: (song: Track, e: React.MouseEvent) => void;
+  tooltip?: string;
+  className?: string;
+  isActive?: boolean;
+  activeClassName?: string;
+  show?: boolean; // conditionally show action
+};

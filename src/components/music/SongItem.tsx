@@ -2,17 +2,7 @@ import { Pause, Play } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
 import { FC } from 'react';
 import { Track } from '@/types/models.ts';
-
-type TrackAction = {
-  icon: string;
-  alt: string;
-  onClick: (song: Track, e: React.MouseEvent) => void;
-  tooltip?: string;
-  className?: string;
-  isActive?: boolean;
-  activeClassName?: string;
-  show?: boolean; // conditionally show action
-};
+import { TrackAction } from '@/types/global';
 
 export interface TrackItemProps {
   song: Track;
@@ -51,7 +41,7 @@ const TrackItem: FC<TrackItemProps> = ({ song, onPlay, isPlaying = false, action
         <p className="text-gray-400 text-sm truncate">{song.albumName}</p>
       </div>
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1">
         {actions.map((action, index) => {
           // Skip if show is false
           if (action.show === false) return null;
@@ -59,11 +49,11 @@ const TrackItem: FC<TrackItemProps> = ({ song, onPlay, isPlaying = false, action
           return (
             <button
               key={index}
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                action.onClick(song, e);
+                await action.onClick(song, e);
               }}
-              className="hover:bg-white/10 rounded-full transition-colors p-1"
+              className="hover:bg-white/10 rounded-full p-1"
               title={action.tooltip}
             >
               <img
