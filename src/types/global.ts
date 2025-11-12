@@ -12,7 +12,7 @@ export interface SearchResult {
 export type TrackAction = {
   icon: string;
   alt: string;
-  onClick: (song: Track, e: React.MouseEvent) => void;
+  onClick: (song: any, e: React.MouseEvent) => void;
   tooltip?: string;
   className?: string;
   isActive?: boolean;
