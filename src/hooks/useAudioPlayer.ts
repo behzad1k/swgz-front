@@ -109,8 +109,8 @@ export const useAudioPlayer = () => {
         // CRITICAL: Check if audio is already playing
         // if (audioRef.current && !audioRef.current.paused) {
         //   console.log('🎵 Audio already playing, keeping current stream');
-          // Don't call loadStreamUrl - keep the progressive stream!
-          // return;
+        // Don't call loadStreamUrl - keep the progressive stream!
+        // return;
         // }
 
         // Only load new stream if audio isn't playing yet
@@ -145,7 +145,7 @@ export const useAudioPlayer = () => {
         setIsDownloading(false);
         setIsPlaying(false);
         console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-isWaitingForDownloadRef.current = false
+        isWaitingForDownloadRef.current = false
       },
       onProgress: (progress) => {
         setDownloadProgress(progress);
@@ -200,12 +200,15 @@ isWaitingForDownloadRef.current = false
       }
     };
 
+    // FIX: Use native ended event instead of relying on backend duration
     const handleEnded = () => {
-      console.log('🏁 Audio ended event');
+      console.log('🏁 Audio stream ended - playing next song');
       if (repeat) {
+        console.log('🔁 Repeat is on - restarting current song');
         audio.currentTime = 0;
         audio.play().catch((err) => console.error('Repeat play failed:', err));
       } else {
+        console.log('⏭️ Playing next song from queue');
         playNextAction();
       }
     };
@@ -458,6 +461,20 @@ isWaitingForDownloadRef.current = false
   // Main song loading effect
   useEffect(() => {
     const loadAndPlaySong = async () => {
+      // CRITICAL FIX: Pause and clear any currently playing audio immediately when switching songs
+      if (audioRef.current && currentSongIdRef.current !== currentSong?.id) {
+        const audio = audioRef.current;
+        if (!audio.paused) {
+          console.log('⏸️ Pausing old audio before loading new song');
+          audio.pause();
+        }
+        // Reset the audio src to prevent it from playing
+        if (audio.src) {
+          console.log('🔇 Clearing old audio source');
+          audio.src = '';
+        }
+      }
+
       if (downloadStatus) {
         downloadStatus.reset();
       }
@@ -502,7 +519,7 @@ isWaitingForDownloadRef.current = false
           console.log('✅ File already cached, streaming immediately...');
           setIsDownloading(false);
           console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-isWaitingForDownloadRef.current = false
+          isWaitingForDownloadRef.current = false
 
           if (streamInfo.quality) setActualQuality(streamInfo.quality);
           if (streamInfo.duration) setSongDuration(streamInfo.duration);
@@ -522,7 +539,7 @@ isWaitingForDownloadRef.current = false
           setIsDownloading(true);
           setDownloadProgress(0);
           console.log('🔒 Setting isWaitingForDownloadRef to TRUE');
-isWaitingForDownloadRef.current = true // Start waiting for download
+          isWaitingForDownloadRef.current = true // Start waiting for download
 
           const downloadResponse = await musicApi.triggerDownload(songObj.id || '', quality);
 
@@ -531,7 +548,7 @@ isWaitingForDownloadRef.current = true // Start waiting for download
             console.log('✅ File became ready during request (race condition)');
             setIsDownloading(false);
             console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-isWaitingForDownloadRef.current = false
+            isWaitingForDownloadRef.current = false
 
             if (downloadResponse.quality) setActualQuality(downloadResponse.quality);
             if (downloadResponse.duration) setSongDuration(downloadResponse.duration);
@@ -564,7 +581,7 @@ isWaitingForDownloadRef.current = false
         setIsPlaying(false);
         setIsDownloading(false);
         console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-isWaitingForDownloadRef.current = false
+        isWaitingForDownloadRef.current = false
       } finally {
         isLoadingRef.current = false;
       }
