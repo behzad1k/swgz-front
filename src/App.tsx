@@ -59,8 +59,8 @@ const App: FC = () => {
 
       login(localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN) || authToken || '', response)
     }catch (e){
-      // localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
-      // navigate(routes.login.path)
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+      navigate(routes.login.path)
     }
   }
   useEffect(() => {

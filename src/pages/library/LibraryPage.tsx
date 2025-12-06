@@ -102,7 +102,7 @@ const LibraryPage: FC = () => {
     }
   }, [librarySongs]);
   return (
-    <div className={`flex flex-col h-screen p-6 space-y-6 max-w-6xl mx-auto${isPlaying ? ' pb-28' : ''}`}>
+    <div className={`flex flex-col h-screen p-6 space-y-6 max-w-6xl mx-auto${isPlaying ? ' pb-28' : ''}  overflow-y-auto space-y-2`}>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your Library</h1>
         {activeTab === 'playlists' && (
@@ -111,30 +111,6 @@ const LibraryPage: FC = () => {
           </Button>
         )}
       </div>
-
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {quickLinks.map((link, idx) => (
-          <div
-            key={idx}
-            className="bg-white/5 hover:bg-white/10 rounded-xl p-6 cursor-pointer transition-all duration-200 group"
-            onClick={() => navigate(buildPath(routes.defaultPlaylist, { slug: link.value }))}
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                {link.icon}
-              </div>
-              <div>
-                <h3 className="text-white font-semibold group-hover:text-purple-400 transition-colors">
-                  {link.label}
-                </h3>
-                <p className="text-gray-400 text-sm">{link.count} items</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="w-full sm:w-96">
@@ -169,6 +145,27 @@ const LibraryPage: FC = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {quickLinks.map((link, idx) => (
+          <div
+            key={idx}
+            className="bg-white/5 hover:bg-white/10 rounded-xl p-6 cursor-pointer transition-all duration-200 group"
+            onClick={() => navigate(buildPath(routes.defaultPlaylist, { slug: link.value }))}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                {link.icon}
+              </div>
+              <div>
+                <h3 className="text-white font-semibold group-hover:text-purple-400 transition-colors">
+                  {link.label}
+                </h3>
+                <p className="text-gray-400 text-sm">{link.count} items</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="flex gap-2 border-b border-white/10">
         {tabs.map((tab) => (
@@ -193,7 +190,7 @@ const LibraryPage: FC = () => {
       ) : (
         <>
           {activeTab === 'songs' && (
-            <div className="flex-1 overflow-y-auto space-y-2">
+            <div className="flex-1 ">
               {filteredSongs.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
                   <img src={Heart} alt={getAltFromPath(Heart)} width={48}/>
@@ -248,7 +245,6 @@ const LibraryPage: FC = () => {
           )}
         </>
       )}
-
 
       <Modal isOpen={showCreatePlaylist} onClose={() => setShowCreatePlaylist(false)} title="Create New Playlist">
         <CreatePlaylistForm onSubmit={handleCreatePlaylist}/>

@@ -1,21 +1,21 @@
+import AlbumPage from '@pages/album/AlbumPage.tsx';
+import ArtistPage from '@pages/artist/ArtistPage.tsx';
+import EmailConfirmation from '@pages/auth/EmailConfirmation.tsx';
+import GoogleCallback from '@pages/auth/GoogleCallback.tsx';
+import LoginPage from '@pages/auth/LoginPage.tsx';
+import LibraryPage from '@pages/library/LibraryPage.tsx';
+import CreatePlaylistPage from '@pages/playlist/CreatePlaylistPage.tsx';
 import DefaultPlaylistPage from '@pages/playlist/DefaultPlaylistPage.tsx';
-import { FC } from 'react';
+import EditPlaylistPage from '@pages/playlist/EditPlaylistPage.tsx';
+import PlaylistDetailPage from '@pages/playlist/PlaylistDetailPage.tsx';
+import EditProfilePage from '@pages/profile/EditProfilePage.tsx';
+import ProfilePage from '@pages/profile/ProfilePage.tsx';
+import SettingsPage from '@pages/profile/SettingsPage.tsx';
+import UserProfilePage from '@pages/profile/UserProfilePage.tsx';
 
 // Pages
 import SearchPage from '@pages/search/SearchPage.tsx';
-import LibraryPage from '@pages/library/LibraryPage.tsx';
-import ProfilePage from '@pages/profile/ProfilePage.tsx';
-import EditProfilePage from '@pages/profile/EditProfilePage.tsx';
-import UserProfilePage from '@pages/profile/UserProfilePage.tsx';
-import SettingsPage from '@pages/profile/SettingsPage.tsx';
-import LoginPage from '@pages/auth/LoginPage.tsx';
-import EmailConfirmation from '@pages/auth/EmailConfirmation.tsx';
-import GoogleCallback from '@pages/auth/GoogleCallback.tsx';
-import PlaylistDetailPage from '@pages/playlist/PlaylistDetailPage.tsx';
-import CreatePlaylistPage from '@pages/playlist/CreatePlaylistPage.tsx';
-import EditPlaylistPage from '@pages/playlist/EditPlaylistPage.tsx';
-import ArtistPage from '@pages/artist/ArtistPage.tsx';
-import AlbumPage from '@pages/album/AlbumPage.tsx';
+import { FC } from 'react';
 
 export interface Route {
   path: string;
@@ -33,7 +33,7 @@ interface Routes {
 }
 
 export const routes: Routes = {
-    login: {
+  login: {
     path: '/login',
     component: LoginPage,
     protected: false,
@@ -57,7 +57,7 @@ export const routes: Routes = {
     showHeader: false,
   },
 
-    root: {
+  root: {
     path: '/',
     component: LibraryPage,
     protected: true,
@@ -128,7 +128,6 @@ export const routes: Routes = {
     showHeader: true,
     headerBackButton: true,
   },
-
 
   // playlist
   defaultPlaylist: {

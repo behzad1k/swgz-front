@@ -15,6 +15,11 @@ export const useShowNowPlaying = () => {
   return state.showNowPlaying;
 };
 
+export const useShowLoading = () => {
+  const { state } = useAppContext();
+  return state.showLoading;
+};
+
 export const useShowDownloadManager = () => {
   const { state } = useAppContext();
   return state.showDownloadManager;

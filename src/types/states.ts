@@ -45,6 +45,7 @@ export type AppState = {
   isOnline: boolean;
   showNowPlaying: boolean;
   showDownloadManager: boolean;
+  showLoading: boolean;
 };
 
 export type ModalState = {

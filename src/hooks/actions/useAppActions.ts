@@ -26,6 +26,13 @@ export const useAppActions = () => {
     [dispatch]
   );
 
+  const setShowLoading = useCallback(
+    (show: boolean) => {
+      dispatch({ type: AppActionKeys.SET_SHOW_LOADING, payload: show });
+    },
+    [dispatch]
+  );
+
   const toggleNowPlaying = useCallback(() => {
     dispatch({ type: AppActionKeys.TOGGLE_NOW_PLAYING });
   }, [dispatch]);
@@ -35,6 +42,7 @@ export const useAppActions = () => {
   }, [dispatch]);
 
   return {
+    setShowLoading,
     setConnectivityStatus,
     setShowNowPlaying,
     setShowDownloadManager,

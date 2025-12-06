@@ -1,4 +1,5 @@
 import { usePlayerContext } from '@/contexts/PlayerContext';
+import { useAppActions } from '@hooks/actions/useAppActions.ts';
 import { PlayerActionKeys } from '@store/playerSlice.ts';
 import { QualityType } from '@/types/global';
 import { Track } from '@/types/models';
@@ -6,6 +7,7 @@ import { useCallback } from 'react';
 
 export const usePlayerActions = () => {
   const { dispatch, state } = usePlayerContext();
+  const { setShowLoading } = useAppActions();
 
   const setAudioRef = useCallback(
     (ref: HTMLAudioElement | null) => {
@@ -119,6 +121,7 @@ export const usePlayerActions = () => {
       setCurrentSong(song);
       setIsPlaying(true);
       setProgress(0);
+      setShowLoading(true)
     },
     [setCurrentSong, setIsPlaying, setProgress]
   );

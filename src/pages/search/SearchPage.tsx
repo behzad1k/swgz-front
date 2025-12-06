@@ -186,6 +186,7 @@ const SearchPage: FC = () => {
                   {results.album.map((album) => (
                     <div className='min-w-36 max-w-36'>
                     <AlbumCard key={album.id} album={album} onClick={() => {
+                      navigate(buildPath(routes.album, { id: album.id }))
                     }}/>
                     </div>
                   ))}
