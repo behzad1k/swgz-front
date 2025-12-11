@@ -23,7 +23,7 @@ export const playlistApi = {
   uploadCover: async (playlistId: string, formData: FormData): Promise<{ coverUrl: string }> => {
     const token = ApiService.getToken();
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/playlists/${playlistId}/cover`,
+      `${import.meta.env.VITE_API_BASE_URL}/playlists/cover/${playlistId}`,
       {
         method: 'POST',
         headers: {
