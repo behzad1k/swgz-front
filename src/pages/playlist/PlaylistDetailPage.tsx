@@ -167,7 +167,7 @@ const PlaylistDetailPage: FC = () => {
                 key={song.id}
                 song={song}
                 onPlay={onPlay} // Disable play in edit mode
-                actions={[addToQueueButton]}
+                actions={[addToQueueButton(song)]}
                 index={index}
                 draggable={false}
               />

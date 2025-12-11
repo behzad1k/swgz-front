@@ -41,7 +41,6 @@ const App: FC = () => {
   const currentUser = useCurrentUser();
   const isAuthenticated = useIsAuthenticated();
   const showDownloadManager = useShowDownloadManager();
-  const addSongToPlaylist = useAddSongToPlaylist();
   const { setShowDownloadManager } = useAppActions();
 
   async function fetchUserLibrary() {
