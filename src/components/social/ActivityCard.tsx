@@ -33,32 +33,34 @@ const ActivityCard: FC<ActivityCardProps> = ({ activity, onLike, onComment, onRe
         <span className="text-gray-500 text-sm">{activity.timestamp}</span>
       </div>
 
-      {activity.content && (
-        <p className="text-gray-300 text-sm">{activity.content}</p>
-      )}
+      {activity.content && <p className="text-gray-300 text-sm">{activity.content}</p>}
 
-      {activity.song && (
-        <SongItem
-          song={activity.song}
-          onPlay={() => {}}
-        />
-      )}
+      {activity.song && <SongItem actions={[]} song={activity.song} onPlay={() => {}} />}
 
       <div className="flex items-center gap-4 pt-2">
         {onLike && (
-          <button onClick={onLike} className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors">
+          <button
+            onClick={onLike}
+            className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors"
+          >
             <img src={Heart} alt={getAltFromPath(Heart)} width={18} />
             <span className="text-sm">Like</span>
           </button>
         )}
         {onComment && (
-          <button onClick={onComment} className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors">
+          <button
+            onClick={onComment}
+            className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
+          >
             <img src={MessageCircle} alt={getAltFromPath(MessageCircle)} width={18} />
             <span className="text-sm">Comment</span>
           </button>
         )}
         {onRepost && (
-          <button onClick={onRepost} className="flex items-center gap-2 text-gray-400 hover:text-green-400 transition-colors">
+          <button
+            onClick={onRepost}
+            className="flex items-center gap-2 text-gray-400 hover:text-green-400 transition-colors"
+          >
             <img src={Repeat} alt={getAltFromPath(Repeat)} width={18} />
             <span className="text-sm">Repost</span>
           </button>

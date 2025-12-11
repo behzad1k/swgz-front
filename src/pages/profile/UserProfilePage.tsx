@@ -14,7 +14,9 @@ const UserProfilePage: FC = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isStalkeding, setIsStalkeding] = useState(false);
-  const [activeTab, setActiveTab] = useState<'playlists' | 'liked' | 'comments' | 'reposts'>('playlists');
+  const [activeTab, setActiveTab] = useState<'playlists' | 'liked' | 'comments' | 'reposts'>(
+    'playlists'
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,20 +71,30 @@ const UserProfilePage: FC = () => {
     );
   }
 
-  const tabs: Array<'playlists' | 'liked' | 'comments' | 'reposts'> = ['playlists', 'liked', 'comments', 'reposts'];
+  const tabs: Array<'playlists' | 'liked' | 'comments' | 'reposts'> = [
+    'playlists',
+    'liked',
+    'comments',
+    'reposts',
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 pb-32">
       <div className="max-w-6xl mx-auto p-6">
-        <button onClick={() => navigate(-1)} className="mb-6 text-gray-400 hover:text-white transition-colors">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-6 text-gray-400 hover:text-white transition-colors"
+        >
           <img src={X} alt={getAltFromPath(X)} width={28} />
         </button>
-
 
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-2xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start gap-6">
             <img
-              src={profile.avatarUrl || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'}
+              src={
+                profile.avatarUrl ||
+                'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'
+              }
               alt={profile.username}
               className="w-32 h-32 rounded-full object-cover border-4 border-white/20"
             />
@@ -93,7 +105,13 @@ const UserProfilePage: FC = () => {
                 <Button
                   size="sm"
                   variant={isStalkeding ? 'secondary' : 'primary'}
-                  icon={isStalkeding ? <img src={UserMinus} alt={getAltFromPath(UserMinus)} width={16} /> : <img src={UserPlus} alt={getAltFromPath(UserPlus)} width={16} />}
+                  icon={
+                    isStalkeding ? (
+                      <img src={UserMinus} alt={getAltFromPath(UserMinus)} width={16} />
+                    ) : (
+                      <img src={UserPlus} alt={getAltFromPath(UserPlus)} width={16} />
+                    )
+                  }
                   onClick={handleStalkToggle}
                 >
                   {isStalkeding ? 'Unstalk' : 'Stalk'}
@@ -111,7 +129,7 @@ const UserProfilePage: FC = () => {
                 </button>
                 <div>
                   <span className="text-white font-semibold">{profile.swgzScore || 0}</span>
-                  <span className="text-gray-400 ml-1">swgz  Score</span>
+                  <span className="text-gray-400 ml-1">swgz Score</span>
                 </div>
               </div>
             </div>
@@ -120,11 +138,10 @@ const UserProfilePage: FC = () => {
           {profile.songOfTheDay && (
             <div className="mt-6 pt-6 border-t border-white/10">
               <h3 className="text-sm text-gray-400 mb-2">Song of the Day</h3>
-              <SongItem song={profile.songOfTheDay} onPlay={() => {}} />
+              <SongItem actions={[]} song={profile.songOfTheDay} onPlay={() => {}} />
             </div>
           )}
         </div>
-
 
         {!profile.isPrivate && (
           <>
@@ -143,7 +160,6 @@ const UserProfilePage: FC = () => {
                 </button>
               ))}
             </div>
-
 
             <div className="text-center py-12 text-gray-400">
               <p>Content for {activeTab} will be displayed here</p>

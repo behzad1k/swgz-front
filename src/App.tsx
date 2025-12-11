@@ -9,8 +9,16 @@ import NowPlayingSheet from '@components/player/NowPlayingSheet.tsx';
 import { useAppActions } from '@hooks/actions/useAppActions.ts';
 import { useAuthActions } from '@hooks/actions/useAuthActions.ts';
 import { useLibraryActions } from '@hooks/actions/useLibraryActions.ts';
-import { useIsOnline, useAddSongToPlaylist, useShowDownloadManager } from '@hooks/selectors/useAppSelectors.ts';
-import { useAuthToken, useCurrentUser, useIsAuthenticated } from '@hooks/selectors/useAuthSelectors.ts';
+import {
+  useIsOnline,
+  useAddSongToPlaylist,
+  useShowDownloadManager,
+} from '@hooks/selectors/useAppSelectors.ts';
+import {
+  useAuthToken,
+  useCurrentUser,
+  useIsAuthenticated,
+} from '@hooks/selectors/useAuthSelectors.ts';
 import { useAudioFocus } from '@hooks/useAudioFocus.ts';
 import { usePlayerInitialization } from '@hooks/usePlayerInitialization.ts';
 import { LOCAL_STORAGE_KEYS } from '@utils/constants.ts';
@@ -25,53 +33,60 @@ import { WifiOff } from '@/assets/svg';
 const App: FC = () => {
   usePlayerInitialization();
   useAudioFocus();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const isOnline = useIsOnline();
-  const { login } = useAuthActions()
+  const { login } = useAuthActions();
   const { setLibrary } = useLibraryActions();
-  const authToken = useAuthToken()
+  const authToken = useAuthToken();
   const currentUser = useCurrentUser();
   const isAuthenticated = useIsAuthenticated();
   const showDownloadManager = useShowDownloadManager();
   const addSongToPlaylist = useAddSongToPlaylist();
-  const { setShowDownloadManager } = useAppActions()
+  const { setShowDownloadManager } = useAppActions();
 
   async function fetchUserLibrary() {
     try {
-      const [librarySongs, recentlyPlayed, mostListened, recentSearches, playlists] = await Promise.all([
-        libraryApi.getLibrary(),
-        libraryApi.getRecentlyPlayed(),
-        libraryApi.getMostListened(),
-        musicApi.getRecentSearches(),
-        playlistApi.getUserPlaylists()
-      ]);
+      const [librarySongs, recentlyPlayed, mostListened, recentSearches, playlists] =
+        await Promise.all([
+          libraryApi.getLibrary(),
+          libraryApi.getRecentlyPlayed(),
+          libraryApi.getMostListened(),
+          musicApi.getRecentSearches(),
+          playlistApi.getUserPlaylists(),
+        ]);
 
-      setLibrary({ librarySongs, recentSearches, recentlyPlayed, mostListened, playlists, likedSongs: librarySongs.filter(e => e.isLiked) })
-
+      setLibrary({
+        librarySongs,
+        recentSearches,
+        recentlyPlayed,
+        mostListened,
+        playlists,
+        likedSongs: librarySongs.filter((e) => e.isLiked),
+      });
     } catch (e) {
       console.error('Failed to fetch user data:', e);
     }
   }
 
-  async function fetchUserData(){
+  async function fetchUserData() {
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)) return;
     try {
       const response = await authApi.getUser();
 
-      login(localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN) || authToken || '', response)
-    }catch (e){
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
-      navigate(routes.login.path)
+      login(localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN) || authToken || '', response);
+    } catch (e) {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+      navigate(routes.login.path);
     }
   }
   useEffect(() => {
     if (isAuthenticated && currentUser) {
       fetchUserLibrary();
-    } else if (isAuthenticated || localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)){
+    } else if (isAuthenticated || localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)) {
       fetchUserData();
     } else {
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
-      navigate(routes.login.path)
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+      navigate(routes.login.path);
     }
   }, [isAuthenticated, currentUser]);
 
@@ -79,7 +94,7 @@ const App: FC = () => {
     <div className="app-container bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 ">
       {!isOnline && (
         <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black px-4 py-2 text-center z-50 flex items-center justify-center gap-2">
-          <img src={WifiOff} alt={getAltFromPath(WifiOff)} width={20}/>
+          <img src={WifiOff} alt={getAltFromPath(WifiOff)} width={20} />
           <span>You're offline. Playing downloaded music.</span>
         </div>
       )}
@@ -112,18 +127,13 @@ const App: FC = () => {
         </Routes>
       </div>
 
-
-      {isAuthenticated && <Navigation/>}
+      {isAuthenticated && <Navigation />}
 
       <NowPlayingSheet />
 
       {showDownloadManager && (
-        <DownloadManager
-          isOpen
-          onClose={() => setShowDownloadManager(false)}
-        />
+        <DownloadManager isOpen onClose={() => setShowDownloadManager(false)} />
       )}
-      {addSongToPlaylist && <AddToPlaylistModal />}
       <ModalManager />
     </div>
   );

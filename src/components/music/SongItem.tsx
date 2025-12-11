@@ -2,7 +2,7 @@ import { getAltFromPath } from '@utils/helpers';
 import { FC } from 'react';
 import { MoveVertical, X } from '@/assets/svg';
 import { Track } from '@/types/models';
-import { TrackAction } from '@hooks/useTrackActions';
+import { TrackAction } from '@/types/global';
 
 interface SongItemProps {
   song: Track;
@@ -110,14 +110,14 @@ const SongItem: FC<SongItemProps> = ({
               key={idx}
               onClick={(e) => {
                 e.stopPropagation();
-                action.action();
+                action.onClick(song, e);
               }}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              title={action.label}
+              title={action.tooltip}
             >
               <img
                 src={action.icon}
-                alt={action.label}
+                alt={action.tooltip}
                 width={20}
                 className="text-gray-400 hover:text-white transition-colors"
               />
