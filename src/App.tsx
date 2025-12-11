@@ -9,7 +9,7 @@ import NowPlayingSheet from '@components/player/NowPlayingSheet.tsx';
 import { useAppActions } from '@hooks/actions/useAppActions.ts';
 import { useAuthActions } from '@hooks/actions/useAuthActions.ts';
 import { useLibraryActions } from '@hooks/actions/useLibraryActions.ts';
-import { useIsOnline, useShowDownloadManager } from '@hooks/selectors/useAppSelectors.ts';
+import { useIsOnline, useAddSongToPlaylist, useShowDownloadManager } from '@hooks/selectors/useAppSelectors.ts';
 import { useAuthToken, useCurrentUser, useIsAuthenticated } from '@hooks/selectors/useAuthSelectors.ts';
 import { useAudioFocus } from '@hooks/useAudioFocus.ts';
 import { usePlayerInitialization } from '@hooks/usePlayerInitialization.ts';
@@ -33,6 +33,7 @@ const App: FC = () => {
   const currentUser = useCurrentUser();
   const isAuthenticated = useIsAuthenticated();
   const showDownloadManager = useShowDownloadManager();
+  const addSongToPlaylist = useAddSongToPlaylist();
   const { setShowDownloadManager } = useAppActions()
 
   async function fetchUserLibrary() {
@@ -122,8 +123,7 @@ const App: FC = () => {
           onClose={() => setShowDownloadManager(false)}
         />
       )}
-
-
+      {addSongToPlaylist && <AddToPlaylistModal />}
       <ModalManager />
     </div>
   );

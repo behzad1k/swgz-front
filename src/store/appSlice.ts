@@ -1,11 +1,13 @@
 // store/slices/appSlice.ts
+import { Track } from '@/types/models.ts';
 import { AppState } from '@/types/states.ts';
 
 export const initialAppState: AppState = {
   isOnline: navigator.onLine,
   showNowPlaying: false,
   showDownloadManager: false,
-  showLoading: false
+  showLoading: false,
+  addSongToPlaylist: undefined
 };
 
 export enum AppActionKeys {
@@ -16,6 +18,7 @@ export enum AppActionKeys {
   TOGGLE_SHOW_LOADING = 'TOGGLE_SHOW_LOADING',
   TOGGLE_NOW_PLAYING = 'TOGGLE_NOW_PLAYING',
   TOGGLE_DOWNLOAD_MANAGER = 'TOGGLE_DOWNLOAD_MANAGER',
+  SET_ADD_SONG_TO_PLAYLIST = 'SET_ADD_SONG_TO_PLAYLIST',
 }
 
 export type AppAction =
@@ -25,7 +28,8 @@ export type AppAction =
   | { type: AppActionKeys.SET_SHOW_LOADING; payload: boolean }
   | { type: AppActionKeys.TOGGLE_SHOW_LOADING; payload: boolean }
   | { type: AppActionKeys.TOGGLE_NOW_PLAYING }
-  | { type: AppActionKeys.TOGGLE_DOWNLOAD_MANAGER };
+  | { type: AppActionKeys.TOGGLE_DOWNLOAD_MANAGER }
+  | { type: AppActionKeys.SET_ADD_SONG_TO_PLAYLIST; payload?: Track };
 
 export const appReducer = (state: AppState, action: AppAction): AppState => {
   switch (action.type) {
@@ -43,6 +47,8 @@ export const appReducer = (state: AppState, action: AppAction): AppState => {
       return { ...state, showLoading: !state.showLoading };
     case AppActionKeys.TOGGLE_DOWNLOAD_MANAGER:
       return { ...state, showDownloadManager: !state.showDownloadManager };
+    case AppActionKeys.SET_ADD_SONG_TO_PLAYLIST:
+      return { ...state, addSongToPlaylist: action.payload };
     default:
       return state;
   }

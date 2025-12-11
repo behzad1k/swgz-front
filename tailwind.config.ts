@@ -5,7 +5,11 @@ export default {
   theme: {
     extend: {
       filter: {
-        'svg-red': 'brightness(0) saturate(100%) invert(47%) sepia(91%) saturate(1310%) hue-rotate(316deg) brightness(91%) contrast(101%)',
+        'svg-red':
+          'brightness(0) saturate(100%) invert(47%) sepia(91%) saturate(1310%) hue-rotate(316deg) brightness(91%) contrast(101%)',
+      },
+      fontSize: {
+        xs: '10px',
       },
       colors: {
         primary: {
@@ -47,7 +51,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require('tailwindcss-filters')
-  ],
+  plugins: [require('tailwindcss-filters')],
 } satisfies Config;

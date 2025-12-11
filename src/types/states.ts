@@ -46,6 +46,7 @@ export type AppState = {
   showNowPlaying: boolean;
   showDownloadManager: boolean;
   showLoading: boolean;
+  addSongToPlaylist?: Track;
 };
 
 export type ModalState = {

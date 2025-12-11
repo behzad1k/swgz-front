@@ -1,75 +1,133 @@
-import { Pause, Play } from '@/assets/svg';
-import { getAltFromPath } from '@utils/helpers.ts';
+import { getAltFromPath } from '@utils/helpers';
 import { FC } from 'react';
-import { Track } from '@/types/models.ts';
-import { TrackAction } from '@/types/global';
+import { MoveVertical, X } from '@/assets/svg';
+import { Track } from '@/types/models';
+import { TrackAction } from '@hooks/useTrackActions';
 
-export interface TrackItemProps {
+interface SongItemProps {
   song: Track;
   onPlay: (song: Track) => void;
+  actions: TrackAction[];
   isPlaying?: boolean;
-  actions?: TrackAction[];
+  index?: number;
+
+  // Draggable props (optional)
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent, index: number) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent, index: number) => void;
+  onRemove?: (songId: string) => void;
+  showDragHandle?: boolean;
+  showRemoveButton?: boolean;
 }
 
-const TrackItem: FC<TrackItemProps> = ({ song, onPlay, isPlaying = false, actions = [] }) => {
+const SongItem: FC<SongItemProps> = ({
+  song,
+  onPlay,
+  actions,
+  isPlaying = false,
+  index,
+  draggable = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onRemove,
+  showDragHandle = false,
+  showRemoveButton = false,
+}) => {
+  const defaultCover =
+    'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png';
+
+  const handleDragStart = (e: React.DragEvent) => {
+    if (draggable && onDragStart && index !== undefined) {
+      onDragStart(e, index);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    if (draggable && onDrop && index !== undefined) {
+      onDrop(e, index);
+    }
+  };
+  console.log(song);
   return (
-    <div className="flex items-center gap-4 p-3 rounded-xl h-20 hover:bg-white/5 transition-all duration-200 cursor-pointer group">
-      <div className="relative flex-shrink-0">
-        <img
-          src={song.albumCover || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'}
-          alt={song.title}
-          className="w-14 h-14 rounded-lg object-cover"
-        />
+    <div
+      draggable={draggable}
+      onDragStart={handleDragStart}
+      onDragOver={draggable ? onDragOver : undefined}
+      onDrop={handleDrop}
+      className={`group flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all ${
+        draggable ? 'cursor-move' : ''
+      } ${isPlaying ? 'ring-2 ring-purple-500' : ''}`}
+    >
+      {/* Drag Handle (only shown when draggable) */}
+      {showDragHandle && draggable && (
+        <div className="text-gray-400">
+          <img src={MoveVertical} alt={getAltFromPath(MoveVertical)} width={20} />
+        </div>
+      )}
+
+      {/* Index Number (optional) */}
+      {index !== undefined && <span className="text-gray-400 text-sm w-6">{index + 1}</span>}
+
+      {/* Album Cover */}
+      <img
+        src={song.albumCover || defaultCover}
+        alt={song.title}
+        className="w-12 h-12 rounded-lg object-cover"
+      />
+
+      {/* Song Info */}
+      <div className="flex-1 min-w-0">
+        <h4
+          className="text-white font-medium truncate cursor-pointer hover:text-purple-400 transition-colors"
+          onClick={() => onPlay(song)}
+        >
+          {song.title}
+        </h4>
+        <p className="text-gray-400 text-sm truncate">{song.artistName}</p>
+      </div>
+
+      {/* Remove Button (only shown when enabled) */}
+      {showRemoveButton && onRemove && (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
-            onPlay(song);
+            onRemove(song.id || '');
           }}
-          className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-lg"
+          title="Remove from playlist"
         >
-          {isPlaying ? (
-            <img src={Pause} alt={getAltFromPath(Pause)} width={24} className="text-white" />
-          ) : (
-            <img src={Play} alt={getAltFromPath(Play)} width={24} className="text-white fill-white" />
-          )}
+          <img src={X} alt="Remove" width={16} className="text-red-500" />
         </button>
-      </div>
+      )}
 
-      <div className="flex-1 min-w-0">
-        <h4 className="text-white font-medium truncate">{song.title}</h4>
-        <p className="text-gray-400 text-sm truncate">{song.artistName}</p>
-        <p className="text-gray-400 text-sm truncate">{song.albumName}</p>
-      </div>
-
-      <div className="flex items-center gap-1">
-        {actions.map((action, index) => {
-          // Skip if show is false
-          if (action.show === false) return null;
-
-          return (
+      {/* Action Buttons (like/library/add to queue/etc) */}
+      {!draggable && actions.length > 0 && (
+        <div className="flex items-center gap-2">
+          {actions.map((action, idx) => (
             <button
-              key={index}
-              onClick={async (e) => {
+              key={idx}
+              onClick={(e) => {
                 e.stopPropagation();
-                await action.onClick(song, e);
+                action.action();
               }}
-              className="hover:bg-white/10 rounded-full p-1"
-              title={action.tooltip}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              title={action.label}
             >
               <img
                 src={action.icon}
-                alt={action.alt}
-                width={25}
-                className={`${action.className || 'text-gray-400'} ${
-                  action.isActive && action.activeClassName ? action.activeClassName : ''
-                }`}
+                alt={action.label}
+                width={20}
+                className="text-gray-400 hover:text-white transition-colors"
               />
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default TrackItem;
+export default SongItem;

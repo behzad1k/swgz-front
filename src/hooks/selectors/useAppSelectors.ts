@@ -24,3 +24,8 @@ export const useShowDownloadManager = () => {
   const { state } = useAppContext();
   return state.showDownloadManager;
 };
+
+export const useAddSongToPlaylist = () => {
+  const { state } = useAppContext();
+  return state.addSongToPlaylist;
+};

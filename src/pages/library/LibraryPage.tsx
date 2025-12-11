@@ -7,9 +7,15 @@ import PlaylistCard from '@/components/music/PlaylistCard';
 import SongList from '@/components/music/SongList';
 import { buildPath, routes } from '@/config/routes.config.ts';
 import { useNavigate } from '@/router';
-import { Playlist, Track } from '@/types/models.ts';
+import { Track } from '@/types/models.ts';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
-import { useLibrarySongs, useLikedSongs, useMostListened, useRecentlyPlayed } from '@hooks/selectors/useLibrarySelectors.ts';
+import {
+  useLibrarySongs,
+  useLikedSongs,
+  useMostListened,
+  usePlaylists,
+  useRecentlyPlayed,
+} from '@hooks/selectors/useLibrarySelectors.ts';
 import { Clock, Heart, LayoutGrid, List, Music, Plus, Search, TrendingUp } from '@/assets/svg';
 import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
 import { getAltFromPath } from '@utils/helpers.ts';
@@ -22,27 +28,32 @@ const LibraryPage: FC = () => {
   const recentlyPlayed = useRecentlyPlayed();
   const librarySongs = useLibrarySongs();
   const isPlaying = useIsPlaying();
-  const { play, setQueue } = usePlayerActions()
+  const { play, setQueue } = usePlayerActions();
   //states
   const [songs, setSongs] = useState<Track[]>([]);
   const [activeTab, setActiveTab] = useState<'songs' | 'playlists'>('songs');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchQuery, setSearchQuery] = useState('');
-  const [playlists, _setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const navigate = useNavigate();
+  const playlists = usePlaylists();
 
   const onPlay = (track: Track) => {
-    setQueue(librarySongs.slice(0, 20).filter(e => e.song.id != track.id).map(e => e.song))
-    play(track)
+    setQueue(
+      librarySongs
+        .slice(0, 20)
+        .filter((e) => e.song.id != track.id)
+        .map((e) => e.song)
+    );
+    play(track);
   };
 
   const handleCreatePlaylist = async (name: string, description: string) => {
     try {
       await playlistApi.createPlaylist({
         name,
-        description
+        description,
       });
       setShowCreatePlaylist(false);
     } catch (error) {
@@ -64,13 +75,12 @@ const LibraryPage: FC = () => {
     {
       value: 'songs',
       label: 'Songs',
-      icon:  <img src={Music} alt={getAltFromPath(Music)} width={18}/>
-
+      icon: <img src={Music} alt={getAltFromPath(Music)} width={18} />,
     },
     {
       value: 'playlists',
       label: 'Playlists',
-      icon: <img src={List} alt={getAltFromPath(List)} width={18}/>
+      icon: <img src={List} alt={getAltFromPath(List)} width={18} />,
     },
   ];
 
@@ -78,35 +88,40 @@ const LibraryPage: FC = () => {
     {
       value: 'liked-songs',
       label: 'Liked Songs',
-      icon: <img src={Heart} alt={getAltFromPath(Heart)} width={20}/>,
-      count: likedSongs.length
+      icon: <img src={Heart} alt={getAltFromPath(Heart)} width={20} />,
+      count: likedSongs.length,
     },
     {
       value: 'recently-played',
       label: 'Recently Played',
-      icon: <img src={Clock} alt={getAltFromPath(Clock)} width={20}/>,
-      count: recentlyPlayed.length
+      icon: <img src={Clock} alt={getAltFromPath(Clock)} width={20} />,
+      count: recentlyPlayed.length,
     },
     {
       value: 'most-listened',
       label: 'Most Listened',
-      icon: <img src={TrendingUp} alt={getAltFromPath(TrendingUp)} width={20}/>,
-      count: mostListened.length
+      icon: <img src={TrendingUp} alt={getAltFromPath(TrendingUp)} width={20} />,
+      count: mostListened.length,
     },
   ];
 
   useEffect(() => {
     if (librarySongs.length) {
-      setSongs(librarySongs.map(e => e.song));
-      setLoading(false)
+      setSongs(librarySongs.map((e) => e.song));
+      setLoading(false);
     }
   }, [librarySongs]);
   return (
-    <div className={`flex flex-col h-screen p-6 space-y-6 max-w-6xl mx-auto${isPlaying ? ' pb-28' : ''}  overflow-y-auto space-y-2`}>
+    <div
+      className={`flex flex-col h-screen p-6 space-y-6 max-w-6xl mx-auto${isPlaying ? ' pb-28' : ''}  overflow-y-auto space-y-2`}
+    >
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your Library</h1>
         {activeTab === 'playlists' && (
-          <Button icon={<img src={Plus} alt={getAltFromPath(Plus)} width={18}/>} onClick={() => setShowCreatePlaylist(true)}>
+          <Button
+            icon={<img src={Plus} alt={getAltFromPath(Plus)} width={18} />}
+            onClick={() => navigate(buildPath(routes.createPlaylist))}
+          >
             Create Playlist
           </Button>
         )}
@@ -118,7 +133,7 @@ const LibraryPage: FC = () => {
             placeholder="Search in your library..."
             value={searchQuery}
             onChange={setSearchQuery}
-            icon={<img src={Search} alt={getAltFromPath(Search)} width={18}/>}
+            icon={<img src={Search} alt={getAltFromPath(Search)} width={18} />}
           />
         </div>
         <div className="flex gap-2">
@@ -130,7 +145,7 @@ const LibraryPage: FC = () => {
                   viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-400'
                 }`}
               >
-                <img src={List} alt={getAltFromPath(List)} width={18}/>
+                <img src={List} alt={getAltFromPath(List)} width={18} />
               </button>
               <button
                 onClick={() => setViewMode('grid')}
@@ -138,7 +153,7 @@ const LibraryPage: FC = () => {
                   viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-gray-400'
                 }`}
               >
-                <img src={LayoutGrid} alt={getAltFromPath(LayoutGrid)} width={18}/>
+                <img src={LayoutGrid} alt={getAltFromPath(LayoutGrid)} width={18} />
               </button>
             </div>
           )}
@@ -184,7 +199,6 @@ const LibraryPage: FC = () => {
         ))}
       </div>
 
-
       {loading ? (
         <div className="text-center py-12 text-gray-400">Loading...</div>
       ) : (
@@ -193,11 +207,11 @@ const LibraryPage: FC = () => {
             <div className="flex-1 ">
               {filteredSongs.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
-                  <img src={Heart} alt={getAltFromPath(Heart)} width={48}/>
+                  <img src={Heart} alt={getAltFromPath(Heart)} width={48} />
                   <p>No songs in your library yet</p>
                 </div>
               ) : (
-                <SongList songs={filteredSongs} onPlay={onPlay}/>
+                <SongList songs={filteredSongs} onPlay={onPlay} />
               )}
             </div>
           )}
@@ -208,13 +222,18 @@ const LibraryPage: FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filteredPlaylists.length === 0 ? (
                     <div className="col-span-full text-center py-12 text-gray-400">
-                      <img src={List} alt={getAltFromPath(List)} width={48}/>
+                      <img src={List} alt={getAltFromPath(List)} width={48} />
                       <p>No playlists yet</p>
                     </div>
                   ) : (
                     filteredPlaylists.map((playlist) => (
-                      <PlaylistCard key={playlist.id} playlist={playlist} onClick={() => {
-                      }}/>
+                      <PlaylistCard
+                        key={playlist.id}
+                        playlist={playlist}
+                        onClick={() => {
+                          navigate(buildPath(routes.playlistDetail, { id: playlist.id }));
+                        }}
+                      />
                     ))
                   )}
                 </div>
@@ -224,16 +243,21 @@ const LibraryPage: FC = () => {
                     <div
                       key={playlist.id}
                       className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all cursor-pointer"
+                      onClick={() => {
+                        navigate(buildPath(routes.playlistDetail, { id: playlist.id }));
+                      }}
                     >
                       <img
-                        src={playlist.coverUrl || 'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'}
+                        src={
+                          playlist.coverUrl ||
+                          'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'
+                        }
                         alt={playlist.title}
                         className="w-16 h-16 rounded-lg object-cover"
                       />
                       <div className="flex-1">
                         <h3 className="text-white font-semibold">{playlist.title}</h3>
                         <p className="text-gray-400 text-sm">
-
                           songs {playlist.isPublic ? 'Public' : 'Private'}
                         </p>
                       </div>
@@ -246,8 +270,12 @@ const LibraryPage: FC = () => {
         </>
       )}
 
-      <Modal isOpen={showCreatePlaylist} onClose={() => setShowCreatePlaylist(false)} title="Create New Playlist">
-        <CreatePlaylistForm onSubmit={handleCreatePlaylist}/>
+      <Modal
+        isOpen={showCreatePlaylist}
+        onClose={() => setShowCreatePlaylist(false)}
+        title="Create New Playlist"
+      >
+        <CreatePlaylistForm onSubmit={handleCreatePlaylist} />
       </Modal>
     </div>
   );

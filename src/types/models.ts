@@ -22,12 +22,17 @@ export interface Image {
 export interface Playlist {
   id: string;
   title: string;
+  source: string;
+  isEditable: boolean;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+  songs: PlaylistSong[];
+  userId?: string;
+  externalId?: string;
+  coverField?: string;
   description?: string;
   coverUrl?: string;
-  songs: Track[];
-  isPublic?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface User {
@@ -35,10 +40,10 @@ export interface User {
   username: string;
   email?: string;
   apiKey?: string;
-  subscriptionPlan?: 'free' | 'premium'
+  subscriptionPlan?: 'free' | 'premium';
 }
 
-export interface UserProfile extends User{
+export interface UserProfile extends User {
   bio?: string;
   avatarUrl?: string;
   stalkingsCount: number;
@@ -63,7 +68,7 @@ export interface Artist {
   name: string;
   pfp: string;
   lastFMLink: string;
-  mbid: string
+  mbid: string;
   bio?: string;
   fullBio?: string;
   externalListeners?: number;
@@ -93,7 +98,7 @@ export interface DownloadItem {
 export interface SearchHistory {
   id: string;
   query: string;
-  filter: SearchFilters
+  filter: SearchFilters;
 }
 
 export interface MostListened {
@@ -103,8 +108,8 @@ export interface MostListened {
 export interface RecentlyPlayed {
   song: Track;
   id: string;
-  userId:	string;
-  songId:	string;
+  userId: string;
+  songId: string;
   playedAt: Date;
 }
 
@@ -117,4 +122,13 @@ export interface LibrarySong {
   addedAt: Date;
   song: Track;
   user?: User;
+}
+
+export interface PlaylistSong {
+  id: string;
+  songId: string;
+  playlistId: string;
+  position: number;
+  addedAt: Date;
+  song: Track;
 }

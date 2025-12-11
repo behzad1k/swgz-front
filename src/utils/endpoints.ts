@@ -4,8 +4,16 @@ const ENDPOINTS = {
     SIGN_UP: '/auth/signup',
     CONFIRM_EMAIL: '/auth/confirm-email',
     USER: '/auth/user',
-  }
-}
+  },
+  PLAYLIST: {
+    INDEX: '/playlists',
+    COVER: '/playlists/cover',
+    SONGS: '/playlists/songs',
+    ORDER: '/playlists/order',
+    YOUTUBE: '/playlists/import/youtube',
+    SPOTIFY: '/playlists/import/spotify',
+  },
+};
 
-export const publicEndpoints = [ENDPOINTS.AUTH.LOGIN, ENDPOINTS.AUTH.SIGN_UP]
-export default ENDPOINTS
+export const publicEndpoints = [ENDPOINTS.AUTH.LOGIN, ENDPOINTS.AUTH.SIGN_UP];
+export default ENDPOINTS;
