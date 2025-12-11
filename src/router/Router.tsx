@@ -81,27 +81,30 @@ export const Router: FC<RouterProps> = ({ children }) => {
     };
   }, [parseQuery]);
 
-  const navigate = useCallback((path: string | number, options: NavigateOptions = {}) => {
-    requestAnimationFrame(() => {
-      if (typeof path === 'number') {
-        window.history.go(path);
-        return;
-      }
+  const navigate = useCallback(
+    (path: string | number, options: NavigateOptions = {}) => {
+      requestAnimationFrame(() => {
+        if (typeof path === 'number') {
+          window.history.go(path);
+          return;
+        }
 
-      if (window.history.length > MAX_HISTORY) {
-        // Use replace instead of push for old entries
-        options.replace = true;
-      }
+        if (window.history.length > MAX_HISTORY) {
+          // Use replace instead of push for old entries
+          options.replace = true;
+        }
 
-      if (options.replace) {
-        window.history.replaceState(options.state || {}, '', path);
-      } else {
-        window.history.pushState(options.state || {}, '', path);
-      }
-      setCurrentPath(window.location.pathname);
-      setQuery(parseQuery(window.location.search));
-    });
-  }, [parseQuery]);
+        if (options.replace) {
+          window.history.replaceState(options.state || {}, '', path);
+        } else {
+          window.history.pushState(options.state || {}, '', path);
+        }
+        setCurrentPath(window.location.pathname);
+        setQuery(parseQuery(window.location.search));
+      });
+    },
+    [parseQuery]
+  );
 
   const back = useCallback(() => {
     window.history.back();
@@ -111,9 +114,12 @@ export const Router: FC<RouterProps> = ({ children }) => {
     window.history.forward();
   }, []);
 
-  const replace = useCallback((path: string) => {
-    navigate(path, { replace: true });
-  }, [navigate]);
+  const replace = useCallback(
+    (path: string) => {
+      navigate(path, { replace: true });
+    },
+    [navigate]
+  );
 
   // Memoize setParams to prevent infinite loops
   const setParamsMemoized = useCallback((newParams: Record<string, string>) => {
@@ -144,7 +150,6 @@ export const Router: FC<RouterProps> = ({ children }) => {
       window.removeEventListener('pageshow', handlePageShow);
     };
   }, [parseQuery]);
-
 
   // Android Compatibility
   useEffect(() => {
@@ -192,16 +197,18 @@ export const Router: FC<RouterProps> = ({ children }) => {
   }, [parseQuery]);
 
   return (
-    <RouterContext.Provider value={{
-      currentPath,
-      params,
-      query,
-      navigate,
-      back,
-      forward,
-      replace,
-      setParams: setParamsMemoized
-    }}>
+    <RouterContext.Provider
+      value={{
+        currentPath,
+        params,
+        query,
+        navigate,
+        back,
+        forward,
+        replace,
+        setParams: setParamsMemoized,
+      }}
+    >
       {children}
     </RouterContext.Provider>
   );

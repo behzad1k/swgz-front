@@ -1,12 +1,11 @@
-import { Playlist } from '@/types/models.ts';
+import { PlaylistDefault } from '@/types/models.ts';
 
-export const DEFAULT_PLAYLIST: Playlist = {
+export const DEFAULT_PLAYLIST: PlaylistDefault = {
   coverUrl: '',
   createdAt: '',
   description: '',
-  id: '',
   isPublic: false,
   title: '',
   songs: [],
-  updatedAt: ''
-}
+  updatedAt: '',
+};

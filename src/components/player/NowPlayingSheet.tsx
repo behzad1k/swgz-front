@@ -7,7 +7,17 @@ import { DownloadProgress } from '@components/player/DownloadProgress.tsx';
 import QualitySelector from '@components/player/QualitySelector.tsx';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useCurrentUser } from '@hooks/selectors/useAuthSelectors.ts';
-import { useCurrentSong, useIsPlaying, usePlayerProgress, usePlayerQuality, usePlayerRepeat, usePlayerShuffle, usePlayerVolume, useQueue, useSongDuration } from '@hooks/selectors/usePlayerSelectors.ts';
+import {
+  useCurrentSong,
+  useIsPlaying,
+  usePlayerProgress,
+  usePlayerQuality,
+  usePlayerRepeat,
+  usePlayerShuffle,
+  usePlayerVolume,
+  useQueue,
+  useSongDuration,
+} from '@hooks/selectors/usePlayerSelectors.ts';
 import { useModal } from '@hooks/useModal.ts';
 import { ChevronDown, ChevronUp } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
@@ -25,7 +35,17 @@ const NowPlayingSheet: FC = () => {
   const [isDesktop, setIsDesktop] = useState(false);
   const { openModal, closeModal } = useModal();
   const user = useCurrentUser();
-  const { seek, togglePlay, changeQuality, playNext, playPrevious, play, changeVolume, toggleShuffle, toggleRepeat } = usePlayerActions();
+  const {
+    seek,
+    togglePlay,
+    changeQuality,
+    playNext,
+    playPrevious,
+    play,
+    changeVolume,
+    toggleShuffle,
+    toggleRepeat,
+  } = usePlayerActions();
   const isPremium = user?.subscriptionPlan === 'premium';
 
   // hooks
@@ -38,7 +58,6 @@ const NowPlayingSheet: FC = () => {
   const quality = usePlayerQuality();
   const currentSong = useCurrentSong();
   const isPlaying = useIsPlaying();
-
 
   // Check if desktop
   useEffect(() => {
@@ -116,14 +135,13 @@ const NowPlayingSheet: FC = () => {
     if (sheetState === 'closed') return 0;
     if (sheetState === 'mini') return 0;
     if (isDragging && dragOffset > 0) {
-      return Math.max(0, 0.6 - (dragOffset / 500));
+      return Math.max(0, 0.6 - dragOffset / 500);
     }
     return 0.6;
   };
 
   return (
     <>
-
       {(sheetState === 'half' || sheetState === 'full') && (
         <div
           className="fixed inset-0 bg-black z-40 transition-opacity duration-300"
@@ -131,7 +149,6 @@ const NowPlayingSheet: FC = () => {
           onClick={() => setSheetState('mini')}
         />
       )}
-
 
       <div
         ref={sheetRef}
@@ -145,81 +162,84 @@ const NowPlayingSheet: FC = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1.5 bg-gray-500 rounded-full" />
         </div>
 
-
         {sheetState === 'mini' && (
           <>
-          <div
-            className="flex items-center px-4 py-2 gap-3 cursor-pointer"
-            onClick={() => setSheetState('half')}
-          >
-            <img
-              src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
-              alt={currentSong.title}
-              className="w-14 h-14 rounded-lg shadow-lg"
-            />
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-white truncate">{currentSong.title}</h4>
-              <p className="text-sm text-gray-400 truncate">{currentSong.artistName}</p>
+            <div
+              className="flex items-center px-4 py-2 gap-3 cursor-pointer"
+              onClick={() => setSheetState('half')}
+            >
+              <img
+                src={
+                  currentSong.albumCover ||
+                  'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'
+                }
+                alt={currentSong.title}
+                className="w-14 h-14 rounded-lg shadow-lg"
+              />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-white truncate">{currentSong.title}</h4>
+                <p className="text-sm text-gray-400 truncate">{currentSong.artistName}</p>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                className="w-10 h-10 flex items-center justify-center text-black hover:scale-110 transition-transform"
+              >
+                {isPlaying ? (
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="4" width="4" height="16" rx="1" />
+                    <rect x="14" y="4" width="4" height="16" rx="1" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playNext();
+                }}
+                className="text-white hover:scale-110 transition-transform"
+              >
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 4l12 8-12 8V4zm13 0v16h2V4h-2z" />
+                </svg>
+              </button>
             </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                togglePlay();
-              }}
-              className="w-10 h-10 flex items-center justify-center text-white hover:scale-110 transition-transform"
-            >
-              {isPlaying ? (
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <rect x="6" y="4" width="4" height="16" rx="1" />
-                  <rect x="14" y="4" width="4" height="16" rx="1" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              )}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                playNext();
-              }}
-              className="text-white hover:scale-110 transition-transform"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4l12 8-12 8V4zm13 0v16h2V4h-2z" />
-              </svg>
-            </button>
-          </div>
-            <div className="h-full bg-white transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full bg-white transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </>
         )}
 
-
         {(sheetState === 'half' || sheetState === 'full') && (
           <div className="flex flex-col h-full overflow-y-auto pb-6">
-
             <button
               onClick={() => setSheetState('mini')}
               className="self-center mb-2 text-gray-400 hover:text-white transition-colors"
             >
-              <img src={ChevronDown} alt={getAltFromPath(ChevronDown)} width={28}/>
+              <img src={ChevronDown} alt={getAltFromPath(ChevronDown)} width={28} />
             </button>
-
 
             <div className="flex justify-center px-6 mb-6">
               <img
-                src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
+                src={
+                  currentSong.albumCover ||
+                  'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'
+                }
                 alt={currentSong.title}
                 className="w-full max-w-sm aspect-square rounded-2xl shadow-2xl object-cover"
               />
             </div>
-
 
             <div className="px-6 mb-6 text-center">
               <h1 className="text-2xl font-bold text-white mb-2">{currentSong.title}</h1>
@@ -227,11 +247,13 @@ const NowPlayingSheet: FC = () => {
               <p className="text-md text-gray-400">{currentSong.albumName}</p>
             </div>
 
-
             <div className="px-6 mb-6">
-              <ProgressBar progress={progress} duration={duration || currentSong.duration || 666} onSeek={seek} />
+              <ProgressBar
+                progress={progress}
+                duration={duration || currentSong.duration || 666}
+                onSeek={seek}
+              />
             </div>
-
 
             <div className="px-6 mb-6">
               <PlayerControls
@@ -246,24 +268,29 @@ const NowPlayingSheet: FC = () => {
               />
             </div>
 
-
             {sheetState === 'full' && (
               <>
-                <Button size={'md'} className={'btn-primary'} onClick={() => openModal({
-                  id: 'QualityChange',
-                  animation: 'slideUp',
-                  size: 'lg',
-                  onClose: () => closeModal('QualityChange'),
-                  component: QualitySelector,
-                  props: {
-                    songId: currentSong.id,
-                    onQualityChange: changeQuality,
-                    quality,
-                    isPremium
-                  },
-                  closeOnOverlayClick: true,
-                  closeOnEscape: true,
-                })}>
+                <Button
+                  size={'md'}
+                  className={'btn-primary'}
+                  onClick={() =>
+                    openModal({
+                      id: 'QualityChange',
+                      animation: 'slideUp',
+                      size: 'lg',
+                      onClose: () => closeModal('QualityChange'),
+                      component: QualitySelector,
+                      props: {
+                        songId: currentSong.id,
+                        onQualityChange: changeQuality,
+                        quality,
+                        isPremium,
+                      },
+                      closeOnOverlayClick: true,
+                      closeOnEscape: true,
+                    })
+                  }
+                >
                   quality
                 </Button>
 
@@ -284,7 +311,7 @@ const NowPlayingSheet: FC = () => {
                       onClick={() => setSheetState('half')}
                       className="text-gray-400 hover:text-white transition-colors"
                     >
-                      <img src={ChevronUp} alt={getAltFromPath(ChevronUp)} width={24}/>
+                      <img src={ChevronUp} alt={getAltFromPath(ChevronUp)} width={24} />
                     </button>
                   </div>
                   <QueueList queue={queue} onPlay={play} />
@@ -312,7 +339,17 @@ const NowPlayingSheet: FC = () => {
 const DesktopNowPlaying: FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { seek, togglePlay, changeQuality, playNext, playPrevious, play, changeVolume, toggleShuffle, toggleRepeat } = usePlayerActions();
+  const {
+    seek,
+    togglePlay,
+    changeQuality,
+    playNext,
+    playPrevious,
+    play,
+    changeVolume,
+    toggleShuffle,
+    toggleRepeat,
+  } = usePlayerActions();
 
   // hooks
   const repeat = usePlayerRepeat();
@@ -339,11 +376,14 @@ const DesktopNowPlaying: FC = () => {
             onClick={() => setIsExpanded(false)}
             className="self-end mb-4 text-gray-400 hover:text-white transition-colors"
           >
-            <img src={ChevronDown} alt={getAltFromPath(ChevronDown)} width={24}/>
+            <img src={ChevronDown} alt={getAltFromPath(ChevronDown)} width={24} />
           </button>
 
           <img
-            src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
+            src={
+              currentSong.albumCover ||
+              'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'
+            }
             alt={currentSong.title}
             className="w-full aspect-square rounded-lg shadow-2xl mb-4 object-cover"
           />
@@ -353,10 +393,14 @@ const DesktopNowPlaying: FC = () => {
             <p className="text-gray-300 mb-1">{currentSong.artistName}</p>
             <p className="text-sm text-gray-400">{currentSong.albumName}</p>
           </div>
-          <DownloadProgress/>
+          <DownloadProgress />
 
           <div className="mb-4">
-            <ProgressBar progress={progress} duration={duration || currentSong.duration || 666} onSeek={seek} />
+            <ProgressBar
+              progress={progress}
+              duration={duration || currentSong.duration || 666}
+              onSeek={seek}
+            />
           </div>
 
           <div className="mb-4">
@@ -411,7 +455,10 @@ const DesktopNowPlaying: FC = () => {
           onClick={() => setIsExpanded(true)}
         >
           <img
-            src={currentSong.albumCover || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'}
+            src={
+              currentSong.albumCover ||
+              'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'
+            }
             alt={currentSong.title}
             className="w-12 h-12 rounded-md mb-3 shadow-lg"
           />

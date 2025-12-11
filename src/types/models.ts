@@ -19,6 +19,17 @@ export interface Image {
   size?: 'large' | 'medium' | 'small';
 }
 
+export interface PlaylistDefault {
+  title: string;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+  songs: Track[];
+  userId?: string;
+  description?: string;
+  coverUrl?: string;
+}
+
 export interface Playlist {
   id: string;
   title: string;

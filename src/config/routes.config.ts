@@ -136,6 +136,9 @@ export const routes: Routes = {
     protected: true,
     showHeader: true,
     headerBackButton: true,
+    exact: true,
+    title: 'Playlist',
+    description: 'View playlist',
   },
 
   // Playlist Routes
@@ -194,10 +197,7 @@ export const routes: Routes = {
 export const routesConfig = Object.values(routes);
 
 // Helper to build paths with params
-export const buildPath = (
-  route: Route,
-  params?: Record<string, string | number>
-): string => {
+export const buildPath = (route: Route, params?: Record<string, string | number>): string => {
   if (!params) return route.path;
 
   let path = route.path;

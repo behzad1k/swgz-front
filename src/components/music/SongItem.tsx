@@ -49,7 +49,6 @@ const SongItem: FC<SongItemProps> = ({
       onDrop(e, index);
     }
   };
-  console.log(song);
   return (
     <div
       draggable={draggable}
