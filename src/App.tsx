@@ -9,11 +9,7 @@ import NowPlayingSheet from '@components/player/NowPlayingSheet.tsx';
 import { useAppActions } from '@hooks/actions/useAppActions.ts';
 import { useAuthActions } from '@hooks/actions/useAuthActions.ts';
 import { useLibraryActions } from '@hooks/actions/useLibraryActions.ts';
-import {
-  useIsOnline,
-  useAddSongToPlaylist,
-  useShowDownloadManager,
-} from '@hooks/selectors/useAppSelectors.ts';
+import { useIsOnline, useShowDownloadManager } from '@hooks/selectors/useAppSelectors.ts';
 import {
   useAuthToken,
   useCurrentUser,
