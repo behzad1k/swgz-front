@@ -4,6 +4,7 @@ const ENDPOINTS = {
     SIGN_UP: '/auth/signup',
     CONFIRM_EMAIL: '/auth/confirm-email',
     USER: '/auth/user',
+    TELEGRAM: '/auth/telegram',
   },
   PLAYLIST: {
     INDEX: '/playlists',

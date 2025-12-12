@@ -11,11 +11,12 @@ import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { authApi } from '@/api/auth.api';
 import ApiService from '@/utils/api';
+import { useTelegram } from '@/contexts/TelegramContext';
 
 const DEFAULT_RESULT_MESSAGES = {
   success: false,
   message: '',
-}
+};
 
 const LoginPage: FC = () => {
   const [email, setEmail] = useState('');
@@ -26,8 +27,39 @@ const LoginPage: FC = () => {
   const [username, setUsername] = useState('');
   const navigate = useNavigate();
 
-  const isAuthenticated = useIsAuthenticated()
+  const isAuthenticated = useIsAuthenticated();
   const { login } = useAuthActions();
+
+  const { user, webApp } = useTelegram();
+
+  useEffect(() => {
+    // Auto-login with Telegram user data
+    if (user && webApp) {
+      handleTelegramAuth();
+    }
+  }, [user, webApp]);
+
+  const handleTelegramAuth = async () => {
+    try {
+      // Send Telegram initData to your backend for verification
+      const initData = webApp.initData;
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/telegram`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData }),
+      });
+
+      const data = await response.json();
+
+      if (data.accessToken) {
+        login(data.accessToken, data.user);
+        navigate(routes.library.path);
+      }
+    } catch (error) {
+      console.error('Telegram auth error:', error);
+    }
+  };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -46,7 +78,13 @@ const LoginPage: FC = () => {
       newErrors.password = passwordValidation.errors[0];
     }
 
-    setResultMessage({ success: false, message: Object.values(newErrors).reduce((acc, curr, index) => acc + (index > 0 ? ' and ': '') + curr, '') });
+    setResultMessage({
+      success: false,
+      message: Object.values(newErrors).reduce(
+        (acc, curr, index) => acc + (index > 0 ? ' and ' : '') + curr,
+        ''
+      ),
+    });
     return Object.keys(newErrors).length === 0;
   };
 
@@ -66,19 +104,19 @@ const LoginPage: FC = () => {
       } else {
         response = await authApi.login({ email, password });
         ApiService.setToken(response.accessToken);
-        login(response.accessToken, response.user)
-        navigate(routes.library.path)
+        login(response.accessToken, response.user);
+        navigate(routes.library.path);
       }
     } catch (err: any) {
-      setResultMessage({ success: false, message: err.message || 'Authentication failed'});
+      setResultMessage({ success: false, message: err.message || 'Authentication failed' });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isAuthenticated) navigate(routes.library.path)
-  },[])
+    if (isAuthenticated) navigate(routes.library.path);
+  }, []);
 
   const handleGoogleAuth = () => {
     authApi.googleAuth();
@@ -96,31 +134,21 @@ const LoginPage: FC = () => {
         </div>
 
         {resultMessage.message && (
-          <div className={`${resultMessage.success ? 'bg-green-500/20 border border-green-500' : 'bg-red-500/20 border border-red-500'} rounded-xl p-3 mb-4`}>
-            <p className={`${resultMessage.success ? 'text-green-400' : 'text-red-400'} text-sm text-left`}>{resultMessage.message}</p>
+          <div
+            className={`${resultMessage.success ? 'bg-green-500/20 border border-green-500' : 'bg-red-500/20 border border-red-500'} rounded-xl p-3 mb-4`}
+          >
+            <p
+              className={`${resultMessage.success ? 'text-green-400' : 'text-red-400'} text-sm text-left`}
+            >
+              {resultMessage.message}
+            </p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignUp && (
-            <Input
-              placeholder="Username"
-              value={username}
-              onChange={setUsername}
-            />
-          )}
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={setEmail}
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={setPassword}
-          />
+          {isSignUp && <Input placeholder="Username" value={username} onChange={setUsername} />}
+          <Input type="email" placeholder="Email" value={email} onChange={setEmail} />
+          <Input type="password" placeholder="Password" value={password} onChange={setPassword} />
           <Button type="submit" className="w-full" size="lg" disabled={loading}>
             {loading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Login'}
           </Button>
@@ -132,7 +160,13 @@ const LoginPage: FC = () => {
           <div className="flex-1 h-px bg-white/10" />
         </div>
 
-        <Button variant="secondary" className="w-full" size="lg" disabled onClick={handleGoogleAuth}>
+        <Button
+          variant="secondary"
+          className="w-full"
+          size="lg"
+          disabled
+          onClick={handleGoogleAuth}
+        >
           Continue with Google (Soon)
         </Button>
 

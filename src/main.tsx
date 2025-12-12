@@ -9,23 +9,26 @@ import serviceWorker from '@/workers/service-worker';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/index.css';
+import { TelegramProvider } from './contexts/TelegramContext';
 
 serviceWorker();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <AppProvider>
-        <LibraryProvider>
-          <ModalProvider>
-            <PlayerProvider>
-              <Router>
-                <App />
-              </Router>
-            </PlayerProvider>
-          </ModalProvider>
-        </LibraryProvider>
-      </AppProvider>
-    </AuthProvider>
+    <TelegramProvider>
+      <AuthProvider>
+        <AppProvider>
+          <LibraryProvider>
+            <ModalProvider>
+              <PlayerProvider>
+                <Router>
+                  <App />
+                </Router>
+              </PlayerProvider>
+            </ModalProvider>
+          </LibraryProvider>
+        </AppProvider>
+      </AuthProvider>
+    </TelegramProvider>
   </React.StrictMode>
 );
