@@ -48,7 +48,12 @@ const SearchPage: FC = () => {
       let newResult: SearchResult = DEFAULT_SEARCH_RESULT;
 
       if (searchData) {
-        newResult = searchData as SearchResult;
+        if (filter != 'all') {
+          // @ts-ignore
+          newResult[filter] = searchData as SearchResult;
+        } else {
+          newResult = searchData as SearchResult;
+        }
       }
 
       newResult.stalker = stalkersData as UserProfile[];
