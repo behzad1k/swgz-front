@@ -1,19 +1,20 @@
 import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useState, useEffect } from 'react';
 import { useNavigate } from '@/router/hooks';
-import { Edit2, Settings, LogOut } from '@/assets/svg';
+import { Edit2, Settings, LogOut, Library } from '@/assets/svg';
 import Button from '@/components/common/Button';
 import Badge from '@/components/common/Badge';
 import SongItem from '@/components/music/SongItem';
 import { profileApi } from '@/api/profile.api';
-import { UserProfile } from '@/types/models.ts';
+import ActivityCard from '@/components/social/ActivityCard';
+import { routes } from '@/config/routes.config';
+import { Activity, UserProfile } from '@/types/models';
 
 const ProfilePage: FC = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [activeTab, setActiveTab] = useState<'playlists' | 'liked' | 'comments' | 'reposts'>(
-    'playlists'
-  );
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activeTab, setActiveTab] = useState<'like' | 'comment' | 'repost'>('like');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,9 +23,9 @@ const ProfilePage: FC = () => {
 
   const loadProfile = async () => {
     try {
-      // TODO: Replace with actual current user endpoint
       const data = await profileApi.getProfile('me');
-      setProfile(data as UserProfile);
+      setProfile(data.profile);
+      setActivities(data.activity);
     } catch (error) {
       console.error('Error loading profile:', error);
     } finally {
@@ -53,30 +54,34 @@ const ProfilePage: FC = () => {
     );
   }
 
-  const tabs: Array<'playlists' | 'liked' | 'comments' | 'reposts'> = [
-    'playlists',
-    'liked',
-    'comments',
-    'reposts',
-  ];
+  const tabs: Array<'like' | 'comment' | 'repost'> = ['like', 'comment', 'repost'];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 pb-32">
       <div className="max-w-6xl mx-auto p-6">
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-2xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start gap-6">
-            <img
-              src={
-                profile.avatarUrl ||
-                'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'
-              }
-              alt={profile.username}
-              className="w-32 h-32 rounded-full object-cover border-4 border-white/20"
-            />
+            <div className="flex justify-between w-full items-start">
+              <img
+                src={
+                  profile.avatarUrl ||
+                  'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'
+                }
+                alt={profile.username}
+                className="w-32 h-32 rounded-full object-cover border-4 border-white/20"
+              />
+              <button
+                onClick={() => navigate(routes.root.path)}
+                className={`max-h-max-h-16 flex gap-1 items-center p-2 backdrop-blur-xl transition-colors bg-gray-600 rounded-full`}
+              >
+                <span className="text-lg font-normal text-white">Library</span>
+                <img className="w-7 h-7" src={Library} alt={getAltFromPath(Library)} />
+              </button>
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold text-white">{profile.username}</h1>
-                {profile.subscriptionPlan == 'premium' && <Badge variant="warning">Premium</Badge>}
+                {profile.subscriptionPlan == 'maxx' && <Badge variant="warning">swgz MAXX</Badge>}
                 <Button
                   size="sm"
                   icon={<img src={Edit2} alt={getAltFromPath(Edit2)} width={16} />}
@@ -144,12 +149,17 @@ const ProfilePage: FC = () => {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {tab}
+              {tab}s
             </button>
           ))}
         </div>
 
-        <div className="text-center py-12 text-gray-400">
+        <div className="py-2 text-gray-400">
+          {activities
+            .filter((e) => e.type == activeTab)
+            .map((e) => (
+              <ActivityCard key={e.id} activity={{ ...e, user: profile }} />
+            ))}
           <p>Content for {activeTab} will be displayed here</p>
         </div>
       </div>

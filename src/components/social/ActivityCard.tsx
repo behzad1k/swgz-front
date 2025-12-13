@@ -17,12 +17,15 @@ const ActivityCard: FC<ActivityCardProps> = ({ activity, onLike, onComment, onRe
     repost: 'reposted',
     comment: 'commented on',
   };
-
+  console.log(activity);
   return (
     <div className="bg-white/5 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-3">
         <img
-          src={activity.user?.avatarUrl || 'https://via.placeholder.com/40'}
+          src={
+            activity.user?.avatarUrl ||
+            'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png'
+          }
           alt={activity.user?.username}
           className="w-10 h-10 rounded-full object-cover"
         />

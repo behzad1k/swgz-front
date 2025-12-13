@@ -51,7 +51,7 @@ export interface User {
   username: string;
   email?: string;
   apiKey?: string;
-  subscriptionPlan?: 'free' | 'premium';
+  subscriptionPlan?: 'broke' | 'maxx';
 }
 
 export interface UserProfile extends User {
@@ -62,6 +62,7 @@ export interface UserProfile extends User {
   swgzScore: number;
   isPrivate?: boolean;
   songOfTheDay?: Track;
+  activity: Activity[];
 }
 
 export interface Activity {

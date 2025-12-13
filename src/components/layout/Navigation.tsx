@@ -8,12 +8,11 @@ const Navigation = () => {
   const isSearchActive = useIsActive('/search');
   const isLibraryActive = useIsActive('/library');
   const isProfileActive = useIsActive('/profile');
-  const isMusicPlaying = useIsPlaying()
+  const isMusicPlaying = useIsPlaying();
 
   const navItems = [
     // { path: '/home', icon: Home, label: 'Home', isActive: isHomeActive },
     { path: '/library', icon: Library, label: 'Library', isActive: isLibraryActive },
-    { path: '/search', icon: Search, label: 'Search', isActive: isSearchActive },
     { path: '/profile', icon: User, label: 'Profile', isActive: isProfileActive },
   ];
 

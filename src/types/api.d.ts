@@ -1,3 +1,5 @@
+import { Activity, UserProfile } from './models';
+
 export interface ApiResponse<T> {
   data: T;
   message?: string;
@@ -15,7 +17,7 @@ export interface PaginatedResponse<T> {
 export interface AuthResponse {
   accessToken: string;
   user: UserProfile;
-  message: string
+  message: string;
 }
 
 export interface LoginCredentials {
@@ -25,4 +27,9 @@ export interface LoginCredentials {
 
 export interface SignUpData extends LoginCredentials {
   username: string;
+}
+
+export interface UserResponse extends LoginCredentials {
+  profile: UserProfile;
+  activity: Activity[];
 }
