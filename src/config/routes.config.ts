@@ -5,7 +5,6 @@ import GoogleCallback from '@pages/auth/GoogleCallback.tsx';
 import LoginPage from '@pages/auth/LoginPage.tsx';
 import LibraryPage from '@pages/library/LibraryPage.tsx';
 import CreatePlaylistPage from '@pages/playlist/CreatePlaylistPage.tsx';
-import DefaultPlaylistPage from '@pages/playlist/DefaultPlaylistPage.tsx';
 import EditPlaylistPage from '@pages/playlist/EditPlaylistPage.tsx';
 import PlaylistDetailPage from '@pages/playlist/PlaylistDetailPage.tsx';
 import EditProfilePage from '@pages/profile/EditProfilePage.tsx';
@@ -129,18 +128,6 @@ export const routes: Routes = {
     headerBackButton: true,
   },
 
-  // playlist
-  defaultPlaylist: {
-    path: '/playlist/default/:slug',
-    component: DefaultPlaylistPage,
-    protected: true,
-    showHeader: true,
-    headerBackButton: true,
-    exact: true,
-    title: 'Playlist',
-    description: 'View playlist',
-  },
-
   // Playlist Routes
   createPlaylist: {
     path: '/playlist/create',
@@ -152,7 +139,7 @@ export const routes: Routes = {
     headerBackButton: true,
   },
   playlistDetail: {
-    path: '/playlist/get/:id',
+    path: '/playlist/get/:slug',
     component: PlaylistDetailPage,
     protected: true,
     exact: true,

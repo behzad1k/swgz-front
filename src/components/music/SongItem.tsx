@@ -18,7 +18,6 @@ interface SongItemProps {
   onDrop?: (e: React.DragEvent, index: number) => void;
   onRemove?: (songId: string) => void;
   showDragHandle?: boolean;
-  showRemoveButton?: boolean;
 }
 
 const SongItem: FC<SongItemProps> = ({
@@ -33,29 +32,31 @@ const SongItem: FC<SongItemProps> = ({
   onDrop,
   onRemove,
   showDragHandle = false,
-  showRemoveButton = false,
 }) => {
   const defaultCover =
     'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png';
 
   const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
     if (draggable && onDragStart && index !== undefined) {
       onDragStart(e, index);
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    e.stopPropagation();
     if (draggable && onDrop && index !== undefined) {
       onDrop(e, index);
     }
   };
+  console.log(actions);
   return (
     <div
       draggable={draggable}
       onDragStart={handleDragStart}
       onDragOver={draggable ? onDragOver : undefined}
       onDrop={handleDrop}
-      className={`group flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all ${
+      className={`group flex items-center gap-3 p-3 rounded-xl bg-white/5 transition-all ${
         draggable ? 'cursor-move' : ''
       } ${isPlaying ? 'ring-2 ring-purple-500' : ''}`}
     >
@@ -87,23 +88,8 @@ const SongItem: FC<SongItemProps> = ({
         <p className="text-gray-400 text-sm truncate">{song.artistName}</p>
       </div>
 
-      {/* Remove Button (only shown when enabled) */}
-      {showRemoveButton && onRemove && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(song.id || '');
-          }}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-lg"
-          title="Remove from playlist"
-        >
-          <img src={X} alt="Remove" width={16} className="text-red-500" />
-        </button>
-      )}
-
       {/* Action Buttons (like/library/add to queue/etc) */}
-      {!draggable && actions.length > 0 && (
+      {actions.length > 0 && (
         <div className="flex items-center gap-2">
           {actions.map((action, idx) => (
             <button

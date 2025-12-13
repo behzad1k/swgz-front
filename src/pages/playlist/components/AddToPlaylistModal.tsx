@@ -81,7 +81,7 @@ const AddToPlaylistModal: FC<AddToPlaylistModalProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6">
       {/* Song Info */}
       <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
         <img

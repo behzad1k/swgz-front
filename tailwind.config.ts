@@ -12,6 +12,7 @@ export default {
         xs: '10px',
       },
       colors: {
+        background: '#1f2937',
         primary: {
           50: '#faf5ff',
           500: '#a855f7',

@@ -165,7 +165,7 @@ const LibraryPage: FC = () => {
           <div
             key={idx}
             className="bg-white/5 hover:bg-white/10 rounded-xl p-6 cursor-pointer transition-all duration-200 group"
-            onClick={() => navigate(buildPath(routes.defaultPlaylist, { slug: link.value }))}
+            onClick={() => navigate(buildPath(routes.playlistDetail, { slug: link.value }))}
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -231,7 +231,7 @@ const LibraryPage: FC = () => {
                         key={playlist.id}
                         playlist={playlist}
                         onClick={() => {
-                          navigate(buildPath(routes.playlistDetail, { id: playlist.id }));
+                          navigate(buildPath(routes.playlistDetail, { slug: playlist.id }));
                         }}
                       />
                     ))
@@ -244,7 +244,7 @@ const LibraryPage: FC = () => {
                       key={playlist.id}
                       className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all cursor-pointer"
                       onClick={() => {
-                        navigate(buildPath(routes.playlistDetail, { id: playlist.id }));
+                        navigate(buildPath(routes.playlistDetail, { slug: playlist.id }));
                       }}
                     >
                       <img
