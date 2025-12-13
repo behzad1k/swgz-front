@@ -1,3 +1,4 @@
+// src/components/music/SongItem.tsx
 import { getAltFromPath } from '@utils/helpers';
 import { FC } from 'react';
 import { MoveVertical, X } from '@/assets/svg';
@@ -18,6 +19,12 @@ interface SongItemProps {
   onDrop?: (e: React.DragEvent, index: number) => void;
   onRemove?: (songId: string) => void;
   showDragHandle?: boolean;
+
+  // Touch events for mobile
+  onTouchStart?: (e: React.TouchEvent, index: number) => void;
+  onTouchMove?: (e: React.TouchEvent) => void;
+  onTouchEnd?: (e: React.TouchEvent, index: number) => void;
+  isTouchDragging?: boolean;
 }
 
 const SongItem: FC<SongItemProps> = ({
@@ -32,6 +39,10 @@ const SongItem: FC<SongItemProps> = ({
   onDrop,
   onRemove,
   showDragHandle = false,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+  isTouchDragging = false,
 }) => {
   const defaultCover =
     'https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png';
@@ -49,16 +60,43 @@ const SongItem: FC<SongItemProps> = ({
       onDrop(e, index);
     }
   };
-  console.log(actions);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (draggable && onTouchStart && index !== undefined) {
+      onTouchStart(e, index);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (draggable && onTouchMove) {
+      onTouchMove(e);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (draggable && onTouchEnd && index !== undefined) {
+      onTouchEnd(e, index);
+    }
+  };
+
   return (
     <div
+      data-song-index={index}
       draggable={draggable}
       onDragStart={handleDragStart}
       onDragOver={draggable ? onDragOver : undefined}
       onDrop={handleDrop}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       className={`group flex items-center gap-3 p-3 rounded-xl bg-white/5 transition-all ${
-        draggable ? 'cursor-move' : ''
-      } ${isPlaying ? 'ring-2 ring-purple-500' : ''}`}
+        draggable ? 'cursor-move touch-none' : ''
+      } ${isPlaying ? 'ring-2 ring-purple-500' : ''} ${
+        isTouchDragging ? 'opacity-50 scale-95' : ''
+      }`}
+      style={{
+        touchAction: draggable ? 'none' : 'auto',
+      }}
     >
       {/* Drag Handle (only shown when draggable) */}
       {showDragHandle && draggable && (
@@ -88,11 +126,12 @@ const SongItem: FC<SongItemProps> = ({
         <p className="text-gray-400 text-sm truncate">{song.artistName}</p>
       </div>
 
-      {/* Action Buttons (like/library/add to queue/etc) */}
+      {/* Action Buttons */}
       {actions.length > 0 && (
         <div className="flex items-center gap-2">
           {actions.map((action, idx) => (
             <button
+              type="button"
               key={idx}
               onClick={(e) => {
                 e.stopPropagation();

@@ -5,7 +5,7 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'custom';
   size?: 'sm' | 'md' | 'lg';
   icon?: ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: any) => void;
   className?: string;
   disabled?: boolean;
   type?: 'submit' | 'reset' | 'button';

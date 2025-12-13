@@ -21,8 +21,11 @@ const EditPlaylistPage: FC = () => {
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isPlaying = useIsPlaying();
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     items: songs,
@@ -30,6 +33,11 @@ const EditPlaylistPage: FC = () => {
     handleDragStart,
     handleDragOver,
     handleDrop,
+    handleDragEnd,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    touchDragIndex,
   } = useDragAndDrop<Track>([]);
 
   useEffect(() => {
@@ -194,10 +202,9 @@ const EditPlaylistPage: FC = () => {
   }
 
   return (
-    <div
-      className={`flex flex-col max-w-6xl mx-auto p-6 h-screen bg-background ${isPlaying ? 'pb-32' : 'pb-8'} overflow-y-auto`}
-    >
-      <div className="flex items-center justify-between mb-8">
+    <div className="flex flex-col max-w-6xl mx-auto p-6 h-screen bg-background">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 flex items-center justify-between mb-3">
         <h1 className="text-3xl font-bold text-white">Edit Playlist</h1>
         <button
           onClick={() => navigate(-1)}
@@ -207,133 +214,147 @@ const EditPlaylistPage: FC = () => {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Cover Image Upload */}
-        <div className="flex justify-center mb-6">
-          <div className="relative group">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="relative w-48 h-48 rounded-xl overflow-hidden bg-white/5 hover:bg-white/10 transition-colors"
-            >
-              {coverPreview ? (
-                <>
-                  <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Scrollable Form Area */}
+
+      <div className="flex-1 overflow-y-auto">
+        <form className="space-y-6">
+          {/* Cover Image Upload */}
+          <div className="flex justify-center my-4">
+            <div className="relative group">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="relative w-48 h-48 rounded-xl overflow-hidden bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                {coverPreview ? (
+                  <>
+                    <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <img
+                        src={Upload}
+                        alt={getAltFromPath(Upload)}
+                        width={32}
+                        className="text-white"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
                     <img
                       src={Upload}
                       alt={getAltFromPath(Upload)}
-                      width={32}
-                      className="text-white"
+                      width={48}
+                      className="text-gray-400"
                     />
                   </div>
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <img
-                    src={Upload}
-                    alt={getAltFromPath(Upload)}
-                    width={48}
-                    className="text-gray-400"
-                  />
-                </div>
-              )}
-            </button>
-            {coverPreview && (
-              <button
-                type="button"
-                onClick={handleRemoveCover}
-                className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors"
-              >
-                <img src={X} alt="Remove" width={16} />
+                )}
               </button>
-            )}
-            <p className="text-center text-gray-400 text-sm mt-2">Click to change cover image</p>
-          </div>
-        </div>
-
-        {/* Playlist Info */}
-        <Input placeholder="Playlist name" value={name} onChange={setName} />
-
-        <div>
-          <label className="text-gray-300 mb-2 block">Description</label>
-          <textarea
-            placeholder="Add a description..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors h-32 resize-none"
-          />
-        </div>
-
-        {/* Delete Playlist Button */}
-        <Button
-          type="button"
-          variant="custom"
-          className="bg-red-500 hover:bg-red-600 text-white w-full"
-          icon={<img src={ListMinus} alt={getAltFromPath(ListMinus)} width={16} />}
-          onClick={handleDeletePlaylist}
-          disabled={loading}
-        >
-          Delete Playlist
-        </Button>
-
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <label className="text-gray-300 font-semibold">Songs ({songs.length})</label>
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <img src={MoveVertical} alt={getAltFromPath(MoveVertical)} width={16} />
-              <span>Drag to reorder</span>
+              {coverPreview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveCover}
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <img src={X} alt="Remove" width={16} />
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            {songs.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <p>No songs in this playlist</p>
-              </div>
-            ) : (
-              songs.map((song, index) => (
-                <SongItem
-                  key={song.id}
-                  song={song}
-                  onPlay={() => {}} // Disable play in edit mode
-                  actions={[
-                    {
-                      icon: ListMinus,
-                      alt: getAltFromPath(ListMinus) || '',
-                      onClick: (e) => handleRemoveSong(song.id || '', e),
-                      tooltip: 'Remove From Playlist',
-                    },
-                  ]}
-                  index={index}
-                  draggable={true}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  showDragHandle={true}
-                />
-              ))
-            )}
-          </div>
-        </div>
+          {/* Playlist Info */}
+          <Input placeholder="Playlist name" value={name} onChange={setName} />
 
-        {/* Action Buttons */}
-        <div className="flex gap-4 pt-4 sticky bottom-0">
-          <Button type="submit" className="flex-1" disabled={loading || !name.trim()}>
-            {loading ? 'Saving...' : 'Save Changes'}
+          <div>
+            <label className="text-gray-300 mb-2 block">Description</label>
+            <textarea
+              placeholder="Add a description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors h-32 resize-none"
+            />
+          </div>
+
+          {/* Delete Playlist Button */}
+          <Button
+            type="button"
+            variant="custom"
+            className="bg-red-500 hover:bg-red-600 text-white w-full"
+            icon={<img src={ListMinus} alt={getAltFromPath(ListMinus)} width={16} />}
+            onClick={handleDeletePlaylist}
+            disabled={loading}
+          >
+            Delete Playlist
           </Button>
-          <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="flex-1">
-            Cancel
-          </Button>
-        </div>
-      </form>
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-gray-300 font-semibold">Songs ({songs.length})</label>
+              <div className="flex items-center gap-2 text-gray-400 text-sm">
+                <img src={MoveVertical} alt={getAltFromPath(MoveVertical)} width={16} />
+                <span>Drag to reorder</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 pb-32">
+              {songs.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <p>No songs in this playlist</p>
+                </div>
+              ) : (
+                songs.map((song, index) => (
+                  <SongItem
+                    key={song.id}
+                    song={song}
+                    onPlay={() => {}}
+                    actions={[
+                      {
+                        icon: ListMinus,
+                        alt: getAltFromPath(ListMinus) || '',
+                        onClick: (e) => handleRemoveSong(song.id || '', e),
+                        tooltip: 'Remove From Playlist',
+                      },
+                    ]}
+                    index={index}
+                    draggable={true}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    isTouchDragging={touchDragIndex === index}
+                    showDragHandle={true}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+
+      {/* Fixed Action Buttons */}
+      <div
+        className={`flex-shrink-0 flex gap-4 pt-4 pb-4 border-t border-white/10 bg-background ${isPlaying ? 'pb-32' : ''}`}
+      >
+        <Button
+          type="submit"
+          onClick={handleSubmit}
+          className="flex-1"
+          disabled={loading || !name.trim()}
+        >
+          {loading ? 'Saving...' : 'Save Changes'}
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="flex-1">
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 };
