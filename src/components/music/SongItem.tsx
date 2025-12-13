@@ -87,6 +87,7 @@ const SongItem: FC<SongItemProps> = ({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onClick={() => onPlay(song)}
       className={`group flex items-center gap-3 p-3 rounded-xl bg-white/5 transition-all ${
         draggable ? 'cursor-move touch-none' : ''
       } ${isPlaying ? 'ring-2 ring-purple-500' : ''} ${
@@ -115,10 +116,7 @@ const SongItem: FC<SongItemProps> = ({
 
       {/* Song Info */}
       <div className="flex-1 min-w-0">
-        <h4
-          className="text-white font-medium truncate cursor-pointer hover:text-purple-400 transition-colors"
-          onClick={() => onPlay(song)}
-        >
+        <h4 className="text-white font-medium truncate cursor-pointer hover:text-purple-400 transition-colors">
           {song.title}
         </h4>
         <p className="text-gray-400 text-sm truncate">{song.artistName}</p>
@@ -126,7 +124,7 @@ const SongItem: FC<SongItemProps> = ({
 
       {/* Action Buttons */}
       {actions.length > 0 && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           {actions.map((action, idx) => (
             <button
               type="button"
@@ -135,7 +133,7 @@ const SongItem: FC<SongItemProps> = ({
                 e.stopPropagation();
                 action.onClick(song, e);
               }}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-1 hover:bg-white/10 rounded-lg transition-colors"
               title={action.tooltip}
             >
               <img

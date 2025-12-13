@@ -10,36 +10,70 @@
 @tailwind utilities;
 
 .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for mobile */
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    left: 0;
-    overscroll-behavior: none;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  overscroll-behavior: none;
 }
 .app-header {
-    flex-shrink: 0;
-    /* your header styles */
+  flex-shrink: 0;
+  /* your header styles */
 }
 .scrollable {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    overscroll-behavior: contain; /* Prevent pull-to-refresh */
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  overscroll-behavior: contain; /* Prevent pull-to-refresh */
 }
 .app-footer {
-    flex-shrink: 0;
-    /* your footer/player styles */
+  flex-shrink: 0;
+  /* your footer/player styles */
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; touch-action:none;}
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: white; cursor: pointer; }
-input[type="range"]::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  touch-action: none;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.filter-svg-purple {
+  filter: brightness(0) saturate(100%) invert(56%) sepia(93%) saturate(4234%) hue-rotate(235deg)
+    brightness(97%) contrast(93%);
+}

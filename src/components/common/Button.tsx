@@ -40,7 +40,7 @@ const Button: FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       type={type}
-      className={`rounded-full font-medium transition-all duration-200 flex items-center justify-center gap-1 ${variants[variant]} ${sizes[size]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-1 ${variants[variant]} ${sizes[size]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {icon && <span>{icon}</span>}
       {children}

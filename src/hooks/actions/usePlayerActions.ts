@@ -121,21 +121,27 @@ export const usePlayerActions = () => {
       setCurrentSong(song);
       setIsPlaying(true);
       setProgress(0);
-      setShowLoading(true)
+      setShowLoading(true);
     },
     [setCurrentSong, setIsPlaying, setProgress]
   );
 
   const playNext = useCallback(() => {
-    console.log('️ Playing next song');
+    console.log('⏭️ Playing next song');
 
     if (state.queue.length > 0) {
       const nextSong = state.queue[0];
+      const remainingQueue = state.queue.slice(1);
 
-      dispatch({ type: PlayerActionKeys.SET_QUEUE, payload: state.queue.slice(1) });
-      play(nextSong);
+      // CRITICAL FIX: Update queue BEFORE playing to prevent race conditions
+      dispatch({ type: PlayerActionKeys.SET_QUEUE, payload: remainingQueue });
+
+      // Use a microtask to ensure queue update completes first
+      queueMicrotask(() => {
+        play(nextSong);
+      });
     } else {
-      console.log('️ Queue empty, stopping playback');
+      console.log('⏹️ Queue empty, stopping playback');
       setIsPlaying(false);
     }
   }, [state.queue, dispatch, play, setIsPlaying]);
@@ -198,6 +204,6 @@ export const usePlayerActions = () => {
     playNext,
     playPrevious,
     seek,
-    setDuration
+    setDuration,
   };
 };

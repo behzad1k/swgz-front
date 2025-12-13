@@ -1,5 +1,5 @@
-import { Search, X } from '@/assets/svg'
-import { FC } from 'react';
+import { Search, X } from '@/assets/svg';
+import { FC, useEffect, useRef } from 'react';
 
 interface SearchBarProps {
   value: string;
@@ -8,13 +8,24 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-const SearchBar: FC<SearchBarProps> = ({ value, onChange, onSearch, placeholder = 'Search...' }) => {
+const SearchBar: FC<SearchBarProps> = ({
+  value,
+  onChange,
+  onSearch,
+  placeholder = 'Search...',
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && onSearch) {
       onSearch(value);
     }
   };
 
+  useEffect(() => {
+    if (inputRef && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
   return (
     <div className="relative">
       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -22,6 +33,7 @@ const SearchBar: FC<SearchBarProps> = ({ value, onChange, onSearch, placeholder 
       </div>
       <input
         type="text"
+        ref={inputRef}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

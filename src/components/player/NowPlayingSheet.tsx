@@ -2,9 +2,7 @@ import PlayerControls from '@/components/player/PlayerControls';
 import ProgressBar from '@/components/player/ProgressBar';
 import QueueList from '@/components/player/QueueList';
 import VolumeControl from '@/components/player/VolumeControl';
-import Button from '@components/common/Button.tsx';
 import { DownloadProgress } from '@components/player/DownloadProgress.tsx';
-import QualitySelector from '@components/player/QualitySelector.tsx';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
 import { useCurrentUser } from '@hooks/selectors/useAuthSelectors.ts';
 import {
@@ -18,12 +16,12 @@ import {
   useQueue,
   useSongDuration,
 } from '@hooks/selectors/usePlayerSelectors.ts';
-import { useModal } from '@hooks/useModal.ts';
-import { ChevronDown, ChevronUp } from '@/assets/svg';
+import { useTrackActions } from '@hooks/useTrackActions.ts';
+import { ChevronDown } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, memo, useState, useRef, useEffect } from 'react';
 
-type SheetState = 'closed' | 'mini' | 'half' | 'full';
+type SheetState = 'nano' | 'mini' | 'full';
 
 const NowPlayingSheet: FC = () => {
   const [sheetState, setSheetState] = useState<SheetState>('mini');
@@ -33,7 +31,9 @@ const NowPlayingSheet: FC = () => {
   const [dragOffset, setDragOffset] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
   const [isDesktop, setIsDesktop] = useState(false);
-  const { openModal, closeModal } = useModal();
+  const lastClickTime = useRef(0);
+  const clickTimeout = useRef<NodeJS.Timeout | null>(null);
+
   const user = useCurrentUser();
   const {
     seek,
@@ -58,6 +58,7 @@ const NowPlayingSheet: FC = () => {
   const quality = usePlayerQuality();
   const currentSong = useCurrentSong();
   const isPlaying = useIsPlaying();
+  const { likeSong, librarySong, addToQueueButton, addToPlaylistButton } = useTrackActions();
 
   // Check if desktop
   useEffect(() => {
@@ -75,8 +76,30 @@ const NowPlayingSheet: FC = () => {
     return <DesktopNowPlaying />;
   }
 
+  const handleNanoClick = () => {
+    const now = Date.now();
+    const timeSinceLastClick = now - lastClickTime.current;
+
+    if (timeSinceLastClick < 300) {
+      // Double click/tap detected
+      if (clickTimeout.current) {
+        clearTimeout(clickTimeout.current);
+        clickTimeout.current = null;
+      }
+      setSheetState('mini');
+      lastClickTime.current = 0;
+    } else {
+      // Single click/tap - wait to see if it's a double click
+      lastClickTime.current = now;
+      clickTimeout.current = setTimeout(() => {
+        togglePlay();
+        clickTimeout.current = null;
+      }, 300);
+    }
+  };
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (sheetState === 'closed') return;
+    if (sheetState === 'nano') return;
     setIsDragging(true);
     setStartY(e.touches[0].clientY);
     setCurrentY(e.touches[0].clientY);
@@ -98,15 +121,13 @@ const NowPlayingSheet: FC = () => {
 
     // Swipe down
     if (deltaY > threshold) {
-      if (sheetState === 'full') setSheetState('half');
-      else if (sheetState === 'half') setSheetState('mini');
-      else if (sheetState === 'mini') setSheetState('closed');
+      if (sheetState === 'full') setSheetState('mini');
+      else if (sheetState === 'mini') setSheetState('nano');
     }
     // Swipe up
     else if (deltaY < -threshold) {
-      if (sheetState === 'closed') setSheetState('mini');
-      else if (sheetState === 'mini') setSheetState('half');
-      else if (sheetState === 'half') setSheetState('full');
+      if (sheetState === 'nano') setSheetState('mini');
+      else if (sheetState === 'mini') setSheetState('full');
     }
 
     setStartY(0);
@@ -115,24 +136,21 @@ const NowPlayingSheet: FC = () => {
   };
 
   const getSheetHeight = () => {
-    if (sheetState === 'closed') return '0';
+    if (sheetState === 'nano') return '0';
     if (sheetState === 'mini') return '120px';
-    if (sheetState === 'half') return '80vh';
     return '100vh';
   };
 
   const getTransform = () => {
-    // When closed, translate fully off screen
-    if (sheetState === 'closed' && !isDragging) return 'translateY(100%)';
+    if (sheetState === 'nano' && !isDragging) return 'translateY(100%)';
 
     if (!isDragging || dragOffset === 0) return 'translateY(0)';
-    // Only allow downward drag
     const clampedOffset = Math.max(0, dragOffset);
     return `translateY(${clampedOffset}px)`;
   };
 
   const getOpacity = () => {
-    if (sheetState === 'closed') return 0;
+    if (sheetState === 'nano') return 0;
     if (sheetState === 'mini') return 0;
     if (isDragging && dragOffset > 0) {
       return Math.max(0, 0.6 - dragOffset / 500);
@@ -140,9 +158,93 @@ const NowPlayingSheet: FC = () => {
     return 0.6;
   };
 
+  // Calculate circular progress for nano player
+  const circumference = 2 * Math.PI * 28; // radius = 28
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  // Get track actions for current song
+  const trackActions = currentSong
+    ? [
+        librarySong(currentSong),
+        likeSong(currentSong),
+        addToQueueButton(currentSong),
+        addToPlaylistButton(currentSong),
+      ]
+    : [];
+
   return (
     <>
-      {(sheetState === 'half' || sheetState === 'full') && (
+      {/* Nano Player - Floating Circle */}
+      {sheetState === 'nano' && (
+        <div className="fixed bottom-6 left-6 z-50 cursor-pointer" onClick={handleNanoClick}>
+          <div className="relative w-16 h-16">
+            {/* Progress Circle */}
+            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
+              {/* Background circle */}
+              <circle
+                cx="32"
+                cy="32"
+                r="28"
+                stroke="rgba(255, 255, 255, 0.2)"
+                strokeWidth="3"
+                fill="none"
+              />
+              {/* Progress circle */}
+              <circle
+                cx="32"
+                cy="32"
+                r="28"
+                stroke="#a855f7"
+                strokeWidth="8"
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-300"
+              />
+            </svg>
+
+            {/* Album Cover Background */}
+            <div
+              className="absolute inset-[3px] rounded-full overflow-hidden bg-cover bg-center shadow-2xl"
+              style={{
+                backgroundImage: `url(${
+                  currentSong.albumCover ||
+                  'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'
+                })`,
+              }}
+            >
+              {/* Dark overlay */}
+              <div className="absolute inset-0 bg-black/40" />
+
+              {/* Play/Pause Icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                {isPlaying ? (
+                  <svg
+                    className="w-5 h-5 text-white drop-shadow-lg"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect x="6" y="4" width="4" height="16" rx="1" />
+                    <rect x="14" y="4" width="4" height="16" rx="1" />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-5 h-5 text-white drop-shadow-lg"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Backdrop for full mode */}
+      {sheetState === 'full' && (
         <div
           className="fixed inset-0 bg-black z-40 transition-opacity duration-300"
           style={{ opacity: getOpacity() }}
@@ -150,6 +252,7 @@ const NowPlayingSheet: FC = () => {
         />
       )}
 
+      {/* Mini & Full Sheet */}
       <div
         ref={sheetRef}
         className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 shadow-2xl z-50 rounded-t-3xl overflow-hidden"
@@ -170,7 +273,7 @@ const NowPlayingSheet: FC = () => {
           <>
             <div
               className="flex items-center px-4 py-2 gap-3 cursor-pointer"
-              onClick={() => setSheetState('half')}
+              onClick={() => setSheetState('full')}
             >
               <img
                 src={
@@ -189,7 +292,7 @@ const NowPlayingSheet: FC = () => {
                   e.stopPropagation();
                   togglePlay();
                 }}
-                className="w-10 h-10 flex items-center justify-center text-black hover:scale-110 transition-transform"
+                className="w-10 h-10 flex items-center justify-center text-white hover:scale-110 transition-transform"
               >
                 {isPlaying ? (
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -214,14 +317,18 @@ const NowPlayingSheet: FC = () => {
                 </svg>
               </button>
             </div>
-            <div
-              className="h-full bg-white transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="px-4">
+              <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
           </>
         )}
 
-        {(sheetState === 'half' || sheetState === 'full') && (
+        {sheetState === 'full' && (
           <div className="flex flex-col h-full overflow-y-auto pb-6">
             <button
               onClick={() => setSheetState('mini')}
@@ -241,10 +348,32 @@ const NowPlayingSheet: FC = () => {
               />
             </div>
 
-            <div className="px-6 mb-6 text-center">
+            <div className="px-6 mb-4 text-center">
               <h1 className="text-2xl font-bold text-white mb-2">{currentSong.title}</h1>
               <p className="text-lg text-gray-300">{currentSong.artistName}</p>
               <p className="text-md text-gray-400">{currentSong.albumName}</p>
+            </div>
+
+            {/* Track Actions */}
+            <div className="px-6 mb-4 flex items-center justify-center gap-4">
+              {trackActions.map((action, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    action.onClick(currentSong, e);
+                  }}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  title={action.tooltip}
+                >
+                  <img
+                    src={action.icon}
+                    alt={action.tooltip}
+                    width={24}
+                    className={`${action.className || 'text-gray-400'} hover:text-white transition-colors`}
+                  />
+                </button>
+              ))}
             </div>
 
             <div className="px-6 mb-6">
@@ -268,66 +397,45 @@ const NowPlayingSheet: FC = () => {
               />
             </div>
 
-            {sheetState === 'full' && (
-              <>
-                <Button
-                  size={'md'}
-                  className={'btn-primary'}
-                  onClick={() =>
-                    openModal({
-                      id: 'QualityChange',
-                      animation: 'slideUp',
-                      size: 'lg',
-                      onClose: () => closeModal('QualityChange'),
-                      component: QualitySelector,
-                      props: {
-                        songId: currentSong.id,
-                        onQualityChange: changeQuality,
-                        quality,
-                        isPremium,
-                      },
-                      closeOnOverlayClick: true,
-                      closeOnEscape: true,
-                    })
-                  }
+            {/* Quality Selector - Simplified to Standard/FLAC */}
+            <div className="px-6 mb-4 flex justify-between w-full">
+              <VolumeControl
+                volume={volume}
+                onVolumeChange={changeVolume}
+                onMuteToggle={() => changeVolume(volume === 0 ? 70 : 0)}
+                isMuted={volume === 0}
+              />
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="text-gray-400 text-xs">Quality:</span>
+                <button
+                  onClick={() => changeQuality('320')}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    quality === '320' || quality === '128' || quality === '192' || quality === '256'
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                  }`}
                 >
-                  quality
-                </Button>
+                  Standard
+                </button>
+                <button
+                  onClick={() => changeQuality('flac')}
+                  disabled={!isPremium}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    quality === 'flac'
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                  } ${!isPremium ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  FLAC {!isPremium && '👑'}
+                </button>
+              </div>
+            </div>
 
-                <div className="px-6 mb-6">
-                  <VolumeControl
-                    volume={volume}
-                    onVolumeChange={changeVolume}
-                    onMuteToggle={() => changeVolume(volume === 0 ? 70 : 0)}
-                    isMuted={volume === 0}
-                  />
-                </div>
-
-                {/* Queue */}
-                <div className="px-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">Up Next</h3>
-                    <button
-                      onClick={() => setSheetState('half')}
-                      className="text-gray-400 hover:text-white transition-colors"
-                    >
-                      <img src={ChevronUp} alt={getAltFromPath(ChevronUp)} width={24} />
-                    </button>
-                  </div>
-                  <QueueList queue={queue} onPlay={play} />
-                </div>
-              </>
-            )}
-
-            {/* Expand to Full Button (only in half state) */}
-            {sheetState === 'half' && (
-              <button
-                onClick={() => setSheetState('full')}
-                className="mt-6 mx-6 py-3 bg-white/10 hover:bg-white/20 rounded-full text-white font-medium transition-colors"
-              >
-                Show Queue & More
-              </button>
-            )}
+            {/* Queue */}
+            <div className="px-6">
+              <h3 className="text-xl font-bold text-white mb-4">Up Next</h3>
+              <QueueList queue={queue} onPlay={play} />
+            </div>
           </div>
         )}
       </div>
@@ -351,6 +459,9 @@ const DesktopNowPlaying: FC = () => {
     toggleRepeat,
   } = usePlayerActions();
 
+  const user = useCurrentUser();
+  const isPremium = user?.subscriptionPlan === 'premium';
+
   // hooks
   const repeat = usePlayerRepeat();
   const shuffle = usePlayerShuffle();
@@ -361,8 +472,17 @@ const DesktopNowPlaying: FC = () => {
   const quality = usePlayerQuality();
   const currentSong = useCurrentSong();
   const isPlaying = useIsPlaying();
+  const { likeSong, librarySong, addToQueueButton, addToPlaylistButton } = useTrackActions();
 
   if (!currentSong) return null;
+
+  // Get track actions for current song
+  const trackActions = [
+    librarySong(currentSong),
+    likeSong(currentSong),
+    addToQueueButton(currentSong),
+    addToPlaylistButton(currentSong),
+  ];
 
   return (
     <div
@@ -393,6 +513,29 @@ const DesktopNowPlaying: FC = () => {
             <p className="text-gray-300 mb-1">{currentSong.artistName}</p>
             <p className="text-sm text-gray-400">{currentSong.albumName}</p>
           </div>
+
+          {/* Track Actions */}
+          <div className="mb-4 flex items-center justify-center gap-3">
+            {trackActions.map((action, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  action.onClick(currentSong, e);
+                }}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                title={action.tooltip}
+              >
+                <img
+                  src={action.icon}
+                  alt={action.tooltip}
+                  width={20}
+                  className={`${action.className || 'text-gray-400'} hover:text-white transition-colors`}
+                />
+              </button>
+            ))}
+          </div>
+
           <DownloadProgress />
 
           <div className="mb-4">
@@ -416,22 +559,31 @@ const DesktopNowPlaying: FC = () => {
             />
           </div>
 
+          {/* Quality Selector - Simplified */}
           <div className="mb-4">
             <div className="flex items-center justify-center gap-2">
               <span className="text-gray-400 text-xs">Quality:</span>
-              {(['128', '320', 'flac'] as const).map((q) => (
-                <button
-                  key={q}
-                  onClick={() => changeQuality(q)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                    quality === q
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
-                  }`}
-                >
-                  {q}
-                </button>
-              ))}
+              <button
+                onClick={() => changeQuality('320')}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  quality === '320' || quality === '128' || quality === '192' || quality === '256'
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                }`}
+              >
+                Standard
+              </button>
+              <button
+                onClick={() => changeQuality('flac')}
+                disabled={!isPremium}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  quality === 'flac'
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                } ${!isPremium ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                FLAC {!isPremium && '👑'}
+              </button>
             </div>
           </div>
 

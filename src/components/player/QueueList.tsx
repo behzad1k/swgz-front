@@ -11,7 +11,7 @@ interface QueueListProps {
 }
 
 const QueueList: FC<QueueListProps> = ({ queue, currentSongId, onPlay }) => {
-  const { deleteFromQueueButton } = useTrackActions()
+  const { deleteFromQueueButton } = useTrackActions();
   if (queue.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -22,16 +22,13 @@ const QueueList: FC<QueueListProps> = ({ queue, currentSongId, onPlay }) => {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-bold text-white mb-4">Up Next</h3>
       {queue.map((song) => (
         <SongItem
           key={song.id}
           song={song}
           onPlay={onPlay}
           isPlaying={song.id === currentSongId}
-          actions={[
-            deleteFromQueueButton(queue.findIndex(e => e.id == song.id))
-          ]}
+          actions={[deleteFromQueueButton(queue.findIndex((e) => e.id == song.id))]}
         />
       ))}
     </div>

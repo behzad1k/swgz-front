@@ -44,6 +44,7 @@ const PlaylistDetailPage: FC = () => {
     if (slug) {
       loadPlaylist(slug);
     }
+    setLoading(false);
 
     return () => {
       if (!playlistProp) {

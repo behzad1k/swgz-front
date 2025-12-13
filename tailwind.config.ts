@@ -52,5 +52,17 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-filters')],
+  plugins: [
+    require('tailwindcss-filters'),
+
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.filter-svg-purple': {
+          filter:
+            'brightness(0) saturate(100%) invert(56%) sepia(93%) saturate(4234%) hue-rotate(235deg) brightness(97%) contrast(93%)',
+        },
+      };
+      addUtilities(newUtilities);
+    },
+  ],
 } satisfies Config;

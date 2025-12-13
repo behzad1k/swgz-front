@@ -23,8 +23,8 @@ import { FC, useEffect } from 'react';
 
 // Components
 import DownloadManager from '@components/download/DownloadManager.tsx';
-import Navigation from '@components/layout/Navigation.tsx';
 import { WifiOff } from '@/assets/svg';
+import { useCurrentSong } from './hooks/selectors/usePlayerSelectors';
 
 const App: FC = () => {
   usePlayerInitialization();
@@ -38,6 +38,7 @@ const App: FC = () => {
   const isAuthenticated = useIsAuthenticated();
   const showDownloadManager = useShowDownloadManager();
   const { setShowDownloadManager } = useAppActions();
+  const currentSong = useCurrentSong();
 
   async function fetchUserLibrary() {
     try {
@@ -86,7 +87,7 @@ const App: FC = () => {
   }, [isAuthenticated, currentUser]);
 
   return (
-    <div className="app-container bg-background ">
+    <div className={`app-container bg-background`}>
       {!isOnline && (
         <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black px-4 py-2 text-center z-50 flex items-center justify-center gap-2">
           <img src={WifiOff} alt={getAltFromPath(WifiOff)} width={20} />
@@ -94,7 +95,7 @@ const App: FC = () => {
         </div>
       )}
 
-      <div className="pb-40">
+      <div className={currentSong ? 'pb-80' : ''}>
         <Routes>
           {routesConfig.map((route) => {
             const RouteComponent = route.component;
@@ -122,7 +123,7 @@ const App: FC = () => {
         </Routes>
       </div>
 
-      {isAuthenticated && <Navigation />}
+      {/*{isAuthenticated && <Navigation />}*/}
 
       <NowPlayingSheet />
 

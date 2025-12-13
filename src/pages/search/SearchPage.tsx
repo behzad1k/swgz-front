@@ -1,6 +1,6 @@
 import { musicApi } from '@/api/music.api';
 import { profileApi } from '@/api/profile.api';
-import { Disc3, Music, RefreshCcw, Search, User, Users } from '@/assets/svg';
+import { Disc3, Music, RefreshCcw, Search, User, Users, X } from '@/assets/svg';
 import SearchBar from '@/components/forms/SearchBar';
 import AlbumCard from '@/components/music/AlbumCard';
 import ArtistCard from '@/components/music/ArtistCard';
@@ -9,7 +9,7 @@ import UserCard from '@/components/social/UserCard';
 import { buildPath, routes } from '@/config/routes.config.ts';
 import { SearchFilters } from '@/enums/global.ts';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useNavigate } from '@/router';
+import { useNavigate, useQuery, useSetSearchParams } from '@/router';
 import { SearchResult } from '@/types/global.ts';
 import { SearchHistory, UserProfile } from '@/types/models.ts';
 import { usePlayerActions } from '@hooks/actions/usePlayerActions.ts';
@@ -25,7 +25,8 @@ const DEFAULT_SEARCH_RESULT = {
 };
 
 const SearchPage: FC = () => {
-  const [query, setQuery] = useState('');
+  const { query } = useQuery();
+  const setQuery = useSetSearchParams();
   const [filter, setFilter] = useState<SearchFilters>(SearchFilters.all);
   const [results, setResults] = useState<SearchResult>(DEFAULT_SEARCH_RESULT);
   const [loading, setLoading] = useState(false);
@@ -93,7 +94,7 @@ const SearchPage: FC = () => {
   ] as const;
 
   const selectSearchHistory = async (searchHistory: SearchHistory) => {
-    setQuery(searchHistory.query);
+    setQuery({ query: searchHistory.query });
     setFilter(searchHistory.filter || SearchFilters.track);
     await handleSearch(searchHistory.query, searchHistory.filter);
   };
@@ -101,12 +102,21 @@ const SearchPage: FC = () => {
   return (
     <div className="h-screen flex flex-col p-6 max-w-6xl mx-auto">
       <div className="flex-shrink-0 space-y-6 mb-6">
-        <h1 className="text-3xl font-bold text-white">Search</h1>
-
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-white">Search</h1>
+          <button
+            onClick={() => navigate(buildPath(routes.root))}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <img src={X} alt={getAltFromPath(X)} width={28} />
+          </button>
+        </div>
         <SearchBar
           placeholder="Search for track, artist, album, or stalker..."
           value={query}
-          onChange={setQuery}
+          onChange={(input: string) => {
+            setQuery({ query: input });
+          }}
           onSearch={handleSearch}
         />
 
@@ -146,8 +156,8 @@ const SearchPage: FC = () => {
                         className="flex flex-col justify-start gap-1 "
                         onClick={async () => await selectSearchHistory(e)}
                       >
-                        <span className="text-m text-gray-800 text-left">{e.query}</span>
-                        <span className="text-sm text-gray-500 text-left">{e.filter}</span>
+                        <span className="text-m text-gray-200 text-left">{e.query}</span>
+                        <span className="text-sm text-gray-400 text-left">{e.filter}</span>
                       </div>
                       <img
                         src={RefreshCcw}
@@ -177,7 +187,7 @@ const SearchPage: FC = () => {
                 <div className="flex flex-col">
                   <h2 className="text-xl font-bold text-white mb-4">Artists</h2>
                   <div
-                    className={`${filter == SearchFilters.all ? 'flex flex-1 overflow-x-auto gap-4' : 'flex flex-wrap justify-evenly'}`}
+                    className={`${filter == SearchFilters.all ? 'flex flex-1 overflow-x-auto gap-4 overflow-y-clip' : 'flex flex-wrap justify-evenly'}`}
                   >
                     {results.artist.map((artist) => (
                       <div className="min-w-36 max-w-36">
@@ -209,7 +219,7 @@ const SearchPage: FC = () => {
                 <div className="flex flex-col">
                   <h2 className="text-xl font-bold text-white mb-4">Albums</h2>
                   <div
-                    className={`${filter == SearchFilters.all ? 'flex flex-1 overflow-x-auto gap-4' : 'flex flex-wrap justify-evenly'}`}
+                    className={`${filter == SearchFilters.all ? 'flex flex-1 overflow-x-auto gap-4 overflow-y-clip' : 'flex flex-wrap justify-evenly'}`}
                   >
                     {results.album.map((album) => (
                       <div className="min-w-36 max-w-36">

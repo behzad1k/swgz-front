@@ -4,8 +4,18 @@ import { musicApi } from '@api/music.api';
 import { useEffect, useRef, useState } from 'react';
 import { usePlayerActions } from './actions/usePlayerActions';
 import { useCurrentUser } from './selectors/useAuthSelectors';
-import { useCurrentSong, useIsPlaying, usePlayerQuality, usePlayerRepeat, usePlayerVolume, } from './selectors/usePlayerSelectors';
+import {
+  useCurrentSong,
+  useIsPlaying,
+  usePlayerQuality,
+  usePlayerRepeat,
+  usePlayerVolume,
+} from './selectors/usePlayerSelectors';
 import { useDownloadStatus } from './useDownloadStatus';
+
+// CRITICAL FIX: Global singleton to ensure only ONE audio element exists
+let globalAudioInstance: HTMLAudioElement | null = null;
+let globalAudioCleanup: (() => void) | null = null;
 
 export const useAudioPlayer = () => {
   const currentSong = useCurrentSong();
@@ -35,11 +45,12 @@ export const useAudioPlayer = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const currentSongIdRef = useRef<string | null>(null);
   const shouldAutoPlayRef = useRef(false);
-  const isWaitingForDownloadRef = useRef(false); // NEW: Track if waiting for download
+  const isWaitingForDownloadRef = useRef(false);
+  const previousUrlRef = useRef<string>(''); // NEW: Track previous URL to prevent unnecessary updates
 
   // Download status tracking
   const downloadStatus = useDownloadStatus(
-    isWaitingForDownloadRef.current ? currentSongIdRef.current : null, // Only connect when waiting
+    isWaitingForDownloadRef.current ? currentSongIdRef.current : null,
     quality,
     {
       onFilenameChanged: (data) => {
@@ -50,7 +61,6 @@ export const useAudioPlayer = () => {
 
         console.log('🔄 Filename changed, updating audio source...');
 
-        // Build the new URL
         const apiKey = user?.apiKey;
         if (!apiKey) {
           console.error('❌ No API key found');
@@ -68,26 +78,7 @@ export const useAudioPlayer = () => {
         }
 
         console.log('🎵 New stream URL after filename change:', newUrl);
-
-        // Update the audio source WITHOUT interrupting playback
-        // The key is to NOT reload or pause - just update the src for future seeks
-        if (audioRef.current) {
-          const audio = audioRef.current;
-          const wasPlaying = !audio.paused;
-          const currentTime = audio.currentTime;
-
-          console.log('🔄 Current state - playing:', wasPlaying, 'time:', currentTime);
-
-          // Since the file content is the same, we don't need to do anything immediately
-          // The audio will continue playing from the buffer
-          // We just update the src for when the user seeks or the current buffer runs out
-
-          // Note: Changing src while playing will interrupt, so we DON'T do it
-          // Instead, we just log that we have a new URL available
-          console.log('✅ New URL available for future use:', newUrl);
-
-          // The stream should continue seamlessly since the file content hasn't changed
-        }
+        console.log('✅ New URL available for future use:', newUrl);
       },
       onReady: (data) => {
         if (!data) {
@@ -102,18 +93,9 @@ export const useAudioPlayer = () => {
         setDownloadProgress(100);
         isWaitingForDownloadRef.current = false;
 
-        // Set metadata safely
         if (data.quality) setActualQuality(data.quality);
         if (data.duration) setSongDuration(data.duration);
 
-        // CRITICAL: Check if audio is already playing
-        // if (audioRef.current && !audioRef.current.paused) {
-        //   console.log('🎵 Audio already playing, keeping current stream');
-        // Don't call loadStreamUrl - keep the progressive stream!
-        // return;
-        // }
-
-        // Only load new stream if audio isn't playing yet
         console.log('🎵 Audio not playing yet, loading stream...');
 
         const apiKey = user?.apiKey;
@@ -136,8 +118,6 @@ export const useAudioPlayer = () => {
         }
 
         console.log('🎵 Stream URL from download:', fullUrl);
-
-        // Load and play the stream
         loadStreamUrl(fullUrl, shouldAutoPlayRef.current);
       },
       onError: (error) => {
@@ -145,7 +125,7 @@ export const useAudioPlayer = () => {
         setIsDownloading(false);
         setIsPlaying(false);
         console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-        isWaitingForDownloadRef.current = false
+        isWaitingForDownloadRef.current = false;
       },
       onProgress: (progress) => {
         setDownloadProgress(progress);
@@ -157,21 +137,30 @@ export const useAudioPlayer = () => {
     }
   );
 
-  // Initialize audio element (same as before)
+  // CRITICAL FIX: Initialize audio element with singleton pattern
   useEffect(() => {
-    if (!audioRef.current) {
-      const audio = new Audio();
-      audio.setAttribute('playsinline', 'true');
-      audio.setAttribute('webkit-playsinline', 'true');
-      audio.preload = 'auto';
-      audio.crossOrigin = 'anonymous';
-      audio.volume = volume / 100;
-      audioRef.current = audio;
-      setAudioRef(audio);
-      console.log('🎵 Audio element created');
+    console.log('🎵 Initializing audio element');
+
+    // If global instance exists, reuse it
+    if (globalAudioInstance) {
+      console.log('♻️ Reusing existing global audio instance');
+      audioRef.current = globalAudioInstance;
+      setAudioRef(globalAudioInstance);
+      return;
     }
 
-    const audio = audioRef.current;
+    // Create new audio element (only once globally)
+    const audio = new Audio();
+    audio.setAttribute('playsinline', 'true');
+    audio.setAttribute('webkit-playsinline', 'true');
+    audio.preload = 'auto';
+    audio.crossOrigin = 'anonymous';
+    audio.volume = volume / 100;
+
+    audioRef.current = audio;
+    globalAudioInstance = audio;
+    setAudioRef(audio);
+    console.log('✅ Created new global audio instance');
 
     if (!audioContextRef.current) {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -180,6 +169,40 @@ export const useAudioPlayer = () => {
         console.log('🔊 AudioContext created');
       }
     }
+
+    return () => {
+      console.log('🧹 Audio player component unmounting (keeping global instance)');
+    };
+  }, []);
+
+  // CRITICAL FIX: Cleanup and stop old audio when song changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+
+    // If song ID changed, stop and cleanup old audio
+    if (currentSongIdRef.current && currentSongIdRef.current !== currentSong.id) {
+      console.log('🔄 Song changed, stopping old audio');
+
+      // Stop playback immediately
+      audio.pause();
+      audio.currentTime = 0;
+
+      // Clear source to prevent loading/playing
+      if (audio.src) {
+        console.log('🔇 Clearing old audio source');
+        audio.removeAttribute('src');
+        audio.load(); // Reset the audio element
+      }
+
+      previousUrlRef.current = '';
+    }
+  }, [currentSong?.id]);
+
+  // Audio event listeners
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
     const updateProgress = () => {
       if (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration)) {
@@ -200,7 +223,6 @@ export const useAudioPlayer = () => {
       }
     };
 
-    // FIX: Use native ended event instead of relying on backend duration
     const handleEnded = () => {
       console.log('🏁 Audio stream ended - playing next song');
       if (repeat) {
@@ -230,18 +252,28 @@ export const useAudioPlayer = () => {
     };
 
     const handleCanPlay = () => {
-      console.log('✅ Audio: canplay event - readyState:', audio.readyState, 'networkState:', audio.networkState);
+      console.log(
+        '✅ Audio: canplay event - readyState:',
+        audio.readyState,
+        'networkState:',
+        audio.networkState
+      );
 
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         audioContextRef.current
-        .resume()
-        .then(() => console.log('🔊 AudioContext resumed'))
-        .catch((e) => console.error('❌ AudioContext resume failed:', e));
+          .resume()
+          .then(() => console.log('🔊 AudioContext resumed'))
+          .catch((e) => console.error('❌ AudioContext resume failed:', e));
       }
     };
 
     const handlePlay = async () => {
-      console.log('▶️ Audio: play event fired - currentTime:', audio.currentTime, 'paused:', audio.paused);
+      console.log(
+        '▶️ Audio: play event fired - currentTime:',
+        audio.currentTime,
+        'paused:',
+        audio.paused
+      );
 
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         await audioContextRef.current.resume();
@@ -284,7 +316,12 @@ export const useAudioPlayer = () => {
     };
 
     const handleLoadedMetadata = () => {
-      console.log('📊 Audio: loadedmetadata - duration:', audio.duration, 'readyState:', audio.readyState);
+      console.log(
+        '📊 Audio: loadedmetadata - duration:',
+        audio.duration,
+        'readyState:',
+        audio.readyState
+      );
     };
 
     const handleLoadedData = () => {
@@ -304,8 +341,7 @@ export const useAudioPlayer = () => {
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('loadeddata', handleLoadedData);
 
-    return () => {
-      console.log('🧹 Cleaning up audio listeners');
+    globalAudioCleanup = () => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
@@ -318,6 +354,13 @@ export const useAudioPlayer = () => {
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('loadeddata', handleLoadedData);
+    };
+
+    return () => {
+      console.log('🧹 Cleaning up audio listeners');
+      if (globalAudioCleanup) {
+        globalAudioCleanup();
+      }
 
       if (wakeLockRef.current) {
         wakeLockRef.current.release();
@@ -327,7 +370,7 @@ export const useAudioPlayer = () => {
         audioContextRef.current.close();
       }
     };
-  }, [repeat, setProgress, setIsPlaying, playNextAction, setAudioRef, volume]);;
+  }, [repeat, setProgress, setIsPlaying, playNextAction, setAudioRef, volume]);
 
   useEffect(() => {
     console.log('🎮 isPlaying STATE CHANGED:', isPlaying, 'at', new Date().toISOString());
@@ -337,7 +380,12 @@ export const useAudioPlayer = () => {
   // Load stream URL helper
   const loadStreamUrl = async (streamUrl: string, shouldPlay: boolean = false) => {
     console.log('🎬 loadStreamUrl called');
-    console.log('📊 Parameters:', { streamUrl, shouldPlay, isPlaying, currentSongId: currentSongIdRef.current });
+    console.log('📊 Parameters:', {
+      streamUrl,
+      shouldPlay,
+      isPlaying,
+      currentSongId: currentSongIdRef.current,
+    });
 
     if (!audioRef.current) {
       console.error('❌ Audio ref not available');
@@ -345,6 +393,24 @@ export const useAudioPlayer = () => {
     }
 
     const audio = audioRef.current;
+
+    // CRITICAL FIX: Only update source if URL actually changed
+    if (streamUrl === previousUrlRef.current) {
+      console.log('⏭️ URL unchanged, skipping update');
+
+      // But still play if requested
+      if (shouldPlay && audio.paused) {
+        console.log('▶️ Playing existing source');
+        try {
+          await audio.play();
+          console.log('✅ Playback started successfully');
+        } catch (error) {
+          console.error('❌ Play error:', error);
+          setIsPlaying(false);
+        }
+      }
+      return;
+    }
 
     try {
       console.log('📂 Loading stream URL:', streamUrl);
@@ -357,9 +423,14 @@ export const useAudioPlayer = () => {
         networkState: audio.networkState,
       });
 
+      // CRITICAL: Stop old audio before loading new source
+      audio.pause();
+      audio.currentTime = 0;
+
       // Set the new source
       audio.src = streamUrl;
       audio.load();
+      previousUrlRef.current = streamUrl;
       console.log('✅ Audio src set and load() called');
 
       // Wait for audio to be ready
@@ -458,6 +529,7 @@ export const useAudioPlayer = () => {
       setIsPlaying(false);
     }
   };
+
   // Main song loading effect
   useEffect(() => {
     const loadAndPlaySong = async () => {
@@ -471,15 +543,23 @@ export const useAudioPlayer = () => {
         // Reset the audio src to prevent it from playing
         if (audio.src) {
           console.log('🔇 Clearing old audio source');
-          audio.src = '';
+          audio.removeAttribute('src');
+          audio.load();
+          previousUrlRef.current = '';
         }
       }
 
       if (downloadStatus) {
         downloadStatus.reset();
       }
+
       // Skip if already loading or waiting for download
-      if (!currentSong || !audioRef.current || isLoadingRef.current || isWaitingForDownloadRef.current) {
+      if (
+        !currentSong ||
+        !audioRef.current ||
+        isLoadingRef.current ||
+        isWaitingForDownloadRef.current
+      ) {
         if (isWaitingForDownloadRef.current) {
           console.log('⏳ Already waiting for download to complete...');
         }
@@ -519,7 +599,7 @@ export const useAudioPlayer = () => {
           console.log('✅ File already cached, streaming immediately...');
           setIsDownloading(false);
           console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-          isWaitingForDownloadRef.current = false
+          isWaitingForDownloadRef.current = false;
 
           if (streamInfo.quality) setActualQuality(streamInfo.quality);
           if (streamInfo.duration) setSongDuration(streamInfo.duration);
@@ -539,7 +619,7 @@ export const useAudioPlayer = () => {
           setIsDownloading(true);
           setDownloadProgress(0);
           console.log('🔒 Setting isWaitingForDownloadRef to TRUE');
-          isWaitingForDownloadRef.current = true // Start waiting for download
+          isWaitingForDownloadRef.current = true;
 
           const downloadResponse = await musicApi.triggerDownload(songObj.id || '', quality);
 
@@ -548,7 +628,7 @@ export const useAudioPlayer = () => {
             console.log('✅ File became ready during request (race condition)');
             setIsDownloading(false);
             console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-            isWaitingForDownloadRef.current = false
+            isWaitingForDownloadRef.current = false;
 
             if (downloadResponse.quality) setActualQuality(downloadResponse.quality);
             if (downloadResponse.duration) setSongDuration(downloadResponse.duration);
@@ -571,9 +651,6 @@ export const useAudioPlayer = () => {
           } else {
             // Download started, wait for SSE onReady callback
             console.log('📡 Download started, waiting for SSE ready event...');
-
-            // loadStreamUrl(`${API_BASE_URL}/music/stream/${songObj.id}?api-key=${apiKey}${quality ? `&quality=${quality}` : ''}`, false)
-            // Don't call loadStreamUrl here - let onReady handle it
           }
         }
       } catch (error) {
@@ -581,7 +658,7 @@ export const useAudioPlayer = () => {
         setIsPlaying(false);
         setIsDownloading(false);
         console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
-        isWaitingForDownloadRef.current = false
+        isWaitingForDownloadRef.current = false;
       } finally {
         isLoadingRef.current = false;
       }
@@ -591,9 +668,13 @@ export const useAudioPlayer = () => {
   }, [currentSong?.id, currentSong?.title, quality, setCurrentSong, setIsPlaying]);
 
   // Sync play/pause state
-  // Sync play/pause state
   useEffect(() => {
-    console.log('🔄 Sync playback effect triggered - isPlaying:', isPlaying, 'currentSong:', currentSong?.id);
+    console.log(
+      '🔄 Sync playback effect triggered - isPlaying:',
+      isPlaying,
+      'currentSong:',
+      currentSong?.id
+    );
 
     if (!audioRef.current || !currentSong) {
       console.log('⏭️ Skipping sync - no audio or song');
@@ -603,7 +684,10 @@ export const useAudioPlayer = () => {
     const audio = audioRef.current;
 
     const syncPlayback = async () => {
-      console.log('🔄 syncPlayback called - isWaitingForDownload:', isWaitingForDownloadRef.current);
+      console.log(
+        '🔄 syncPlayback called - isWaitingForDownload:',
+        isWaitingForDownloadRef.current
+      );
 
       // Don't sync if waiting for download - let onReady handle initial play
       if (isWaitingForDownloadRef.current) {
@@ -611,7 +695,14 @@ export const useAudioPlayer = () => {
         return;
       }
 
-      console.log('🔍 Sync check - isPlaying:', isPlaying, 'audio.paused:', audio.paused, 'audio.src:', !!audio.src);
+      console.log(
+        '🔍 Sync check - isPlaying:',
+        isPlaying,
+        'audio.paused:',
+        audio.paused,
+        'audio.src:',
+        !!audio.src
+      );
 
       if (isPlaying && audio.paused && audio.src) {
         console.log('▶️ Syncing: Playing audio (was paused)');
@@ -627,20 +718,20 @@ export const useAudioPlayer = () => {
         }
 
         audio
-        .play()
-        .then(() => {
-          console.log('✅ Sync play successful');
-          if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = 'playing';
-          }
-        })
-        .catch((e) => {
-          console.error('❌ Sync play failed:', e);
-          if (e.name === 'NotAllowedError') {
-            console.log('⚠️ Autoplay blocked by browser');
-            setIsPlaying(false);
-          }
-        });
+          .play()
+          .then(() => {
+            console.log('✅ Sync play successful');
+            if ('mediaSession' in navigator) {
+              navigator.mediaSession.playbackState = 'playing';
+            }
+          })
+          .catch((e) => {
+            console.error('❌ Sync play failed:', e);
+            if (e.name === 'NotAllowedError') {
+              console.log('⚠️ Autoplay blocked by browser');
+              setIsPlaying(false);
+            }
+          });
       } else if (!isPlaying && !audio.paused) {
         console.log('⏸️ Syncing: Pausing audio');
         console.log('📊 Audio state before pause:', {
@@ -660,7 +751,7 @@ export const useAudioPlayer = () => {
     };
 
     syncPlayback();
-  }, [isPlaying, currentSong, setIsPlaying]);;
+  }, [isPlaying, currentSong, setIsPlaying]);
 
   // Volume sync
   useEffect(() => {
@@ -678,4 +769,27 @@ export const useAudioPlayer = () => {
     songDuration,
     downloadStatus: downloadStatus.status,
   };
+};
+
+// Export cleanup function for emergency use
+export const cleanupAllAudioInstances = () => {
+  console.log('🧹 Emergency cleanup of all audio instances');
+
+  if (globalAudioCleanup) {
+    globalAudioCleanup();
+  }
+
+  if (globalAudioInstance) {
+    globalAudioInstance.pause();
+    globalAudioInstance.src = '';
+    globalAudioInstance.load();
+    globalAudioInstance = null;
+  }
+
+  // Clean up any rogue audio elements in the DOM
+  document.querySelectorAll('audio').forEach((audio) => {
+    audio.pause();
+    audio.src = '';
+    audio.remove();
+  });
 };

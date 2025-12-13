@@ -28,9 +28,18 @@ const PlayerControls: FC<PlayerControlsProps> = ({
       {onShuffle && (
         <button
           onClick={onShuffle}
-          className={`p-2 rounded-full transition-colors ${shuffle ? 'text-purple-400' : 'text-gray-400 hover:text-white'}`}
+          className={`p-2 rounded-full transition-all ${
+            shuffle
+              ? 'text-purple-400 bg-purple-500/20 filter-svg-purple'
+              : 'text-gray-400 hover:text-white hover:bg-white/10'
+          }`}
         >
-          <img src={Shuffle} alt={getAltFromPath(Shuffle)} width={20} />
+          <img
+            src={Shuffle}
+            alt={getAltFromPath(Shuffle)}
+            width={20}
+            className={shuffle ? 'filter-svg-purple' : ''}
+          />
         </button>
       )}
       <button onClick={onPrevious} className="p-3 hover:bg-white/10 rounded-full transition-colors">
@@ -62,9 +71,18 @@ const PlayerControls: FC<PlayerControlsProps> = ({
       {onRepeat && (
         <button
           onClick={onRepeat}
-          className={`p-2 rounded-full transition-colors ${repeat ? 'text-purple-400' : 'text-gray-400 hover:text-white'}`}
+          className={`p-2 rounded-full transition-all ${
+            repeat
+              ? 'text-purple-400 bg-purple-500/20 filter-svg-purple'
+              : 'text-gray-400 hover:text-white hover:bg-white/10'
+          }`}
         >
-          <img src={Repeat} alt={getAltFromPath(Repeat)} width={20} />
+          <img
+            src={Repeat}
+            alt={getAltFromPath(Repeat)}
+            width={20}
+            className={repeat ? 'filter-svg-purple' : ''}
+          />
         </button>
       )}
     </div>

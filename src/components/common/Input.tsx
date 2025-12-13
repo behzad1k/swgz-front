@@ -1,16 +1,22 @@
 import { FC, ReactNode } from 'react';
 
-
 interface InputProps {
   type?: string;
   placeholder?: string;
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   icon?: ReactNode;
   className?: string;
 }
 
-const Input: FC<InputProps> = ({ type = 'text', placeholder, value, onChange, icon, className = '' }) => {
+const Input: FC<InputProps> = ({
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  icon,
+  className = '',
+}) => {
   return (
     <div className="relative">
       {icon && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>}

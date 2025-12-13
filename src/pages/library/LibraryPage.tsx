@@ -16,10 +16,21 @@ import {
   usePlaylists,
   useRecentlyPlayed,
 } from '@hooks/selectors/useLibrarySelectors.ts';
-import { Clock, Heart, LayoutGrid, List, Music, Plus, Search, TrendingUp } from '@/assets/svg';
+import {
+  Clock,
+  Heart,
+  LayoutGrid,
+  List,
+  Music,
+  Plus,
+  Search,
+  TrendingUp,
+  User,
+} from '@/assets/svg';
 import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
 import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, useEffect, useState } from 'react';
+import { useAuthState } from '@/hooks/selectors/useAuthSelectors';
 
 const LibraryPage: FC = () => {
   // hooks
@@ -29,11 +40,12 @@ const LibraryPage: FC = () => {
   const librarySongs = useLibrarySongs();
   const isPlaying = useIsPlaying();
   const { play, setQueue } = usePlayerActions();
+  const { user } = useAuthState();
   //states
   const [songs, setSongs] = useState<Track[]>([]);
-  const [activeTab, setActiveTab] = useState<'songs' | 'playlists'>('songs');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'songs' | 'playlists'>('playlists');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [searchQuery, _setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const navigate = useNavigate();
@@ -117,49 +129,54 @@ const LibraryPage: FC = () => {
     >
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your Library</h1>
-        {activeTab === 'playlists' && (
+        <button
+          onClick={() => navigate(routes.profile.path)}
+          className={`max-h-max-h-16 flex gap-1 items-center p-2 backdrop-blur-xl transition-colors bg-gray-600 rounded-full`}
+        >
+          <span className="text-lg font-normal text-white">{user?.username}</span>
+          <img className="w-7 h-7" src={user?.avatarUrl || User} alt={getAltFromPath(User)} />
+        </button>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="w-full sm:w-96">
+          <Input
+            placeholder="Search"
+            // value={searchQuery}
+            // onChange={setSearchQuery}
+            onChange={(input) => navigate(`${routes.search.path}?query=${input}`)}
+            icon={<img src={Search} alt={getAltFromPath(Search)} width={18} />}
+          />
+        </div>
+      </div>
+      {activeTab === 'playlists' && (
+        <div className="flex justify-between w-full">
           <Button
             icon={<img src={Plus} alt={getAltFromPath(Plus)} width={18} />}
             onClick={() => navigate(buildPath(routes.createPlaylist))}
           >
             Create Playlist
           </Button>
-        )}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="w-full sm:w-96">
-          <Input
-            placeholder="Search in your library..."
-            value={searchQuery}
-            onChange={setSearchQuery}
-            icon={<img src={Search} alt={getAltFromPath(Search)} width={18} />}
-          />
+          <div className="flex bg-white/5 rounded-xl p-1">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-400'
+              }`}
+            >
+              <img src={List} alt={getAltFromPath(List)} width={18} />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-gray-400'
+              }`}
+            >
+              <img src={LayoutGrid} alt={getAltFromPath(LayoutGrid)} width={18} />
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          {activeTab === 'playlists' && (
-            <div className="flex bg-white/5 rounded-xl p-1">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-400'
-                }`}
-              >
-                <img src={List} alt={getAltFromPath(List)} width={18} />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-gray-400'
-                }`}
-              >
-                <img src={LayoutGrid} alt={getAltFromPath(LayoutGrid)} width={18} />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {quickLinks.map((link, idx) => (
           <div
