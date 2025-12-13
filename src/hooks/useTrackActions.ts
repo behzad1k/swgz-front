@@ -112,13 +112,6 @@ export const useTrackActions = () => {
     tooltip: 'Add to Playlist',
   });
 
-  const removeFromPlaylistButton = (playlistId: string, songId: string): TrackAction => ({
-    alt: getAltFromPath(Plus) || '',
-    icon: ListMinus,
-    onClick(_track: Track, _e: React.MouseEvent): void {},
-    tooltip: 'Remove From Playlist',
-  });
-
   const likeSong = useCallback(
     (song: Track): TrackAction => {
       const isLiked = song.id != undefined && likedSongs.map((e) => e.songId).includes(song.id);

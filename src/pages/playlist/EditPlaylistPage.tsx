@@ -10,7 +10,6 @@ import { Playlist, Track } from '@/types/models.ts';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { routes } from '@/config/routes.config';
 import { useIsPlaying } from '@/hooks/selectors/usePlayerSelectors';
-import { TrackAction } from '@/types/global';
 
 const EditPlaylistPage: FC = () => {
   const { id } = useParams();
@@ -21,11 +20,8 @@ const EditPlaylistPage: FC = () => {
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isPlaying = useIsPlaying();
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     items: songs,
@@ -33,7 +29,6 @@ const EditPlaylistPage: FC = () => {
     handleDragStart,
     handleDragOver,
     handleDrop,
-    handleDragEnd,
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,

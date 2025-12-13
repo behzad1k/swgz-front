@@ -1,7 +1,7 @@
 // src/components/music/SongItem.tsx
 import { getAltFromPath } from '@utils/helpers';
 import { FC } from 'react';
-import { MoveVertical, X } from '@/assets/svg';
+import { MoveVertical } from '@/assets/svg';
 import { Track } from '@/types/models';
 import { TrackAction } from '@/types/global';
 
@@ -17,7 +17,6 @@ interface SongItemProps {
   onDragStart?: (e: React.DragEvent, index: number) => void;
   onDragOver?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent, index: number) => void;
-  onRemove?: (songId: string) => void;
   showDragHandle?: boolean;
 
   // Touch events for mobile
@@ -37,7 +36,6 @@ const SongItem: FC<SongItemProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
-  onRemove,
   showDragHandle = false,
   onTouchStart,
   onTouchMove,
