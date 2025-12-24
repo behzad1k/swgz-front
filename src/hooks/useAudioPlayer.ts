@@ -19,12 +19,17 @@ let globalAudioCleanup: (() => void) | null = null;
 
 // Global flag to force autoplay for next song (survives component re-renders)
 let globalShouldAutoPlay = false;
+// src/hooks/useAudioPlayer.ts - ONLY the iOSAudioSessionManager class
+// Replace the existing class in your useAudioPlayer.ts with this version
 
-// iOS Audio Session Manager
+// iOS Audio Session Manager - FIXED VERSION
 class iOSAudioSessionManager {
   private static instance: iOSAudioSessionManager;
   private isActive = false;
   private audioContext: AudioContext | null = null;
+  private sourceNode: MediaElementAudioSourceNode | null = null;
+  private connectedAudioElement: HTMLAudioElement | null = null;
+  private keepAliveInterval: number | null = null;
 
   static getInstance(): iOSAudioSessionManager {
     if (!this.instance) {
@@ -34,41 +39,146 @@ class iOSAudioSessionManager {
   }
 
   async activate(): Promise<void> {
-    if (this.isActive) return;
-
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
+    if (!AudioContext) {
+      console.warn('⚠️ AudioContext not available');
+      return;
+    }
 
     try {
+      // Create AudioContext if needed
       if (!this.audioContext) {
         this.audioContext = new AudioContext();
+        console.log('🔊 Created AudioContext for iOS audio session');
       }
 
+      // Resume if suspended
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume();
+        console.log('🔊 AudioContext resumed');
       }
 
       this.isActive = true;
-      console.log('🔊 iOS Audio Session activated');
+      console.log('🔊 iOS Audio Session activated, state:', this.audioContext.state);
+
+      // Start keep-alive mechanism
+      this.startKeepAlive();
     } catch (error) {
-      console.error('Failed to activate audio session:', error);
+      console.error('❌ Failed to activate audio session:', error);
+    }
+  }
+
+  async connectAudioElement(audioElement: HTMLAudioElement): Promise<void> {
+    if (!this.audioContext) {
+      console.warn('⚠️ AudioContext not initialized, activating first...');
+      await this.activate();
+      if (!this.audioContext) return;
+    }
+
+    // Don't reconnect if already connected to this element
+    if (this.connectedAudioElement === audioElement && this.sourceNode) {
+      console.log('🔗 Audio element already connected');
+      return;
+    }
+
+    try {
+      // Disconnect previous source if exists
+      if (this.sourceNode) {
+        this.sourceNode.disconnect();
+        this.sourceNode = null;
+      }
+
+      // Create source node from audio element
+      this.sourceNode = this.audioContext.createMediaElementSource(audioElement);
+
+      // CRITICAL: Connect source to destination for iOS background playback
+      this.sourceNode.connect(this.audioContext.destination);
+
+      this.connectedAudioElement = audioElement;
+
+      console.log('🔗 Audio element connected to AudioContext for background playback');
+
+      // Ensure context is running
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+    } catch (error) {
+      // This error is expected if we try to create multiple sources from same element
+      // Just log and continue
+      console.log('ℹ️ Audio element connection note:', error);
     }
   }
 
   async ensureActive(): Promise<void> {
-    if (this.audioContext?.state === 'suspended') {
-      await this.audioContext.resume();
+    if (!this.audioContext) {
+      console.log('⚠️ AudioContext not created, activating...');
+      await this.activate();
+      return;
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      console.log('🔊 AudioContext suspended, resuming...');
+      try {
+        await this.audioContext.resume();
+        console.log('✅ AudioContext resumed, state:', this.audioContext.state);
+      } catch (error) {
+        console.error('❌ Failed to resume AudioContext:', error);
+      }
+    }
+  }
+
+  private startKeepAlive(): void {
+    // Clear existing interval
+    if (this.keepAliveInterval) {
+      clearInterval(this.keepAliveInterval);
+    }
+
+    // Keep AudioContext alive by checking and resuming every 2 seconds
+    this.keepAliveInterval = window.setInterval(() => {
+      if (this.audioContext && this.audioContext.state === 'suspended') {
+        console.log('🔄 Keep-alive: Resuming suspended AudioContext');
+        this.audioContext.resume().catch((err) => {
+          console.error('❌ Keep-alive resume failed:', err);
+        });
+      }
+    }, 2000);
+
+    console.log('⏰ AudioContext keep-alive started');
+  }
+
+  private stopKeepAlive(): void {
+    if (this.keepAliveInterval) {
+      clearInterval(this.keepAliveInterval);
+      this.keepAliveInterval = null;
+      console.log('⏰ AudioContext keep-alive stopped');
     }
   }
 
   async deactivate(): Promise<void> {
+    this.stopKeepAlive();
+
+    if (this.sourceNode) {
+      this.sourceNode.disconnect();
+      this.sourceNode = null;
+    }
+
     if (this.audioContext && this.audioContext.state !== 'closed') {
       await this.audioContext.close();
       this.audioContext = null;
     }
+
+    this.connectedAudioElement = null;
     this.isActive = false;
+    console.log('🔇 iOS Audio Session deactivated');
+  }
+
+  getState(): string {
+    return this.audioContext?.state || 'no-context';
   }
 }
+
+// Export for use in useAudioPlayer.ts
+export { iOSAudioSessionManager };
 
 export const useAudioPlayer = () => {
   const currentSong = useCurrentSong();

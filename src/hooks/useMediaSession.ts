@@ -13,6 +13,7 @@ export const useMediaSession = () => {
   const { togglePlay, playNext, playPrevious, seek, setProgress } = usePlayerActions();
 
   const audioRefForSeek = useRef<HTMLAudioElement | null>(null);
+  const positionUpdateIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     const audioElements = document.getElementsByTagName('audio');
@@ -21,13 +22,20 @@ export const useMediaSession = () => {
     }
   }, []);
 
+  // Set up media session metadata
   useEffect(() => {
     if (!('mediaSession' in navigator)) {
       console.warn('Media Session API not supported');
       return;
     }
 
-    if (!currentSong) return;
+    if (!currentSong) {
+      // Clear metadata when no song
+      navigator.mediaSession.metadata = null;
+      return;
+    }
+
+    console.log('🎵 Setting media session metadata for:', currentSong.title);
 
     navigator.mediaSession.metadata = new MediaMetadata({
       title: currentSong.title,
@@ -66,85 +74,126 @@ export const useMediaSession = () => {
         },
       ],
     });
+  }, [currentSong]);
 
-    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-  }, [currentSong, isPlaying]);
+  // Update playback state
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
 
+    const newState = isPlaying ? 'playing' : 'paused';
+    console.log('📻 Setting media session playback state to:', newState);
+    navigator.mediaSession.playbackState = newState;
+  }, [isPlaying]);
+
+  // CRITICAL: Update position state frequently for iOS background playback
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     if (!currentSong || !audioRefForSeek.current) return;
 
     const audio = audioRefForSeek.current;
-    // Update position state more frequently for iOS
+
+    // Clear any existing interval
+    if (positionUpdateIntervalRef.current) {
+      clearInterval(positionUpdateIntervalRef.current);
+      positionUpdateIntervalRef.current = null;
+    }
+
     const updatePositionState = () => {
-      if (
-        'setPositionState' in navigator.mediaSession &&
-        audio.duration &&
-        !isNaN(audio.duration)
-      ) {
+      if (!audio.duration || isNaN(audio.duration) || !isFinite(audio.duration)) {
+        return;
+      }
+
+      if ('setPositionState' in navigator.mediaSession) {
         try {
+          const position = Math.min(audio.currentTime, audio.duration);
+
           navigator.mediaSession.setPositionState({
             duration: audio.duration,
             playbackRate: audio.playbackRate,
-            position: Math.min(audio.currentTime, audio.duration),
+            position: position,
           });
+
+          // Only log occasionally to avoid spam
+          if (Math.floor(audio.currentTime) % 10 === 0) {
+            console.log('📍 Position state updated:', {
+              position: position.toFixed(1),
+              duration: audio.duration.toFixed(1),
+              background: document.hidden,
+            });
+          }
         } catch (error) {
           console.warn('Failed to update position state:', error);
         }
       }
     };
 
+    // Update immediately
     updatePositionState();
 
-    // Update position state every second for better iOS compatibility
-    const interval = setInterval(updatePositionState, 1000);
+    // CRITICAL: Update position every second (especially important for iOS background)
+    if (isPlaying) {
+      positionUpdateIntervalRef.current = window.setInterval(updatePositionState, 1000);
+      console.log('⏱️ Started position state updates (1s interval)');
+    }
 
-    return () => clearInterval(interval);
-  }, [currentSong, progress, isPlaying]);
+    return () => {
+      if (positionUpdateIntervalRef.current) {
+        clearInterval(positionUpdateIntervalRef.current);
+        positionUpdateIntervalRef.current = null;
+        console.log('⏱️ Stopped position state updates');
+      }
+    };
+  }, [currentSong, isPlaying]);
 
+  // Set up media session action handlers
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
+
+    console.log('🎮 Setting up media session action handlers');
 
     const actionHandlers: Array<[MediaSessionAction, MediaSessionActionHandler]> = [
       [
         'play',
         () => {
-          togglePlay();
+          console.log('📻 Media session: play');
+          if (!isPlaying) {
+            togglePlay();
+          }
         },
       ],
       [
         'pause',
         () => {
-          togglePlay();
+          console.log('📻 Media session: pause');
+          if (isPlaying) {
+            togglePlay();
+          }
         },
       ],
       [
         'previoustrack',
         () => {
+          console.log('📻 Media session: previous track');
           playPrevious();
         },
       ],
       [
         'nexttrack',
         () => {
+          console.log('📻 Media session: next track');
           playNext();
         },
       ],
       [
         'seekbackward',
         (details) => {
-          if (!audioRefForSeek.current) {
-            console.warn('No audio element available for seeking');
-            return;
-          }
+          if (!audioRefForSeek.current) return;
 
           const audio = audioRefForSeek.current;
-          const skipTime = details.seekOffset || 10; // Default 10 seconds
-
+          const skipTime = details.seekOffset || 10;
           const newTime = Math.max(0, audio.currentTime - skipTime);
 
-          console.log(`Seeking backward: ${audio.currentTime}s -> ${newTime}s`);
-
+          console.log('📻 Media session: seek backward', skipTime, 's');
           audio.currentTime = newTime;
 
           if (audio.duration) {
@@ -156,18 +205,13 @@ export const useMediaSession = () => {
       [
         'seekforward',
         (details) => {
-          if (!audioRefForSeek.current) {
-            console.warn('No audio element available for seeking');
-            return;
-          }
+          if (!audioRefForSeek.current) return;
 
           const audio = audioRefForSeek.current;
-          const skipTime = details.seekOffset || 10; // Default 10 seconds
-
+          const skipTime = details.seekOffset || 10;
           const newTime = Math.min(audio.duration, audio.currentTime + skipTime);
 
-          console.log(`Seeking forward: ${audio.currentTime}s -> ${newTime}s`);
-
+          console.log('📻 Media session: seek forward', skipTime, 's');
           audio.currentTime = newTime;
 
           if (audio.duration) {
@@ -179,23 +223,14 @@ export const useMediaSession = () => {
       [
         'seekto',
         (details) => {
-          if (!audioRefForSeek.current) {
-            console.warn('No audio element available for seeking');
-            return;
-          }
-
-          if (details.seekTime === undefined || details.seekTime === null) {
-            console.warn('No seek time provided');
-            return;
-          }
+          if (!audioRefForSeek.current) return;
+          if (details.seekTime === undefined || details.seekTime === null) return;
 
           const audio = audioRefForSeek.current;
           const seekTime = details.seekTime;
-
           const validSeekTime = Math.max(0, Math.min(audio.duration, seekTime));
 
-          console.log(`️ Seeking to: ${validSeekTime}s`);
-
+          console.log('📻 Media session: seek to', validSeekTime, 's');
           audio.currentTime = validSeekTime;
 
           if (audio.duration) {
@@ -207,11 +242,14 @@ export const useMediaSession = () => {
       [
         'stop',
         () => {
+          console.log('📻 Media session: stop');
           if (audioRefForSeek.current) {
             audioRefForSeek.current.pause();
             audioRefForSeek.current.currentTime = 0;
           }
-          togglePlay();
+          if (isPlaying) {
+            togglePlay();
+          }
         },
       ],
     ];
@@ -219,18 +257,54 @@ export const useMediaSession = () => {
     actionHandlers.forEach(([action, handler]) => {
       try {
         navigator.mediaSession.setActionHandler(action, handler);
-        console.log(`Media Session: Registered "${action}" handler`);
+        console.log(`📻 Registered "${action}" handler`);
       } catch (error) {
-        console.warn(`️ Media Session: Action "${action}" not supported`, error);
+        console.warn(`️ Action "${action}" not supported`, error);
       }
     });
 
     return () => {
+      console.log('🧹 Cleaning up media session handlers');
       actionHandlers.forEach(([action]) => {
         try {
           navigator.mediaSession.setActionHandler(action, null);
-        } catch (error) {}
+        } catch (error) {
+          // Ignore
+        }
       });
     };
-  }, [togglePlay, playNext, playPrevious, seek, setProgress]);
+  }, [togglePlay, playNext, playPrevious, setProgress, isPlaying]);
+
+  // CRITICAL: Handle visibility changes to keep session active
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!('mediaSession' in navigator)) return;
+
+      if (document.hidden && isPlaying) {
+        console.log('📻 Background: Ensuring media session stays playing');
+        navigator.mediaSession.playbackState = 'playing';
+
+        // Update position state to keep session alive
+        if (audioRefForSeek.current && audioRefForSeek.current.duration) {
+          try {
+            navigator.mediaSession.setPositionState({
+              duration: audioRefForSeek.current.duration,
+              playbackRate: audioRefForSeek.current.playbackRate,
+              position: audioRefForSeek.current.currentTime,
+            });
+          } catch (error) {
+            console.warn('Failed to update position on background:', error);
+          }
+        }
+      } else if (!document.hidden) {
+        console.log('📻 Foreground: Media session state:', navigator.mediaSession.playbackState);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isPlaying]);
 };
