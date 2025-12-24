@@ -144,13 +144,15 @@ export const usePlayerActions = () => {
       console.log('🎵 Next song:', nextSong.title);
 
       dispatch({ type: PlayerActionKeys.SET_QUEUE, payload: remainingQueue });
+      console.log('heeeeeere');
+      play(nextSong);
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          console.log('▶️ Playing:', nextSong.title);
-          play(nextSong);
-        });
-      });
+      // requestAnimationFrame(() => {
+      //   requestAnimationFrame(() => {
+      //     console.log('▶️ Playing:', nextSong.title);
+      //     play(nextSong);
+      //   });
+      // });
     } else {
       console.log('⏹️ Queue empty, stopping playback');
       setIsPlaying(false);
