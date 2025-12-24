@@ -17,6 +17,9 @@ import { useDownloadStatus } from './useDownloadStatus';
 let globalAudioInstance: HTMLAudioElement | null = null;
 let globalAudioCleanup: (() => void) | null = null;
 
+// Global flag to force autoplay for next song (survives component re-renders)
+let globalShouldAutoPlay = false;
+
 // iOS Audio Session Manager
 class iOSAudioSessionManager {
   private static instance: iOSAudioSessionManager;
@@ -93,8 +96,8 @@ export const useAudioPlayer = () => {
   const repeatState = usePlayerRepeat();
   const repeatRef = useRef(repeatState);
   const queueRef = useRef(queue);
-  const isPlayingRef = useRef(isPlaying); // ADDED: Track isPlaying state
-  const currentSongRef = useRef(currentSong); // ADDED: Track current song
+  const isPlayingRef = useRef(isPlaying);
+  const currentSongRef = useRef(currentSong);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isLoadingRef = useRef(false);
@@ -105,7 +108,8 @@ export const useAudioPlayer = () => {
   const isWaitingForDownloadRef = useRef(false);
   const previousUrlRef = useRef<string>('');
   const lastPathnameRef = useRef<string | null>(null);
-  const endedEventCountRef = useRef(0); // ADDED: Prevent duplicate ended events
+  const endedEventCountRef = useRef(0);
+  const lastEndedTimeRef = useRef(0); // Track last ended event time
 
   // CRITICAL FIX: Stable refs for callbacks to prevent event listener cleanup
   const playNextActionRef = useRef(playNextAction);
@@ -150,7 +154,6 @@ export const useAudioPlayer = () => {
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
-    console.log('🎮 isPlayingRef updated to:', isPlaying);
   }, [isPlaying]);
 
   useEffect(() => {
@@ -187,7 +190,6 @@ export const useAudioPlayer = () => {
         }
 
         console.log('🎵 New stream URL after filename change:', newUrl);
-        console.log('✅ New URL available for future use:', newUrl);
       },
       onReady: (data) => {
         if (!data) {
@@ -197,7 +199,7 @@ export const useAudioPlayer = () => {
           return;
         }
 
-        console.log('✅ File ready from download (metadata update only)');
+        console.log('✅ File ready from download');
         setIsDownloading(false);
         setDownloadProgress(100);
         isWaitingForDownloadRef.current = false;
@@ -205,17 +207,14 @@ export const useAudioPlayer = () => {
         if (data.quality) setActualQuality(data.quality);
         if (data.duration) setSongDuration(data.duration);
 
-        console.log('🎵 Audio not playing yet, loading stream...');
-
         const apiKey = user?.apiKey;
         if (!apiKey) {
-          console.error('❌ No API key found in cookies');
+          console.error('❌ No API key found');
           setIsPlayingRef.current(false);
           return;
         }
 
         let fullUrl: string;
-
         if (data.streamUrl) {
           fullUrl = `${API_BASE_URL}${data.streamUrl}${data.streamUrl.includes('?') ? '&' : '?'}api-key=${apiKey}`;
         } else if (currentSongIdRef.current) {
@@ -227,13 +226,24 @@ export const useAudioPlayer = () => {
         }
 
         console.log('🎵 Stream URL from download:', fullUrl);
-        loadStreamUrl(fullUrl, shouldAutoPlayRef.current);
+
+        // Use global flag OR ref for shouldPlay
+        const shouldPlay = globalShouldAutoPlay || shouldAutoPlayRef.current;
+        console.log(
+          '🎯 onReady shouldPlay:',
+          shouldPlay,
+          '(global:',
+          globalShouldAutoPlay,
+          'ref:',
+          shouldAutoPlayRef.current,
+          ')'
+        );
+        loadStreamUrl(fullUrl, shouldPlay);
       },
       onError: (error) => {
         console.error('Download failed:', error || 'Unknown error');
         setIsDownloading(false);
         setIsPlayingRef.current(false);
-        console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
         isWaitingForDownloadRef.current = false;
       },
       onProgress: (progress) => {
@@ -246,11 +256,9 @@ export const useAudioPlayer = () => {
     }
   );
 
-  // CRITICAL FIX: Initialize audio element with singleton pattern - NO DEPENDENCIES
   useEffect(() => {
     console.log('🎵 Initializing audio element');
 
-    // If global instance exists, reuse it
     if (globalAudioInstance) {
       console.log('♻️ Reusing existing global audio instance');
       audioRef.current = globalAudioInstance;
@@ -258,7 +266,6 @@ export const useAudioPlayer = () => {
       return;
     }
 
-    // Create new audio element (only once globally)
     const audio = new Audio();
     audio.setAttribute('playsinline', 'true');
     audio.setAttribute('webkit-playsinline', 'true');
@@ -298,8 +305,8 @@ export const useAudioPlayer = () => {
     if (oldSongId && newSongId && oldSongId !== newSongId) {
       console.log('🔄 Song changed from', oldSongId, 'to', newSongId);
 
-      // Reset ended event counter for new song
       endedEventCountRef.current = 0;
+      lastEndedTimeRef.current = 0;
 
       audio.pause();
       audio.currentTime = 0;
@@ -313,7 +320,6 @@ export const useAudioPlayer = () => {
     }
   }, [currentSong?.id]);
 
-  // CRITICAL FIX: Audio event listeners - ZERO dependencies to prevent ANY re-runs
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -339,20 +345,20 @@ export const useAudioPlayer = () => {
       }
     };
 
-    // CRITICAL FIX: Enhanced handleEnded with debouncing and background handling
     const handleEnded = async () => {
-      // Prevent duplicate ended events (iOS fires this multiple times)
-      endedEventCountRef.current++;
-      const eventNumber = endedEventCountRef.current;
+      const now = Date.now();
+      const timeSinceLastEnded = now - lastEndedTimeRef.current;
 
-      console.log('🏁 Audio stream ended (event #' + eventNumber + ')');
-
-      // Only process the first ended event
-      if (eventNumber > 1) {
-        console.log('⏭️ Ignoring duplicate ended event #' + eventNumber);
+      // Debounce: ignore if less than 500ms since last ended event
+      if (timeSinceLastEnded < 500 && lastEndedTimeRef.current > 0) {
+        console.log('⏭️ Ignoring duplicate ended event (debounced)');
         return;
       }
 
+      lastEndedTimeRef.current = now;
+      endedEventCountRef.current++;
+
+      console.log('🏁 Audio stream ended (event #' + endedEventCountRef.current + ')');
       console.log('📊 Background state:', {
         documentHidden: document.hidden,
         visibilityState: document.visibilityState,
@@ -371,7 +377,6 @@ export const useAudioPlayer = () => {
         console.log('🔁 Repeat is on - restarting current song');
         audio.currentTime = 0;
 
-        // CRITICAL: Always try to play in background
         try {
           await audio.play();
           console.log('✅ Repeat play started');
@@ -380,16 +385,17 @@ export const useAudioPlayer = () => {
         }
       } else if (queueRef.current.length > 0) {
         console.log('⏭️ Playing next song from queue');
-        console.log('📊 About to call playNextAction with queue length:', queueRef.current.length);
+        console.log('📊 Queue length:', queueRef.current.length);
 
-        // CRITICAL FIX: Set shouldAutoPlayRef BEFORE calling playNext
-        // This ensures the next song will auto-play even in background
+        // CRITICAL FIX: Set GLOBAL flag to ensure next song auto-plays
+        globalShouldAutoPlay = true;
         shouldAutoPlayRef.current = true;
 
-        console.log('🎯 Setting shouldAutoPlayRef to TRUE for background playback');
+        console.log('🎯 Set globalShouldAutoPlay = TRUE for background playback');
 
-        // Small delay to allow state to settle
+        // Call playNext after a small delay to ensure state settles
         setTimeout(() => {
+          console.log('🎬 Calling playNextAction now...');
           playNextActionRef.current();
         }, 100);
       } else {
@@ -440,7 +446,6 @@ export const useAudioPlayer = () => {
         document.hidden
       );
 
-      // Activate iOS audio session
       const sessionManager = iOSAudioSessionManager.getInstance();
       await sessionManager.activate();
 
@@ -460,14 +465,12 @@ export const useAudioPlayer = () => {
 
     const handlePause = () => {
       console.log(
-        '⏸️ Audio: pause event fired - currentTime:',
+        '⏸️ Audio: pause event - currentTime:',
         audio.currentTime,
         'background:',
         document.hidden
       );
 
-      // CRITICAL: Don't release wake lock if we're in background and should be playing
-      // This prevents iOS from stopping playback
       if (!document.hidden || !isPlayingRef.current) {
         if (wakeLockRef.current) {
           wakeLockRef.current.release();
@@ -538,7 +541,7 @@ export const useAudioPlayer = () => {
     };
 
     return () => {
-      console.log('🧹 Cleaning up audio listeners - COMPONENT UNMOUNTING');
+      console.log('🧹 Cleaning up audio listeners');
       if (globalAudioCleanup) {
         globalAudioCleanup();
         globalAudioCleanup = null;
@@ -553,16 +556,15 @@ export const useAudioPlayer = () => {
 
   useEffect(() => {
     console.log('🎮 isPlaying STATE CHANGED:', isPlaying, 'at', new Date().toISOString());
-    console.trace('isPlaying changed from');
   }, [isPlaying]);
 
-  // Load stream URL helper
   const loadStreamUrl = async (streamUrl: string, shouldPlay: boolean = false) => {
     console.log('🎬 loadStreamUrl called');
     console.log('📊 Parameters:', {
       streamUrl,
       shouldPlay,
       isPlaying,
+      globalShouldAutoPlay,
       currentSongId: currentSongIdRef.current,
       background: document.hidden,
     });
@@ -574,11 +576,9 @@ export const useAudioPlayer = () => {
 
     const audio = audioRef.current;
 
-    // CRITICAL FIX: Only update source if URL actually changed
     if (streamUrl === previousUrlRef.current) {
       console.log('⏭️ URL unchanged, skipping update');
 
-      // But still play if requested
       if (shouldPlay && audio.paused) {
         console.log('▶️ Playing existing source');
         try {
@@ -594,30 +594,20 @@ export const useAudioPlayer = () => {
 
     try {
       console.log('📂 Loading stream URL:', streamUrl);
-      console.log('🎵 Should play:', shouldPlay, 'isPlaying state:', isPlaying);
-      console.log('📊 Current audio state:', {
-        src: audio.src,
-        paused: audio.paused,
-        currentTime: audio.currentTime,
-        readyState: audio.readyState,
-        networkState: audio.networkState,
-      });
+      console.log('🎵 Should play:', shouldPlay);
 
-      // CRITICAL: Stop old audio before loading new source
       audio.pause();
       audio.currentTime = 0;
 
-      // Set the new source
       audio.src = streamUrl;
       audio.load();
       previousUrlRef.current = streamUrl;
 
-      // Reset ended event counter for new source
       endedEventCountRef.current = 0;
+      lastEndedTimeRef.current = 0;
 
       console.log('✅ Audio src set and load() called');
 
-      // Wait for audio to be ready
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
           console.error('⏱️ Audio load timeout after 60s');
@@ -625,7 +615,7 @@ export const useAudioPlayer = () => {
         }, 60000);
 
         const canPlayHandler = () => {
-          console.log('✅ Audio canplay event received in promise');
+          console.log('✅ Audio canplay event received');
           clearTimeout(timeout);
           audio.removeEventListener('canplay', canPlayHandler);
           audio.removeEventListener('error', errorHandler);
@@ -633,7 +623,7 @@ export const useAudioPlayer = () => {
         };
 
         const errorHandler = (e: Event) => {
-          console.error('❌ Audio load error event in promise:', e);
+          console.error('❌ Audio load error:', e);
           clearTimeout(timeout);
           audio.removeEventListener('canplay', canPlayHandler);
           audio.removeEventListener('error', errorHandler);
@@ -645,77 +635,58 @@ export const useAudioPlayer = () => {
       });
 
       console.log('✅ Audio loaded and ready');
-      console.log('📊 Audio state after load:', {
-        paused: audio.paused,
-        currentTime: audio.currentTime,
-        readyState: audio.readyState,
-        networkState: audio.networkState,
-      });
 
-      // Resume audio context if needed
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         console.log('🔊 Resuming AudioContext...');
         await audioContextRef.current.resume();
-        console.log('✅ AudioContext resumed, state:', audioContextRef.current.state);
       }
 
-      // CRITICAL FIX: Always play if shouldPlay is true, regardless of background state
       if (shouldPlay) {
         console.log('▶️ Attempting to play audio (shouldPlay=true)...');
-        console.log('📊 Background state:', document.hidden);
-        console.log('📊 isPlaying state at play time:', isPlaying);
+        console.log('📊 Background:', document.hidden, 'isPlaying:', isPlaying);
 
         try {
           await audio.play();
           console.log('✅ Playback started successfully');
-          console.log('📊 Audio state after play:', {
-            paused: audio.paused,
-            currentTime: audio.currentTime,
-          });
+
+          // Clear the global flag after successful play
+          globalShouldAutoPlay = false;
 
           if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = 'playing';
           }
         } catch (playError: any) {
           console.error('❌ Play error:', playError);
-          console.error('❌ Play error details:', {
-            name: playError.name,
-            message: playError.message,
-            audioState: {
-              paused: audio.paused,
-              currentTime: audio.currentTime,
-              readyState: audio.readyState,
-            },
-          });
 
           if (playError.name === 'NotAllowedError') {
-            console.warn('⚠️ Autoplay blocked - user interaction required');
+            console.warn('⚠️ Autoplay blocked');
             setIsPlayingRef.current(false);
+            globalShouldAutoPlay = false;
           } else {
-            // Retry once
             console.log('🔄 Retrying play after 500ms...');
             await new Promise((resolve) => setTimeout(resolve, 500));
 
             try {
               await audio.play();
               console.log('✅ Playback started on retry');
+              globalShouldAutoPlay = false;
             } catch (retryError) {
               console.error('❌ Retry failed:', retryError);
               setIsPlayingRef.current(false);
+              globalShouldAutoPlay = false;
             }
           }
         }
       } else {
         console.log('ℹ️ Audio loaded but not auto-playing (shouldPlay = false)');
-        console.log('📊 Current isPlaying state:', isPlaying);
       }
     } catch (error) {
       console.error('❌ Failed to load stream:', error);
       setIsPlayingRef.current(false);
+      globalShouldAutoPlay = false;
     }
   };
 
-  // Main song loading effect
   useEffect(() => {
     const loadAndPlaySong = async () => {
       try {
@@ -761,7 +732,7 @@ export const useAudioPlayer = () => {
             console.log('⏳ Already loading, skipping...');
           }
           if (isWaitingForDownloadRef.current) {
-            console.log('⏳ Already waiting for download to complete...');
+            console.log('⏳ Already waiting for download...');
           }
           return;
         }
@@ -790,14 +761,13 @@ export const useAudioPlayer = () => {
 
           currentSongIdRef.current = songObj.id || null;
 
-          // CRITICAL FIX: Use shouldAutoPlayRef instead of isPlaying for background
-          // This ensures next song plays even if isPlaying state hasn't updated yet
-          const shouldAutoPlay = shouldAutoPlayRef.current || isPlaying;
+          // CRITICAL: Use global flag OR current state
+          const shouldAutoPlay = globalShouldAutoPlay || isPlaying;
           console.log(
-            '🎯 shouldAutoPlay determined:',
+            '🎯 shouldAutoPlay:',
             shouldAutoPlay,
-            '(ref:',
-            shouldAutoPlayRef.current,
+            '(global:',
+            globalShouldAutoPlay,
             'state:',
             isPlaying,
             ')'
@@ -811,7 +781,6 @@ export const useAudioPlayer = () => {
           if (streamInfo.ready && streamInfo.filePath) {
             console.log('✅ File already cached, streaming immediately...');
             setIsDownloading(false);
-            console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
             isWaitingForDownloadRef.current = false;
 
             if (streamInfo.quality) setActualQuality(streamInfo.quality);
@@ -821,6 +790,7 @@ export const useAudioPlayer = () => {
             if (!apiKey) {
               console.error('❌ No API key found');
               setIsPlayingRef.current(false);
+              globalShouldAutoPlay = false;
               return;
             }
 
@@ -830,15 +800,13 @@ export const useAudioPlayer = () => {
             console.log('⬇️ File not ready, triggering download...');
             setIsDownloading(true);
             setDownloadProgress(0);
-            console.log('🔒 Setting isWaitingForDownloadRef to TRUE');
             isWaitingForDownloadRef.current = true;
 
             const downloadResponse = await musicApi.triggerDownload(songObj.id || '', quality);
 
             if (downloadResponse.status === 'ready') {
-              console.log('✅ File became ready during request (race condition)');
+              console.log('✅ File ready (race condition)');
               setIsDownloading(false);
-              console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
               isWaitingForDownloadRef.current = false;
 
               if (downloadResponse.quality) setActualQuality(downloadResponse.quality);
@@ -848,6 +816,7 @@ export const useAudioPlayer = () => {
               if (!apiKey) {
                 console.error('❌ No API key found');
                 setIsPlayingRef.current(false);
+                globalShouldAutoPlay = false;
                 return;
               }
 
@@ -865,29 +834,27 @@ export const useAudioPlayer = () => {
           }
         } catch (error) {
           console.error('❌ Failed to load song:', error);
-          console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
           setIsPlayingRef.current(false);
           setIsDownloading(false);
-          console.log('🔓 Setting isWaitingForDownloadRef to FALSE');
           isWaitingForDownloadRef.current = false;
+          globalShouldAutoPlay = false;
         } finally {
           isLoadingRef.current = false;
           console.log('🔓 isLoadingRef set to FALSE');
         }
       } catch (outerError) {
-        console.error('❌ OUTER CATCH - Critical error in loadAndPlaySong:', outerError);
+        console.error('❌ OUTER CATCH:', outerError);
         isLoadingRef.current = false;
-        console.log('🔓 isLoadingRef set to FALSE (outer catch)');
+        globalShouldAutoPlay = false;
       }
     };
 
     loadAndPlaySong();
   }, [currentSong?.id, currentSong?.title, quality]);
 
-  // Sync play/pause state
   useEffect(() => {
     console.log(
-      '🔄 Sync playback effect triggered - isPlaying:',
+      '🔄 Sync playback effect - isPlaying:',
       isPlaying,
       'currentSong:',
       currentSong?.id,
@@ -903,11 +870,6 @@ export const useAudioPlayer = () => {
     const audio = audioRef.current;
 
     const syncPlayback = async () => {
-      console.log(
-        '🔄 syncPlayback called - isWaitingForDownload:',
-        isWaitingForDownloadRef.current
-      );
-
       if (isWaitingForDownloadRef.current) {
         console.log('⏳ Skipping playback sync - waiting for download');
         return;
@@ -924,12 +886,6 @@ export const useAudioPlayer = () => {
 
       if (isPlaying && audio.paused && audio.src) {
         console.log('▶️ Syncing: Playing audio (was paused)');
-        console.log('📊 Audio state before play:', {
-          paused: audio.paused,
-          currentTime: audio.currentTime,
-          readyState: audio.readyState,
-          networkState: audio.networkState,
-        });
 
         if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
           await audioContextRef.current.resume();
@@ -946,31 +902,25 @@ export const useAudioPlayer = () => {
           .catch((e) => {
             console.error('❌ Sync play failed:', e);
             if (e.name === 'NotAllowedError') {
-              console.log('⚠️ Autoplay blocked by browser');
+              console.log('⚠️ Autoplay blocked');
               setIsPlayingRef.current(false);
             }
           });
       } else if (!isPlaying && !audio.paused) {
         console.log('⏸️ Syncing: Pausing audio');
-        console.log('📊 Audio state before pause:', {
-          paused: audio.paused,
-          currentTime: audio.currentTime,
-          readyState: audio.readyState,
-        });
         audio.pause();
 
         if ('mediaSession' in navigator) {
           navigator.mediaSession.playbackState = 'paused';
         }
       } else {
-        console.log('ℹ️ No sync needed - states match');
+        console.log('ℹ️ No sync needed');
       }
     };
 
     syncPlayback();
   }, [isPlaying, currentSong]);
 
-  // Volume sync - apply directly to audio element
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
@@ -990,7 +940,7 @@ export const useAudioPlayer = () => {
 };
 
 export const cleanupAllAudioInstances = () => {
-  console.log('🧹 Emergency cleanup of all audio instances');
+  console.log('🧹 Emergency cleanup');
 
   if (globalAudioCleanup) {
     globalAudioCleanup();
