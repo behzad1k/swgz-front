@@ -90,6 +90,7 @@ export const useAudioPlayer = () => {
 
   const repeatState = usePlayerRepeat(); // Get current repeat state
   const repeatRef = useRef(repeatState);
+  const queueRef = useRef(queue); // ADDED: Queue ref for handleEnded
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isLoadingRef = useRef(false);
@@ -137,6 +138,11 @@ export const useAudioPlayer = () => {
   useEffect(() => {
     volumeRef.current = volume;
   }, [volume]);
+
+  // ADDED: Keep queue ref updated
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
 
   // Download status tracking
   const downloadStatus = useDownloadStatus(
@@ -323,17 +329,19 @@ export const useAudioPlayer = () => {
         }
       }
     };
-    // Then in the audio event listeners useEffect, update handleEnded:
+
+    // FIXED: Use refs instead of closures for handleEnded
     const handleEnded = async () => {
       console.log('🏁 Audio stream ended');
       console.log('📊 State Check:', {
-        repeat: repeat,
-        queueLength: queue.length,
+        repeat: repeatRef.current, // FIXED: Use ref
+        queueLength: queueRef.current.length, // FIXED: Use ref
         currentSong: currentSong?.title,
         isPlaying: isPlaying,
       });
 
-      if (repeat) {
+      if (repeatRef.current) {
+        // FIXED: Use ref
         console.log('🔁 Repeat is on - restarting current song');
         audio.currentTime = 0;
         try {
@@ -343,8 +351,8 @@ export const useAudioPlayer = () => {
         }
       } else {
         console.log('⏭️ Playing next song from queue');
-        console.log('📊 About to call playNextAction with queue length:', queue.length);
-        playNextAction();
+        console.log('📊 About to call playNextAction with queue length:', queueRef.current.length); // FIXED: Use ref
+        playNextActionRef.current(); // Use ref
       }
     };
 
