@@ -9,8 +9,7 @@ import { usePlayerActions } from '@/hooks/actions/usePlayerActions';
 export const useMediaSession = () => {
   const currentSong = useCurrentSong();
   const isPlaying = useIsPlaying();
-  const progress = usePlayerProgress();
-  const { togglePlay, playNext, playPrevious, seek, setProgress } = usePlayerActions();
+  const { togglePlay, playNext, playPrevious, setProgress } = usePlayerActions();
 
   const audioRefForSeek = useRef<HTMLAudioElement | null>(null);
   const positionUpdateIntervalRef = useRef<number | null>(null);

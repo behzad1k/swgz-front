@@ -25,7 +25,6 @@ let globalShouldAutoPlay = false;
 // iOS Audio Session Manager - FIXED VERSION
 class iOSAudioSessionManager {
   private static instance: iOSAudioSessionManager;
-  private isActive = false;
   private audioContext: AudioContext | null = null;
   private sourceNode: MediaElementAudioSourceNode | null = null;
   private connectedAudioElement: HTMLAudioElement | null = null;
