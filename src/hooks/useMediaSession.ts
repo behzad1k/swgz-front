@@ -75,7 +75,6 @@ export const useMediaSession = () => {
     if (!currentSong || !audioRefForSeek.current) return;
 
     const audio = audioRefForSeek.current;
-    console.log('dur', audio.duration);
     // Update position state more frequently for iOS
     const updatePositionState = () => {
       if (

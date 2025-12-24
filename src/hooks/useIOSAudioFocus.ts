@@ -22,7 +22,8 @@ export const useIOSAudioFocus = () => {
               title: currentMetadata.title,
               artist: currentMetadata.artist,
               album: currentMetadata.album,
-              // artwork: currentMetadata.artwork,
+              // @ts-ignore
+              artwork: currentMetadata.artwork,
             });
           }
         }
