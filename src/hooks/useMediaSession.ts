@@ -1,9 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  useCurrentSong,
-  useIsPlaying,
-  usePlayerProgress,
-} from '@/hooks/selectors/usePlayerSelectors';
+import { useCurrentSong, useIsPlaying } from '@/hooks/selectors/usePlayerSelectors';
 import { usePlayerActions } from '@/hooks/actions/usePlayerActions';
 
 export const useMediaSession = () => {
