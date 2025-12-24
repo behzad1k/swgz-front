@@ -1,11 +1,10 @@
 import { useIsActive, useNavigate } from '@/router';
 import { useIsPlaying } from '@hooks/selectors/usePlayerSelectors.ts';
-import { Search, Library, User } from '@/assets/svg';
+import { Library, User } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
 
 const Navigation = () => {
   const navigate = useNavigate();
-  const isSearchActive = useIsActive('/search');
   const isLibraryActive = useIsActive('/library');
   const isProfileActive = useIsActive('/profile');
   const isMusicPlaying = useIsPlaying();

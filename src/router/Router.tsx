@@ -1,4 +1,13 @@
-import { FC, ReactNode, createContext, useEffect, useState, useCallback, useRef } from 'react';
+import {
+  FC,
+  ReactNode,
+  createContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
 
 export interface RouterContextType {
   currentPath: string;
@@ -22,121 +31,117 @@ interface RouterProps {
   children: ReactNode;
 }
 
+// CRITICAL FIX: Single state object to prevent multiple re-renders
+interface RouterState {
+  currentPath: string;
+  params: Record<string, string>;
+  query: Record<string, string>;
+}
+
 const MAX_HISTORY = 50;
 
-export const Router: FC<RouterProps> = ({ children }) => {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const [params, setParams] = useState<Record<string, string>>({});
-  const [query, setQuery] = useState<Record<string, string>>({});
-  const [renderKey, setRenderKey] = useState(0);
+const parseQuery = (search: string): Record<string, string> => {
+  const params = new URLSearchParams(search);
+  const query: Record<string, string> = {};
 
-  // Use refs to track navigation state
+  params.forEach((value, key) => {
+    try {
+      query[key] = value === '' ? '' : decodeURIComponent(value);
+    } catch {
+      query[key] = value;
+    }
+  });
+
+  return query;
+};
+
+export const Router: FC<RouterProps> = ({ children }) => {
+  // CRITICAL FIX: Single state object instead of 4 separate states
+  const [routerState, setRouterState] = useState<RouterState>(() => ({
+    currentPath: window.location.pathname,
+    params: {},
+    query: parseQuery(window.location.search),
+  }));
+
+  // Use refs to prevent navigation loops
   const isNavigatingRef = useRef(false);
   const lastPathRef = useRef(window.location.pathname);
-  const lastQueryRef = useRef(window.location.search);
+  const lastSearchRef = useRef(window.location.search);
 
-  const parseQuery = useCallback((search: string): Record<string, string> => {
-    const params = new URLSearchParams(search);
-    const query: Record<string, string> = {};
-
-    params.forEach((value, key) => {
-      // Handle empty values
-      if (value === '') {
-        query[key] = '';
-        return;
-      }
-
-      // Decode URI components
-      try {
-        query[key] = decodeURIComponent(value);
-      } catch {
-        query[key] = value; // Fallback if decode fails
-      }
-    });
-
-    return query;
-  }, []);
-
-  // Force update helper
-  const forceUpdate = useCallback(() => {
-    setRenderKey((prev) => prev + 1);
-  }, []);
-
-  // Update route state helper
+  // CRITICAL FIX: Single update function that batches all state changes
   const updateRouteState = useCallback(() => {
     const newPath = window.location.pathname;
     const newSearch = window.location.search;
 
-    // Check if path or query actually changed
-    const pathChanged = newPath !== lastPathRef.current;
-    const queryChanged = newSearch !== lastQueryRef.current;
-
-    if (pathChanged || queryChanged) {
-      lastPathRef.current = newPath;
-      lastQueryRef.current = newSearch;
-
-      setCurrentPath(newPath);
-      setQuery(parseQuery(newSearch));
-      forceUpdate(); // Force re-render to ensure route components update
+    // Only update if something actually changed
+    if (newPath === lastPathRef.current && newSearch === lastSearchRef.current) {
+      return;
     }
-  }, [parseQuery, forceUpdate]);
+
+    lastPathRef.current = newPath;
+    lastSearchRef.current = newSearch;
+
+    // Single state update instead of 3-4 separate updates
+    setRouterState((prev) => {
+      const newQuery = parseQuery(newSearch);
+
+      // Only update if values actually changed
+      if (prev.currentPath === newPath && JSON.stringify(prev.query) === JSON.stringify(newQuery)) {
+        return prev;
+      }
+
+      return {
+        currentPath: newPath,
+        params: prev.params, // Keep existing params, will be updated by Route component
+        query: newQuery,
+      };
+    });
+  }, []);
 
   // Initialize on mount
   useEffect(() => {
-    const initialPath = window.location.pathname;
-    const initialSearch = window.location.search;
-
-    lastPathRef.current = initialPath;
-    lastQueryRef.current = initialSearch;
-
-    setCurrentPath(initialPath);
-    setQuery(parseQuery(initialSearch));
-
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    if (isStandalone) {
-      forceUpdate();
-    }
-  }, [parseQuery, forceUpdate]);
+    updateRouteState();
+  }, [updateRouteState]);
 
   const navigate = useCallback(
     (path: string | number, options: NavigateOptions = {}) => {
+      // Prevent concurrent navigation
       if (isNavigatingRef.current) return;
+
+      if (typeof path === 'number') {
+        window.history.go(path);
+        return;
+      }
+
+      // Prevent duplicate navigation
+      const targetPath = path.split('?')[0];
+      const targetSearch = path.includes('?') ? `?${path.split('?')[1]}` : '';
+
+      if (targetPath === lastPathRef.current && targetSearch === lastSearchRef.current) {
+        return;
+      }
 
       isNavigatingRef.current = true;
 
-      requestAnimationFrame(() => {
-        try {
-          if (typeof path === 'number') {
-            window.history.go(path);
-            return;
-          }
-
-          // Prevent duplicate navigation
-          const targetPath = path.split('?')[0];
-          const targetSearch = path.includes('?') ? path.split('?')[1] : '';
-
-          if (
-            targetPath === lastPathRef.current &&
-            targetSearch === lastQueryRef.current.slice(1)
-          ) {
-            return;
-          }
-
-          if (window.history.length > MAX_HISTORY) {
-            options.replace = true;
-          }
-
-          if (options.replace) {
-            window.history.replaceState(options.state || {}, '', path);
-          } else {
-            window.history.pushState(options.state || {}, '', path);
-          }
-
-          updateRouteState();
-        } finally {
-          isNavigatingRef.current = false;
+      try {
+        // Limit history size
+        if (window.history.length > MAX_HISTORY) {
+          options.replace = true;
         }
-      });
+
+        if (options.replace) {
+          window.history.replaceState(options.state || {}, '', path);
+        } else {
+          window.history.pushState(options.state || {}, '', path);
+        }
+
+        updateRouteState();
+      } finally {
+        // Allow next navigation
+        setTimeout(() => {
+          isNavigatingRef.current = false;
+        }, 0);
+      }
     },
     [updateRouteState]
   );
@@ -156,30 +161,32 @@ export const Router: FC<RouterProps> = ({ children }) => {
     [navigate]
   );
 
-  const setParamsMemoized = useCallback((newParams: Record<string, string>) => {
-    setParams((prevParams) => {
+  // CRITICAL FIX: Optimized setParams that doesn't trigger update if params haven't changed
+  const setParams = useCallback((newParams: Record<string, string>) => {
+    setRouterState((prev) => {
       // Only update if params actually changed
-      if (JSON.stringify(prevParams) !== JSON.stringify(newParams)) {
-        return newParams;
+      if (JSON.stringify(prev.params) === JSON.stringify(newParams)) {
+        return prev;
       }
-      return prevParams;
+
+      return {
+        ...prev,
+        params: newParams,
+      };
     });
   }, []);
 
-  // Handle popstate (back/forward)
+  // Handle browser navigation (back/forward)
   useEffect(() => {
     const handlePopState = () => {
       updateRouteState();
     };
 
     window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
+    return () => window.removeEventListener('popstate', handlePopState);
   }, [updateRouteState]);
 
-  // Handle bfcache restoration (iOS)
+  // Handle bfcache restoration (iOS Safari)
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
@@ -188,69 +195,32 @@ export const Router: FC<RouterProps> = ({ children }) => {
     };
 
     window.addEventListener('pageshow', handlePageShow);
-
-    return () => {
-      window.removeEventListener('pageshow', handlePageShow);
-    };
+    return () => window.removeEventListener('pageshow', handlePageShow);
   }, [updateRouteState]);
 
-  // Handle hash changes
-  useEffect(() => {
-    const handleHashChange = () => {
-      updateRouteState();
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, [updateRouteState]);
-
-  // Handle online/offline
-  useEffect(() => {
-    const handleOnline = () => {
-      updateRouteState();
-    };
-
-    window.addEventListener('online', handleOnline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-    };
-  }, [updateRouteState]);
-
-  // Android back button
-  useEffect(() => {
-    const handleBackButton = (e: Event) => {
-      if (window.history.length > 1) {
-        e.preventDefault();
-        window.history.back();
-      }
-    };
-
-    window.addEventListener('backbutton', handleBackButton);
-
-    return () => {
-      window.removeEventListener('backbutton', handleBackButton);
-    };
-  }, []);
-
-  return (
-    <RouterContext.Provider
-      value={{
-        currentPath,
-        params,
-        query,
-        navigate,
-        back,
-        forward,
-        replace,
-        setParams: setParamsMemoized,
-      }}
-      key={renderKey}
-    >
-      {children}
-    </RouterContext.Provider>
+  // CRITICAL FIX: Memoize context value to prevent unnecessary re-renders of consumers
+  const contextValue = useMemo(
+    () => ({
+      currentPath: routerState.currentPath,
+      params: routerState.params,
+      query: routerState.query,
+      navigate,
+      back,
+      forward,
+      replace,
+      setParams,
+    }),
+    [
+      routerState.currentPath,
+      routerState.params,
+      routerState.query,
+      navigate,
+      back,
+      forward,
+      replace,
+      setParams,
+    ]
   );
+
+  return <RouterContext.Provider value={contextValue}>{children}</RouterContext.Provider>;
 };

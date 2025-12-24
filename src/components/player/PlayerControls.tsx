@@ -50,14 +50,9 @@ const PlayerControls: FC<PlayerControlsProps> = ({
         className="p-4 bg-white rounded-full hover:scale-110 transition-transform shadow-lg"
       >
         {isPlaying ? (
-          <img
-            src={Pause}
-            alt={getAltFromPath(Pause)}
-            width={28}
-            className="stroke-black fill-black"
-          />
+          <img src={Pause} alt={getAltFromPath(Pause)} width={28} className="filter-svg-black" />
         ) : (
-          <img src={Play} alt={getAltFromPath(Play)} width={28} className="" />
+          <img src={Play} alt={getAltFromPath(Play)} width={28} className="filter-svg-black" />
         )}
       </button>
       <button onClick={onNext} className="p-3 hover:bg-white/10 rounded-full transition-colors">

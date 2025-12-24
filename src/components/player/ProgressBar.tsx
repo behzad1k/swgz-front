@@ -14,7 +14,6 @@ const ProgressBar: FC<ProgressBarProps> = ({ progress, duration, onSeek }) => {
   };
 
   const currentTime = (progress / 100) * duration;
-
   return (
     <div className="w-full space-y-2">
       <input
@@ -27,7 +26,7 @@ const ProgressBar: FC<ProgressBarProps> = ({ progress, duration, onSeek }) => {
       />
       <div className="flex justify-between text-sm text-gray-400">
         <span>{formatTime(currentTime)}</span>
-        <span>{formatTime(duration)}</span>
+        <span>{duration > 0 ? formatTime(duration) : '--:--'}</span>
       </div>
     </div>
   );

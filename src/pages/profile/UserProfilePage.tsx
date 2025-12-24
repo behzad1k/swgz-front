@@ -29,7 +29,7 @@ const UserProfilePage: FC = () => {
     setLoading(true);
     try {
       const data = await profileApi.getProfile(user);
-      setProfile(data as UserProfile);
+      setProfile(data.profile);
       // TODO: Check if currently stalking this user
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -101,7 +101,7 @@ const UserProfilePage: FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold text-white">{profile.username}</h1>
-                {profile.subscriptionPlan == 'premium' && <Badge variant="warning">Premium</Badge>}
+                {profile.subscriptionPlan == 'maxx' && <Badge variant="warning">maxx</Badge>}
                 <Button
                   size="sm"
                   variant={isStalkeding ? 'secondary' : 'primary'}

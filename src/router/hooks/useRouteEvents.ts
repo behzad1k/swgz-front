@@ -45,7 +45,7 @@ export const useSearchParam = (key: string): string | null => {
 };
 
 /**
- * Hook to set search params - supports multiple params
+ * CRITICAL FIX: Optimized hook to set search params
  * Usage:
  *   setSearchParams({ tab: 'songs', filter: 'recent' })
  *   setSearchParams({ tab: 'songs' }, { replace: true })
@@ -77,9 +77,13 @@ export const useSetSearchParams = () => {
       // Build search string
       const searchParams = new URLSearchParams(baseQuery);
       const searchString = searchParams.toString();
-      const newPath = searchString ? `${currentPath}?${searchString}` : currentPath;
 
-      navigate(newPath, { replace });
+      // CRITICAL FIX: Only navigate if search params actually changed
+      const currentSearch = new URLSearchParams(query).toString();
+      if (searchString !== currentSearch) {
+        const newPath = searchString ? `${currentPath}?${searchString}` : currentPath;
+        navigate(newPath, { replace });
+      }
     },
     [navigate, currentPath, query]
   );
@@ -111,13 +115,16 @@ export const useRemoveSearchParams = () => {
  * Hook to clear all search params
  */
 export const useClearSearchParams = () => {
-  const { navigate, currentPath } = useRouter();
+  const { navigate, currentPath, query } = useRouter();
 
   return useCallback(
     (options?: { replace?: boolean }) => {
-      navigate(currentPath, { replace: options?.replace });
+      // Only navigate if there are actually params to clear
+      if (Object.keys(query).length > 0) {
+        navigate(currentPath, { replace: options?.replace });
+      }
     },
-    [navigate, currentPath]
+    [navigate, currentPath, query]
   );
 };
 

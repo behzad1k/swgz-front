@@ -19,7 +19,7 @@ const EditProfilePage: FC = () => {
     try {
       // TODO: Get current user's profile
       const data = await profileApi.getProfile('me');
-      setProfile(data as UserProfile);
+      setProfile(data.profile);
     } catch (error) {
       console.error('Error loading profile:', error);
     }
@@ -52,7 +52,10 @@ const EditProfilePage: FC = () => {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Edit Profile</h1>
-          <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-white transition-colors">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
             <img src={X} alt={getAltFromPath(X)} width={28} />
           </button>
         </div>

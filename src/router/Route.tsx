@@ -9,30 +9,33 @@ interface RouteProps {
 }
 
 export const Route: FC<RouteProps> = ({ path, element, exact = false }) => {
-  const { currentPath, setParams } = useRouter();
-  const prevMatchRef = useRef<string>('');
+  const { currentPath, setParams, params: currentParams } = useRouter();
+  const prevParamsRef = useRef<string>('');
 
   // Memoize the match result
   const match = useMemo(() => {
-    const result = matchPath(path, currentPath, exact);
-    return result;
+    return matchPath(path, currentPath, exact);
   }, [path, currentPath, exact]);
 
-  // Update params when match changes
+  // CRITICAL FIX: Only update params if they actually changed
   useEffect(() => {
     if (match && match.params) {
-      const matchKey = `${currentPath}-${JSON.stringify(match.params)}`;
+      const paramsString = JSON.stringify(match.params);
 
-      // Only update if match actually changed
-      if (prevMatchRef.current !== matchKey) {
-        prevMatchRef.current = matchKey;
-        setParams(match.params);
+      // Only update if params actually changed
+      if (prevParamsRef.current !== paramsString) {
+        prevParamsRef.current = paramsString;
+
+        // Additional check: only update if different from current params
+        if (JSON.stringify(currentParams) !== paramsString) {
+          setParams(match.params);
+        }
       }
-    } else if (!match) {
+    } else if (!match && prevParamsRef.current !== '') {
       // Clear params when route doesn't match
-      prevMatchRef.current = '';
+      prevParamsRef.current = '';
     }
-  }, [match, currentPath, setParams]);
+  }, [match, setParams, currentParams]);
 
   if (!match) {
     return null;

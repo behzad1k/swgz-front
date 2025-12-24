@@ -17,9 +17,11 @@ import {
   useSongDuration,
 } from '@hooks/selectors/usePlayerSelectors.ts';
 import { useTrackActions } from '@hooks/useTrackActions.ts';
-import { ChevronDown } from '@/assets/svg';
+import { ChevronDown, RefreshCcw } from '@/assets/svg';
 import { getAltFromPath } from '@utils/helpers.ts';
 import { FC, memo, useState, useRef, useEffect } from 'react';
+import { useQueueManager } from '@/hooks/useQueueManager';
+import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 
 type SheetState = 'nano' | 'mini' | 'full';
 
@@ -34,6 +36,7 @@ const NowPlayingSheet: FC = () => {
   const lastClickTime = useRef(0);
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  const { songDuration } = useAudioPlayer();
   const user = useCurrentUser();
   const {
     seek,
@@ -46,7 +49,7 @@ const NowPlayingSheet: FC = () => {
     toggleShuffle,
     toggleRepeat,
   } = usePlayerActions();
-  const isPremium = user?.subscriptionPlan === 'premium';
+  const isPremium = user?.subscriptionPlan === 'maxx';
 
   // hooks
   const repeat = usePlayerRepeat();
@@ -59,7 +62,11 @@ const NowPlayingSheet: FC = () => {
   const currentSong = useCurrentSong();
   const isPlaying = useIsPlaying();
   const { likeSong, librarySong, addToQueueButton, addToPlaylistButton } = useTrackActions();
+  const { fillQueue } = useQueueManager();
 
+  const retrieveQueue = () => {
+    fillQueue();
+  };
   // Check if desktop
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
@@ -379,7 +386,7 @@ const NowPlayingSheet: FC = () => {
             <div className="px-6 mb-6">
               <ProgressBar
                 progress={progress}
-                duration={duration || currentSong.duration || 666}
+                duration={songDuration || duration || currentSong.duration || 0}
                 onSeek={seek}
               />
             </div>
@@ -433,7 +440,18 @@ const NowPlayingSheet: FC = () => {
 
             {/* Queue */}
             <div className="px-6">
-              <h3 className="text-xl font-bold text-white mb-4">Up Next</h3>
+              <div className="flex justify-between w-full items-center mb-6">
+                <h3 className="text-xl font-bold text-white">Up Next</h3>
+                <div className="border-white flex gap-2 items-center" onClick={retrieveQueue}>
+                  <img
+                    src={RefreshCcw}
+                    alt={getAltFromPath(RefreshCcw)}
+                    width={20}
+                    className="stroke-black fill-black"
+                  />
+                  <span className="text-white">Similiar Songs</span>
+                </div>
+              </div>
               <QueueList queue={queue} onPlay={play} />
             </div>
           </div>
@@ -460,7 +478,7 @@ const DesktopNowPlaying: FC = () => {
   } = usePlayerActions();
 
   const user = useCurrentUser();
-  const isPremium = user?.subscriptionPlan === 'premium';
+  const isPremium = user?.subscriptionPlan === 'maxx';
 
   // hooks
   const repeat = usePlayerRepeat();

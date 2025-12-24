@@ -22,7 +22,6 @@ const PlaylistDetailPage: FC = () => {
   const { play, setQueue, setShuffle } = usePlayerActions();
   const isPlaying = useIsPlaying();
 
-  // Determine if this playlist is editable (only user-created playlists)
   const isEditable = playlist?.isEditable ?? false;
   const isDefaultPlaylist = !!playlistProp;
 
@@ -32,7 +31,6 @@ const PlaylistDetailPage: FC = () => {
   };
 
   useEffect(() => {
-    // If playlist prop is provided, use it (for default playlists)
     if (playlistProp) {
       setPlaylist(playlistProp);
       setSongs(playlistProp.songs.map((playlistSong) => playlistSong.song) || []);
@@ -40,7 +38,6 @@ const PlaylistDetailPage: FC = () => {
       return;
     }
 
-    // Otherwise, load from API (for user-created playlists)
     if (slug) {
       loadPlaylist(slug);
     }
@@ -75,8 +72,12 @@ const PlaylistDetailPage: FC = () => {
 
   const handleShuffle = () => {
     if (songs.length) {
-      setShuffle(true);
-      onPlay(songs[0]);
+      const firstSong = songs[Math.floor(Math.random() * songs.length)];
+      setShuffle(
+        true,
+        songs.filter((e) => e.id != firstSong.id)
+      );
+      play(firstSong);
     }
   };
 

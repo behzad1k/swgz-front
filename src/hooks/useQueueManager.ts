@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { musicApi } from '@api/music.api';
 import { Track } from '@/types/models';
-import { usePlayerProgress, useIsPlaying, useQueue, useCurrentSong } from './selectors/usePlayerSelectors';
+import {
+  usePlayerProgress,
+  useIsPlaying,
+  useQueue,
+  useCurrentSong,
+} from './selectors/usePlayerSelectors';
 import { usePlayerActions } from './actions/usePlayerActions';
 
 export const useQueueManager = () => {
@@ -15,45 +20,46 @@ export const useQueueManager = () => {
   const isPreparingNextRef = useRef(false);
   const preparedNextSongRef = useRef<Track | null>(null);
 
-    useEffect(() => {
-    const fillQueueIfEmpty = async () => {
-      if (
-        isPlaying &&
-        progress > 10 &&
-        progress < 11 &&
-        queue.length === 0 &&
-        !isFetchingSimilarRef.current &&
-        currentSong?.id
-      ) {
-        console.log('Progress at 10% - Fetching similar tracks...');
-        isFetchingSimilarRef.current = true;
+  const fillQueue = async () => {
+    if (!currentSong?.id) return;
+    try {
+      const similarTracks = await musicApi.getSimilarTracks(currentSong.id);
+      console.log('Similar tracks fetched:', similarTracks.length);
+      setQueue(similarTracks);
+    } catch (error) {
+      console.error('Failed to fetch similar tracks:', error);
+    } finally {
+      isFetchingSimilarRef.current = false;
+    }
+  };
 
-        try {
-          const similarTracks = await musicApi.getSimilarTracks(currentSong.id);
-          console.log('Similar tracks fetched:', similarTracks.length);
-          setQueue(similarTracks);
-        } catch (error) {
-          console.error('Failed to fetch similar tracks:', error);
-        } finally {
-          isFetchingSimilarRef.current = false;
-        }
-      }
-    };
+  useEffect(() => {
+    if (
+      isPlaying &&
+      progress > 10 &&
+      progress < 11 &&
+      queue.length === 0 &&
+      !isFetchingSimilarRef.current &&
+      currentSong?.id
+    ) {
+      console.log('Progress at 10% - Fetching similar tracks...');
+      isFetchingSimilarRef.current = true;
 
-    fillQueueIfEmpty();
+      fillQueue();
+    }
   }, [progress, isPlaying, queue.length, currentSong?.id, setQueue]);
 
-    useEffect(() => {
+  useEffect(() => {
     const prepareNextSong = async () => {
       if (
         isPlaying &&
-        progress > 80 &&
-        progress < 81 &&
+        progress > 60 &&
+        progress < 61 &&
         !isPreparingNextRef.current &&
         queue.length > 0 &&
         currentSong?.id
       ) {
-                isPreparingNextRef.current = true;
+        isPreparingNextRef.current = true;
 
         try {
           const nextSong = queue[0];
@@ -78,7 +84,7 @@ export const useQueueManager = () => {
 
             console.log('Next song prepared:', preparedSong);
 
-                        setQueue([preparedSong, ...queue.slice(1)]);
+            setQueue([preparedSong, ...queue.slice(1)]);
             preparedNextSongRef.current = preparedSong;
           } else {
             console.log('Next song already has ID');
@@ -96,6 +102,7 @@ export const useQueueManager = () => {
   }, [progress, isPlaying, queue, currentSong?.id, setQueue]);
 
   return {
+    fillQueue,
     preparedNextSong: preparedNextSongRef.current,
   };
 };

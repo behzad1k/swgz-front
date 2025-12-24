@@ -1,22 +1,20 @@
 import { useEffect, useRef } from 'react';
-import { useCurrentSong, useIsPlaying, usePlayerProgress } from '@/hooks/selectors/usePlayerSelectors';
+import {
+  useCurrentSong,
+  useIsPlaying,
+  usePlayerProgress,
+} from '@/hooks/selectors/usePlayerSelectors';
 import { usePlayerActions } from '@/hooks/actions/usePlayerActions';
 
 export const useMediaSession = () => {
   const currentSong = useCurrentSong();
   const isPlaying = useIsPlaying();
   const progress = usePlayerProgress();
-  const {
-    togglePlay,
-    playNext,
-    playPrevious,
-    seek,
-    setProgress
-  } = usePlayerActions();
+  const { togglePlay, playNext, playPrevious, seek, setProgress } = usePlayerActions();
 
-    const audioRefForSeek = useRef<HTMLAudioElement | null>(null);
+  const audioRefForSeek = useRef<HTMLAudioElement | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     const audioElements = document.getElementsByTagName('audio');
     if (audioElements.length > 0) {
       audioRefForSeek.current = audioElements[0];
@@ -31,7 +29,7 @@ export const useMediaSession = () => {
 
     if (!currentSong) return;
 
-        navigator.mediaSession.metadata = new MediaMetadata({
+    navigator.mediaSession.metadata = new MediaMetadata({
       title: currentSong.title,
       artist: currentSong.artistName,
       album: currentSong.albumName,
@@ -69,61 +67,73 @@ export const useMediaSession = () => {
       ],
     });
 
-        navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+  }, [currentSong, isPlaying]);
 
-      }, [currentSong, isPlaying]);
-
-    useEffect(() => {
+  useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     if (!currentSong || !audioRefForSeek.current) return;
 
     const audio = audioRefForSeek.current;
-
-    if ('setPositionState' in navigator.mediaSession && audio.duration) {
-      try {
-        navigator.mediaSession.setPositionState({
-          duration: audio.duration,
-          playbackRate: audio.playbackRate,
-          position: audio.currentTime,
-        });
-      } catch (error) {
-        console.warn('Failed to update position state:', error);
+    console.log('dur', audio.duration);
+    // Update position state more frequently for iOS
+    const updatePositionState = () => {
+      if (
+        'setPositionState' in navigator.mediaSession &&
+        audio.duration &&
+        !isNaN(audio.duration)
+      ) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: audio.duration,
+            playbackRate: audio.playbackRate,
+            position: Math.min(audio.currentTime, audio.duration),
+          });
+        } catch (error) {
+          console.warn('Failed to update position state:', error);
+        }
       }
-    }
-  }, [currentSong, progress]);
+    };
+
+    updatePositionState();
+
+    // Update position state every second for better iOS compatibility
+    const interval = setInterval(updatePositionState, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentSong, progress, isPlaying]);
 
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
 
-        const actionHandlers: Array<[MediaSessionAction, MediaSessionActionHandler]> = [
+    const actionHandlers: Array<[MediaSessionAction, MediaSessionActionHandler]> = [
       [
         'play',
         () => {
-                    togglePlay();
+          togglePlay();
         },
       ],
       [
         'pause',
         () => {
-                    togglePlay();
+          togglePlay();
         },
       ],
       [
         'previoustrack',
         () => {
-                    playPrevious();
+          playPrevious();
         },
       ],
       [
         'nexttrack',
         () => {
-                    playNext();
+          playNext();
         },
       ],
       [
         'seekbackward',
         (details) => {
-
           if (!audioRefForSeek.current) {
             console.warn('No audio element available for seeking');
             return;
@@ -132,13 +142,13 @@ export const useMediaSession = () => {
           const audio = audioRefForSeek.current;
           const skipTime = details.seekOffset || 10; // Default 10 seconds
 
-                    const newTime = Math.max(0, audio.currentTime - skipTime);
+          const newTime = Math.max(0, audio.currentTime - skipTime);
 
           console.log(`Seeking backward: ${audio.currentTime}s -> ${newTime}s`);
 
-                    audio.currentTime = newTime;
+          audio.currentTime = newTime;
 
-                    if (audio.duration) {
+          if (audio.duration) {
             const newProgress = (newTime / audio.duration) * 100;
             setProgress(newProgress);
           }
@@ -147,7 +157,6 @@ export const useMediaSession = () => {
       [
         'seekforward',
         (details) => {
-
           if (!audioRefForSeek.current) {
             console.warn('No audio element available for seeking');
             return;
@@ -156,13 +165,13 @@ export const useMediaSession = () => {
           const audio = audioRefForSeek.current;
           const skipTime = details.seekOffset || 10; // Default 10 seconds
 
-                    const newTime = Math.min(audio.duration, audio.currentTime + skipTime);
+          const newTime = Math.min(audio.duration, audio.currentTime + skipTime);
 
           console.log(`Seeking forward: ${audio.currentTime}s -> ${newTime}s`);
 
-                    audio.currentTime = newTime;
+          audio.currentTime = newTime;
 
-                    if (audio.duration) {
+          if (audio.duration) {
             const newProgress = (newTime / audio.duration) * 100;
             setProgress(newProgress);
           }
@@ -171,7 +180,6 @@ export const useMediaSession = () => {
       [
         'seekto',
         (details) => {
-
           if (!audioRefForSeek.current) {
             console.warn('No audio element available for seeking');
             return;
@@ -185,13 +193,13 @@ export const useMediaSession = () => {
           const audio = audioRefForSeek.current;
           const seekTime = details.seekTime;
 
-                    const validSeekTime = Math.max(0, Math.min(audio.duration, seekTime));
+          const validSeekTime = Math.max(0, Math.min(audio.duration, seekTime));
 
           console.log(`️ Seeking to: ${validSeekTime}s`);
 
-                    audio.currentTime = validSeekTime;
+          audio.currentTime = validSeekTime;
 
-                    if (audio.duration) {
+          if (audio.duration) {
             const newProgress = (validSeekTime / audio.duration) * 100;
             setProgress(newProgress);
           }
@@ -200,7 +208,7 @@ export const useMediaSession = () => {
       [
         'stop',
         () => {
-                    if (audioRefForSeek.current) {
+          if (audioRefForSeek.current) {
             audioRefForSeek.current.pause();
             audioRefForSeek.current.currentTime = 0;
           }
@@ -209,7 +217,7 @@ export const useMediaSession = () => {
       ],
     ];
 
-        actionHandlers.forEach(([action, handler]) => {
+    actionHandlers.forEach(([action, handler]) => {
       try {
         navigator.mediaSession.setActionHandler(action, handler);
         console.log(`Media Session: Registered "${action}" handler`);
@@ -218,12 +226,11 @@ export const useMediaSession = () => {
       }
     });
 
-        return () => {
+    return () => {
       actionHandlers.forEach(([action]) => {
         try {
           navigator.mediaSession.setActionHandler(action, null);
-        } catch (error) {
-                  }
+        } catch (error) {}
       });
     };
   }, [togglePlay, playNext, playPrevious, seek, setProgress]);

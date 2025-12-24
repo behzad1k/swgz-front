@@ -3,15 +3,21 @@ import { useAppActions } from '@hooks/actions/useAppActions.ts';
 import { PlayerActionKeys } from '@store/playerSlice.ts';
 import { QualityType } from '@/types/global';
 import { Track } from '@/types/models';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { shuffle } from '@/utils/helpers';
 
 export const usePlayerActions = () => {
   const { dispatch, state } = usePlayerContext();
   const { setShowLoading } = useAppActions();
+  const queueRef = useRef(state.queue);
+
+  useEffect(() => {
+    queueRef.current = state.queue;
+    console.log('📊 Queue ref updated, length:', state.queue.length);
+  }, [state.queue]);
 
   const setAudioRef = useCallback(
     (ref: HTMLAudioElement | null) => {
-      console.log(ref);
       dispatch({ type: PlayerActionKeys.SET_AUDIO_REF, payload: ref });
     },
     [dispatch]
@@ -106,8 +112,9 @@ export const usePlayerActions = () => {
   }, [dispatch]);
 
   const setShuffle = useCallback(
-    (shuffle: boolean) => {
-      dispatch({ type: PlayerActionKeys.SET_SHUFFLE, payload: shuffle });
+    (isShuffle: boolean, newQueue?: Track[]) => {
+      dispatch({ type: PlayerActionKeys.SET_SHUFFLE, payload: isShuffle });
+      setQueue(shuffle(newQueue || state.queue));
     },
     [dispatch]
   );
@@ -125,26 +132,30 @@ export const usePlayerActions = () => {
     },
     [setCurrentSong, setIsPlaying, setProgress]
   );
-
   const playNext = useCallback(() => {
     console.log('⏭️ Playing next song');
 
-    if (state.queue.length > 0) {
-      const nextSong = state.queue[0];
-      const remainingQueue = state.queue.slice(1);
+    const currentQueue = queueRef.current;
 
-      // CRITICAL FIX: Update queue BEFORE playing to prevent race conditions
+    if (currentQueue.length > 0) {
+      const nextSong = currentQueue[0];
+      const remainingQueue = currentQueue.slice(1);
+
+      console.log('🎵 Next song:', nextSong.title);
+
       dispatch({ type: PlayerActionKeys.SET_QUEUE, payload: remainingQueue });
 
-      // Use a microtask to ensure queue update completes first
-      queueMicrotask(() => {
-        play(nextSong);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          console.log('▶️ Playing:', nextSong.title);
+          play(nextSong);
+        });
       });
     } else {
       console.log('⏹️ Queue empty, stopping playback');
       setIsPlaying(false);
     }
-  }, [state.queue, dispatch, play, setIsPlaying]);
+  }, [dispatch, play, setIsPlaying]);
 
   const playPrevious = useCallback(() => {
     if (!state.audioRef) return;
